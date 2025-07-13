@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "364367652354",
+    "project_id": "t7kem-al7an",
+    "storage_bucket": "t7kem-al7an.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364367652354:android:d997b2e38578fb4745a91b",
+        "android_client_info": {
+          "package_name": "com.example.t7kem_al7an"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC70pXzSZobYtIEu_wZSJQptKfTs3L7WzA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
