@@ -10,14 +10,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core:
-  flutter_native_splash: ^2.4.0
-  flutter_bloc:
-  hive_flutter:
+  # firebase_core:
+  # flutter_native_splash: ^2.4.0
+  # flutter_bloc:
+  # hive_flutter:
   cupertino_icons:
-  cached_network_image:
-  flutter_local_notifications:
-  flutter_launcher_icons:
+  # cached_network_image:
+  # flutter_local_notifications:
+  # flutter_launcher_icons:
 
 
 dev_dependencies:
