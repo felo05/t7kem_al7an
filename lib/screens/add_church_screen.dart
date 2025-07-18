@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../widgets/custom_toggle_widget.dart';
+import '../widgets/dynamic_input_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddChurchScreen extends StatefulWidget {
   const AddChurchScreen({super.key});
@@ -10,22 +13,38 @@ class AddChurchScreen extends StatefulWidget {
 class _AddChurchScreenState extends State<AddChurchScreen> {
   final _formKey = GlobalKey<FormState>();
   final _churchNameController = TextEditingController();
-  final _locationController = TextEditingController();
-  final _contactPersonController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _addressController = TextEditingController();
-  
+  // Day selection
+  String? _selectedDay;
+  final List<String> _availableDays = [
+    'السبت',
+    'الأحد',
+    'الإثنين',
+    'الثلاثاء',
+    'الخميس',
+    'السبت (النهائي)'
+  ];
   bool _isLoading = false;
+  bool _isKG1 = false; // Toggle button state
+  bool _isKg2 = false; // Toggle button state
+  bool _isKgG = false; // Toggle button state
+  bool _isOulaTanya1 = false; // Toggle button state
+  bool _isOulaTanya2 = false; // Toggle button state
+  bool _isOulaTanyaG = false; // Toggle button state
+  bool _isTaltaRaba1 = false; // Toggle button state
+  bool _isTaltaRaba2 = false; // Toggle button state
+  bool _isTaltaRabaG = false; // Toggle button state
+  bool _isKhamsaSadsa1 = false; // Toggle button state
+  bool _isKhamsaSadsa2 = false; // Toggle button state
+  bool _isKhamsaSadsaG = false; // Toggle button state
 
+  // For dynamic entries
+  List<String> _kg = [];
+  List<String> _oulaTanya = [];
+  List<String> _taltaRaba = [];
+  List<String> _khamsaSadsa = [];
   @override
   void dispose() {
     _churchNameController.dispose();
-    _locationController.dispose();
-    _contactPersonController.dispose();
-    _phoneController.dispose();
-    _emailController.dispose();
-    _addressController.dispose();
     super.dispose();
   }
 
@@ -34,7 +53,7 @@ class _AddChurchScreenState extends State<AddChurchScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Add Church',
+          'أضف اللجان',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -87,104 +106,282 @@ class _AddChurchScreenState extends State<AddChurchScreen> {
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          'Register New Church',
+                          'تسجيل لجان الكنيسة',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Fill in the details below to register a new church',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
+                        )
                       ],
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 30), // Day selection dropdown
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'اختر اليوم',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedDay,
+                              decoration: InputDecoration(
+                                hintText: 'اختر اليوم...',
+                                prefixIcon: Icon(
+                                  Icons.calendar_month,
+                                  color: Colors.green.shade700,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      color: Colors.green.shade700, width: 2),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                fillColor: Colors.grey.shade50,
+                                filled: true,
+                              ),
+                              items: _availableDays.map((String day) {
+                                return DropdownMenuItem<String>(
+                                  value: day,
+                                  child: Text(
+                                    day,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedDay = newValue;
+                                });
+                              },
+                              isExpanded: true,
+                              dropdownColor: Colors.white,
+                              style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   _buildInputField(
                     controller: _churchNameController,
-                    label: 'Church Name',
+                    label: 'اسم الكنيسة',
                     icon: Icons.church,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter church name';
+                        return 'برجاء ادخال اسم الكنيسة';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _locationController,
-                    label: 'Location/City',
-                    icon: Icons.location_on,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter location';
-                      }
-                      return null;
+
+                  // Toggle Button for Church Status
+                  CustomToggleWidget(
+                    text: 'حضانة المستوى الأول',
+                    value: _isKG1,
+                    onChanged: (value) {
+                      setState(() {
+                        _isKG1 = value;
+                      });
                     },
                   ),
+                  const SizedBox(height: 8),
+                  CustomToggleWidget(
+                    text: 'حضانة المستوى الثاني',
+                    value: _isKg2,
+                    onChanged: (value) {
+                      setState(() {
+                        _isKg2 = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomToggleWidget(
+                    text: 'حضانة موهوبين جماعي ',
+                    value: _isKgG,
+                    onChanged: (value) {
+                      setState(() {
+                        _isKgG = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Dynamic Input Widget for Custom Entries
+                  DynamicInputWidget(
+                    title: 'حضانة موهوبين فردي ',
+                    initialItems: _kg,
+                    onItemsChanged: (items) {
+                      setState(() {
+                        _kg = items;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomToggleWidget(
+                    text: 'أولى وثانية المستوى الأول',
+                    value: _isOulaTanya1,
+                    onChanged: (value) {
+                      setState(() {
+                        _isOulaTanya1 = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomToggleWidget(
+                    text: 'أولى وثانية المستوى الثاني',
+                    value: _isOulaTanya2,
+                    onChanged: (value) {
+                      setState(() {
+                        _isOulaTanya2 = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomToggleWidget(
+                    text: 'أولى وثانية موهوبين جماعي ',
+                    value: _isOulaTanyaG,
+                    onChanged: (value) {
+                      setState(() {
+                        _isOulaTanyaG = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Dynamic Input Widget for Custom Entries
+                  DynamicInputWidget(
+                    title: 'أولى وثانية موهوبين فردي ',
+                    initialItems: _oulaTanya,
+                    onItemsChanged: (items) {
+                      setState(() {
+                        _oulaTanya = items;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomToggleWidget(
+                    text: 'ثالثة ورابعة المستوى الأول',
+                    value: _isTaltaRaba1,
+                    onChanged: (value) {
+                      setState(() {
+                        _isTaltaRaba1 = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomToggleWidget(
+                    text: 'ثالثة ورابعة المستوى الثاني',
+                    value: _isTaltaRaba2,
+                    onChanged: (value) {
+                      setState(() {
+                        _isTaltaRaba2 = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomToggleWidget(
+                    text: 'ثالثة ورابعة موهوبين جماعي ',
+                    value: _isTaltaRabaG,
+                    onChanged: (value) {
+                      setState(() {
+                        _isTaltaRabaG = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+
+                  DynamicInputWidget(
+                    title: 'ثالثة ورابعة موهوبين فردي ',
+                    initialItems: _taltaRaba,
+                    onItemsChanged: (items) {
+                      setState(() {
+                        _taltaRaba = items;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomToggleWidget(
+                    text: 'خامسة وسادسة المستوى الأول',
+                    value: _isKhamsaSadsa1,
+                    onChanged: (value) {
+                      setState(() {
+                        _isKhamsaSadsa1 = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomToggleWidget(
+                    text: 'خامسة وسادسة المستوى الثاني',
+                    value: _isKhamsaSadsa2,
+                    onChanged: (value) {
+                      setState(() {
+                        _isKhamsaSadsa2 = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomToggleWidget(
+                    text: 'خامسة وسادسة موهوبين جماعي ',
+                    value: _isKhamsaSadsaG,
+                    onChanged: (value) {
+                      setState(() {
+                        _isKhamsaSadsaG = value;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Dynamic Input Widget for Custom Entries
+                  DynamicInputWidget(
+                    title: 'خامسة وسادسة موهوبين فردي ',
+                    initialItems: _khamsaSadsa,
+                    onItemsChanged: (items) {
+                      setState(() {
+                        _khamsaSadsa = items;
+                      });
+                    },
+                  ),
+
                   const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _contactPersonController,
-                    label: 'Contact Person',
-                    icon: Icons.person,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter contact person name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _phoneController,
-                    label: 'Phone Number',
-                    icon: Icons.phone,
-                    keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter phone number';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _emailController,
-                    label: 'Email Address',
-                    icon: Icons.email,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter email address';
-                      }
-                      if (!value.contains('@')) {
-                        return 'Please enter a valid email address';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _addressController,
-                    label: 'Full Address',
-                    icon: Icons.home,
-                    maxLines: 3,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter full address';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 30),
                   ElevatedButton(
                     onPressed: _isLoading ? null : _submitForm,
                     style: ElevatedButton.styleFrom(
@@ -206,7 +403,7 @@ class _AddChurchScreenState extends State<AddChurchScreen> {
                             ),
                           )
                         : const Text(
-                            'Register Church',
+                            'أضف الكنيسة',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -271,30 +468,101 @@ class _AddChurchScreenState extends State<AddChurchScreen> {
         _isLoading = true;
       });
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        // Prepare church data for Firestore
+        Map<String, dynamic> churchData = {
+          'day': _selectedDay,
+          'churchName': _churchNameController.text.trim(),
+          'categories': {
+            'nursery': {
+              'level1': _isKG1,
+              'level2': _isKg2,
+              'giftedGroup': _isKgG,
+              'giftedIndividual': _kg.where((item) => item.isNotEmpty).toList(),
+            },
+            'firstSecond': {
+              'level1': _isOulaTanya1,
+              'level2': _isOulaTanya2,
+              'giftedGroup': _isOulaTanyaG,
+              'giftedIndividual': _oulaTanya
+                  .where((item) => item.isNotEmpty)
+                  .toList(), // You can add separate lists for each category
+            },
+            'thirdFourth': {
+              'level1': _isTaltaRaba1,
+              'level2': _isTaltaRaba2,
+              'giftedGroup': _isTaltaRabaG,
+              'giftedIndividual': _taltaRaba
+                  .where((item) => item.isNotEmpty)
+                  .toList(), // You can add separate lists for each category
+            },
+            'fifthSixth': {
+              'level1': _isKhamsaSadsa1,
+              'level2': _isKhamsaSadsa2,
+              'giftedGroup': _isKhamsaSadsaG,
+              'giftedIndividual': _khamsaSadsa
+                  .where((item) => item.isNotEmpty)
+                  .toList(), // You can add separate lists for each category
+            },
+          },
+        };
 
-      setState(() {
-        _isLoading = false;
-      });
+        // Add church to Firestore
+        DocumentReference docRef = await FirebaseFirestore.instance
+            .collection('churches')
+            .add(churchData);
 
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Church "${_churchNameController.text}" registered successfully!'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        setState(() {
+          _isLoading = false;
+        });
 
-        // Clear form
-        _churchNameController.clear();
-        _locationController.clear();
-        _contactPersonController.clear();
-        _phoneController.clear();
-        _emailController.clear();
-        _addressController.clear();
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Church "${_churchNameController.text}" registered successfully!\nDocument ID: ${docRef.id}'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+
+          // Clear form
+          _churchNameController.clear();
+          setState(() {
+            _isKG1 = false;
+            _isKg2 = false;
+            _isKgG = false;
+            _isOulaTanya1 = false;
+            _isOulaTanya2 = false;
+            _isOulaTanyaG = false;
+            _isTaltaRaba1 = false;
+            _isTaltaRaba2 = false;
+            _isTaltaRabaG = false;
+            _isKhamsaSadsa1 = false;
+            _isKhamsaSadsa2 = false;
+            _isKhamsaSadsaG = false;
+            _kg.clear();
+            _oulaTanya.clear();
+            _taltaRaba.clear();
+            _khamsaSadsa.clear();
+          });
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error saving church: ${e.toString()}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     }
   }

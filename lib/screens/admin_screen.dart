@@ -40,7 +40,7 @@ class AdminScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 40),
                 const Text(
-                  'Welcome to Admin Panel',
+                  'صفحة المنسق',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -61,8 +61,7 @@ class AdminScreen extends StatelessWidget {
                 _buildAdminButton(
                   context,
                   icon: Icons.church,
-                  title: 'Add Churches',
-                  subtitle: 'Register new churches to the system',
+                  title: 'أضف اللجان',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -76,8 +75,7 @@ class AdminScreen extends StatelessWidget {
                 _buildAdminButton(
                   context,
                   icon: Icons.person_add,
-                  title: 'Add Judges',
-                  subtitle: 'Register new judges to the system',
+                  title: 'أضف المحكمين',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -91,7 +89,7 @@ class AdminScreen extends StatelessWidget {
                 _buildAdminButton(
                   context,
                   icon: Icons.analytics,
-                  title: 'Check Status',
+                  title: 'إحصائيات',
                   subtitle: 'View system status and statistics',
                   onTap: () {
                     Navigator.push(
@@ -141,7 +139,7 @@ class AdminScreen extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String title,
-    required String subtitle,
+    String? subtitle,
     required VoidCallback onTap,
   }) {
     return Material(
@@ -179,26 +177,13 @@ class AdminScreen extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               Icon(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../widgets/dynamic_dropdown_widget.dart';
 
 class AddJudgeScreen extends StatefulWidget {
   const AddJudgeScreen({super.key});
@@ -9,34 +11,88 @@ class AddJudgeScreen extends StatefulWidget {
 
 class _AddJudgeScreenState extends State<AddJudgeScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _expertiseController = TextEditingController();
-  final _yearsExperienceController = TextEditingController();
-  
-  String _selectedCategory = 'Hymns';
-  bool _isLoading = false;
 
-  final List<String> _categories = [
-    'Hymns',
-    'Spiritual Songs',
-    'Biblical Knowledge',
-    'Church History',
-    'Liturgy',
-    'General Christianity',
+  bool _isLoading = false;
+  bool _isLoadingUsers = true;
+  List<String> _userNames = [];
+
+  // Day selection
+  String? _selectedDay;
+  final List<String> _availableDays = [
+    'السبت',
+    'الأحد',
+    'الإثنين',
+    'الثلاثاء',
+    'الخميس',
+    'السبت (النهائي)'
   ];
+
+  // Selected items lists
+  List<String> _selectedKg1 = [];
+  List<String> _selectedKg2 = [];
+  List<String> _selectedKgG = [];
+  List<String> _selectedKgF = [];
+  List<String> _selectedOulaTanya1 = [];
+  List<String> _selectedOulaTanya2 = [];
+  List<String> _selectedOulaTanyaG = [];
+  List<String> _selectedOulaTanyaF = [];
+  List<String> _selectedTaltaRaba1 = [];
+  List<String> _selectedTaltaRaba2 = [];
+  List<String> _selectedTaltaRabaG = [];
+  List<String> _selectedTaltaRabaF = [];
+  List<String> _selectedKhamsaSadsa1 = [];
+  List<String> _selectedKhamsaSadsa2 = [];
+  List<String> _selectedKhamsaSadsaG = [];
+  List<String> _selectedKhamsaSadsaF = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserNames();
+  }
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _expertiseController.dispose();
-    _yearsExperienceController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchUserNames() async {
+    try {
+      setState(() {
+        _isLoadingUsers = true;
+      });
+
+      // Fetch users from Firestore
+      final QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection('users').get();
+
+      final List<String> names = [];
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        if (data.containsKey('name') && data['name'] != null) {
+          names.add(data['name'].toString());
+        }
+      }
+
+      setState(() {
+        _userNames = names;
+        _isLoadingUsers = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingUsers = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطأ في تحميل أسماء المحكمين: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -44,7 +100,7 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Add Judge',
+          'أضف المحكمين',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -67,283 +123,520 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.person_add,
-                          size: 64,
-                          color: Colors.purple.shade700,
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Register New Judge',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Add a qualified judge to evaluate competitions',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  Row(
+          child: _isLoadingUsers
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: _buildInputField(
-                          controller: _firstNameController,
-                          label: 'First Name',
-                          icon: Icons.person,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter first name';
-                            }
-                            return null;
-                          },
-                        ),
+                      CircularProgressIndicator(
+                        color: Colors.white,
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildInputField(
-                          controller: _lastNameController,
-                          label: 'Last Name',
-                          icon: Icons.person_outline,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter last name';
-                            }
-                            return null;
-                          },
+                      SizedBox(height: 16),
+                      Text(
+                        'جاري تحميل أسماء المحكمين...',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _emailController,
-                    label: 'Email Address',
-                    icon: Icons.email,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter email address';
-                      }
-                      if (!value.contains('@')) {
-                        return 'Please enter a valid email address';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _phoneController,
-                    label: 'Phone Number',
-                    icon: Icons.phone,
-                    keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter phone number';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 5,
-                          offset: const Offset(0, 2),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.person,
+                                size: 64,
+                                color: Colors.purple.shade700,
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'تسجيل المحكمين',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+
+                        // Day selection dropdown
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 5,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'اختر اليوم',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border:
+                                        Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  child: DropdownButtonFormField<String>(
+                                    value: _selectedDay,
+                                    decoration: InputDecoration(
+                                      hintText: 'اختر اليوم...',
+                                      prefixIcon: Icon(
+                                        Icons.person,
+                                        color: Colors.purple.shade700,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                            color: Colors.purple.shade700,
+                                            width: 2),
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 12,
+                                      ),
+                                      fillColor: Colors.grey.shade50,
+                                      filled: true,
+                                    ),
+                                    items: _availableDays.map((String day) {
+                                      return DropdownMenuItem<String>(
+                                        value: day,
+                                        child: Text(
+                                          day,
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (String? newValue) {
+                                      setState(() {
+                                        _selectedDay = newValue;
+                                      });
+                                    },
+                                    isExpanded: true,
+                                    dropdownColor: Colors.white,
+                                    style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Names from Firestore
+                        DynamicDropdownWidget(
+                          title: 'حضانة المستوى الأول',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedKg1,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedKg1 = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Email addresses
+                        DynamicDropdownWidget(
+                          title: 'حضانة المستوى الثاني',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedKg2,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedKg2 = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Phone numbers
+                        DynamicDropdownWidget(
+                          title: 'حضانة موهوبين جماعي ',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedKgG,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedKgG = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Categories
+                        DynamicDropdownWidget(
+                          title: 'حضانة موهوبين فردي ',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedKgF,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedKgF = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Experience years
+                        DynamicDropdownWidget(
+                          title: 'أولى وثانية المستوى الأول',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedOulaTanya1,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedOulaTanya1 = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Additional expertise
+                        DynamicDropdownWidget(
+                          title: 'أولى وثانية المستوى الثاني',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedOulaTanya2,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedOulaTanya2 = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 30),
+
+                        // Names from Firestore
+                        DynamicDropdownWidget(
+                          title: 'أولى وثانية موهوبين جماعي ',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedOulaTanyaG,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedOulaTanyaG = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Email addresses
+                        DynamicDropdownWidget(
+                          title: 'أولى وثانية موهوبين فردي ',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedOulaTanyaF,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedOulaTanyaF = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Phone numbers
+                        DynamicDropdownWidget(
+                          title: 'ثالثة ورابعة المستوى الأول',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedTaltaRaba1,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedTaltaRaba1 = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Categories
+                        DynamicDropdownWidget(
+                          title: 'ثالثة ورابعة المستوى الثاني',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedTaltaRaba2,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedTaltaRaba2 = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Experience years
+                        DynamicDropdownWidget(
+                          title: 'ثالثة ورابعة موهوبين جماعي ',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedTaltaRabaG,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedTaltaRabaG = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Additional expertise
+                        DynamicDropdownWidget(
+                          title: 'ثالثة ورابعة موهوبين فردي ',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedTaltaRabaF,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedTaltaRabaF = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 30),
+
+                        // Names from Firestore
+                        DynamicDropdownWidget(
+                          title: 'خامسة وسادسة المستوى الأول',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedKhamsaSadsa1,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedKhamsaSadsa1 = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Email addresses
+                        DynamicDropdownWidget(
+                          title: 'خامسة وسادسة المستوى الثاني',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedKhamsaSadsa2,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedKhamsaSadsa2 = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Phone numbers
+                        DynamicDropdownWidget(
+                          title: 'خامسة وسادسة موهوبين جماعي ',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedKhamsaSadsaG,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedKhamsaSadsaG = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Categories
+                        DynamicDropdownWidget(
+                          title: 'خامسة وسادسة موهوبين فردي ',
+                          dropdownItems: _userNames,
+                          initialSelectedItems: _selectedKhamsaSadsaF,
+                          onItemsChanged: (items) {
+                            setState(() {
+                              _selectedKhamsaSadsaF = items;
+                            });
+                          },
+                          primaryColor: Colors.purple.shade700,
+                          dropdownIcon: Icons.person,
+                          itemIcon: Icons.person,
+                          hintText: 'اختر اسم المحكم...',
+                        ),
+                        const SizedBox(height: 30),
+
+                        // Submit button
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple.shade700,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'تسجيل المحكمين',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
                       ],
                     ),
-                    child: DropdownButtonFormField<String>(
-                      value: _selectedCategory,
-                      decoration: InputDecoration(
-                        labelText: 'Specialty Category',
-                        prefixIcon: Icon(Icons.category, color: Colors.purple.shade700),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        fillColor: Colors.white,
-                        filled: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                      ),
-                      items: _categories.map((String category) {
-                        return DropdownMenuItem<String>(
-                          value: category,
-                          child: Text(category),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedCategory = newValue!;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please select a category';
-                        }
-                        return null;
-                      },
-                    ),
                   ),
-                  const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _yearsExperienceController,
-                    label: 'Years of Experience',
-                    icon: Icons.timeline,
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter years of experience';
-                      }
-                      final years = int.tryParse(value);
-                      if (years == null || years < 0) {
-                        return 'Please enter a valid number';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildInputField(
-                    controller: _expertiseController,
-                    label: 'Additional Expertise & Qualifications',
-                    icon: Icons.school,
-                    maxLines: 3,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please describe additional expertise';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple.shade700,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 4,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text(
-                            'Register Judge',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    String? Function(String?)? validator,
-    TextInputType? keyboardType,
-    int maxLines = 1,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: TextFormField(
-        controller: controller,
-        validator: validator,
-        keyboardType: keyboardType,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, color: Colors.purple.shade700),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          fillColor: Colors.white,
-          filled: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
+                ),
         ),
       ),
     );
   }
 
   void _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    // Validate that a day is selected
+    if (_selectedDay == null || _selectedDay!.isEmpty) {
+      _showErrorMessage('يرجى اختيار اليوم أولاً');
+      return;
+    }
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+    // Validate that at least one item is selected in each required field
+    if (_selectedKg1.isEmpty ||
+        _selectedKg2.isEmpty ||
+        _selectedKgG.isEmpty ||
+        _selectedKgF.isEmpty ||
+        _selectedOulaTanya1.isEmpty ||
+        _selectedOulaTanya2.isEmpty ||
+        _selectedOulaTanyaG.isEmpty ||
+        _selectedOulaTanyaF.isEmpty ||
+        _selectedTaltaRaba1.isEmpty ||
+        _selectedTaltaRaba2.isEmpty ||
+        _selectedTaltaRabaG.isEmpty ||
+        _selectedTaltaRabaF.isEmpty ||
+        _selectedKhamsaSadsa1.isEmpty ||
+        _selectedKhamsaSadsa2.isEmpty ||
+        _selectedKhamsaSadsaG.isEmpty ||
+        _selectedKhamsaSadsaF.isEmpty) {
+      _showErrorMessage('يرجى اختيار اسم محكم واحد على الأقل في كل حقل.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Prepare judge data for Firestore
+      final judgeData = {
+        'day': _selectedDay,
+        'kg1': _selectedKg1,
+        'kg2': _selectedKg2,
+        'kgG': _selectedKgG,
+        'kgF': _selectedKgF,
+        'oulaTanya1': _selectedOulaTanya1,
+        'oulaTanya2': _selectedOulaTanya2,
+        'oulaTanyaG': _selectedOulaTanyaG,
+        'oulaTanyaF': _selectedOulaTanyaF,
+        'taltaRaba1': _selectedTaltaRaba1,
+        'taltaRaba2': _selectedTaltaRaba2,
+        'taltaRabaG': _selectedTaltaRabaG,
+        'taltaRabaF': _selectedTaltaRabaF,
+        'khamsaSadsa1': _selectedKhamsaSadsa1,
+        'khamsaSadsa2': _selectedKhamsaSadsa2,
+        'khamsaSadsaG': _selectedKhamsaSadsaG,
+        'khamsaSadsaF': _selectedKhamsaSadsaF,
+      };
+
+      // Save to Firestore
+      await FirebaseFirestore.instance.collection('judges').add(judgeData);
 
       setState(() {
         _isLoading = false;
@@ -353,23 +646,57 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Judge "${_firstNameController.text} ${_lastNameController.text}" registered successfully!'),
+            content: Text('تم تسجيل المحكمين ليوم $_selectedDay بنجاح!'),
             backgroundColor: Colors.purple,
             duration: const Duration(seconds: 3),
           ),
         );
 
         // Clear form
-        _firstNameController.clear();
-        _lastNameController.clear();
-        _emailController.clear();
-        _phoneController.clear();
-        _expertiseController.clear();
-        _yearsExperienceController.clear();
         setState(() {
-          _selectedCategory = 'Hymns';
+          _selectedDay = null;
+          _selectedKg1 = [];
+          _selectedKg2 = [];
+          _selectedKgG = [];
+          _selectedKgF = [];
+          _selectedOulaTanya1 = [];
+          _selectedOulaTanya2 = [];
+          _selectedOulaTanyaG = [];
+          _selectedOulaTanyaF = [];
+          _selectedTaltaRaba1 = [];
+          _selectedTaltaRaba2 = [];
+          _selectedTaltaRabaG = [];
+          _selectedTaltaRabaF = [];
+          _selectedKhamsaSadsa1 = [];
+          _selectedKhamsaSadsa2 = [];
+          _selectedKhamsaSadsaG = [];
+          _selectedKhamsaSadsaF = [];
         });
       }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('حدث خطأ أثناء تسجيل المحكمين: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
+  }
+
+  void _showErrorMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 }
