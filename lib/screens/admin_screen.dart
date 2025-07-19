@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'add_church_screen.dart';
 import 'add_judge_screen.dart';
 import 'check_status_screen.dart';
+import 'seed_data_screen.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
@@ -49,15 +50,6 @@ class AdminScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'Manage churches, judges, and check system status',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 60),
                 _buildAdminButton(
                   context,
                   icon: Icons.church,
@@ -89,13 +81,27 @@ class AdminScreen extends StatelessWidget {
                 _buildAdminButton(
                   context,
                   icon: Icons.analytics,
-                  title: 'إحصائيات',
-                  subtitle: 'View system status and statistics',
+                  title: 'النتائج',
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const CheckStatusScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+                _buildAdminButton(
+                  context,
+                  icon: Icons.storage,
+                  title: 'البيانات التجريبية',
+                  subtitle: 'إضافة أو مسح البيانات للاختبار',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SeedDataScreen(),
                       ),
                     );
                   },
@@ -177,13 +183,28 @@ class AdminScreen extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               Icon(

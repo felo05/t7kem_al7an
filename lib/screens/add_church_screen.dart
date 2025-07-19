@@ -462,17 +462,58 @@ class _AddChurchScreenState extends State<AddChurchScreen> {
     );
   }
 
-  void _submitForm() async {
+    void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      if (_selectedDay == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('يرجى اختيار اليوم أولاً'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+  
       setState(() {
         _isLoading = true;
       });
-
+  
       try {
-        // Prepare church data for Firestore
+        final String churchName = _churchNameController.text.trim();
+        
+        // Convert Arabic day to English for document ID
+        String dayId = _convertDayToEnglish(_selectedDay!);
+        
+        // Map of booleans to collection names
+        Map<String, bool> categoryMappings = {
+          'kg1': _isKG1,
+          'kg2': _isKg2,
+          'kgG': _isKgG,
+          'oulaTanya1': _isOulaTanya1,
+          'oulaTanya2': _isOulaTanya2,
+          'oulaTanyaG': _isOulaTanyaG,
+          'taltaRaba1': _isTaltaRaba1,
+          'taltaRaba2': _isTaltaRaba2,
+          'taltaRabaG': _isTaltaRabaG,
+          'khamsaSadsa1': _isKhamsaSadsa1,
+          'khamsaSadsa2': _isKhamsaSadsa2,
+          'khamsaSadsaG': _isKhamsaSadsaG,
+        };
+  
+        // Update Firestore collections for each true boolean
+        for (String collectionName in categoryMappings.keys) {
+          if (categoryMappings[collectionName] == true) {
+            await _addChurchToCollection(collectionName, dayId, churchName);
+          }
+        }
+  
+        // Also handle dynamic input arrays
+        await _handleDynamicInputs(dayId, churchName);
+  
+        // Prepare church data for main churches collection
         Map<String, dynamic> churchData = {
           'day': _selectedDay,
-          'churchName': _churchNameController.text.trim(),
+          'churchName': churchName,
           'categories': {
             'nursery': {
               'level1': _isKG1,
@@ -484,75 +525,53 @@ class _AddChurchScreenState extends State<AddChurchScreen> {
               'level1': _isOulaTanya1,
               'level2': _isOulaTanya2,
               'giftedGroup': _isOulaTanyaG,
-              'giftedIndividual': _oulaTanya
-                  .where((item) => item.isNotEmpty)
-                  .toList(), // You can add separate lists for each category
+              'giftedIndividual': _oulaTanya.where((item) => item.isNotEmpty).toList(),
             },
             'thirdFourth': {
               'level1': _isTaltaRaba1,
               'level2': _isTaltaRaba2,
               'giftedGroup': _isTaltaRabaG,
-              'giftedIndividual': _taltaRaba
-                  .where((item) => item.isNotEmpty)
-                  .toList(), // You can add separate lists for each category
+              'giftedIndividual': _taltaRaba.where((item) => item.isNotEmpty).toList(),
             },
             'fifthSixth': {
               'level1': _isKhamsaSadsa1,
               'level2': _isKhamsaSadsa2,
               'giftedGroup': _isKhamsaSadsaG,
-              'giftedIndividual': _khamsaSadsa
-                  .where((item) => item.isNotEmpty)
-                  .toList(), // You can add separate lists for each category
+              'giftedIndividual': _khamsaSadsa.where((item) => item.isNotEmpty).toList(),
             },
           },
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
         };
-
-        // Add church to Firestore
+  
+        // Add church to main churches collection
         DocumentReference docRef = await FirebaseFirestore.instance
             .collection('churches')
             .add(churchData);
-
+  
         setState(() {
           _isLoading = false;
         });
-
+  
         // Show success message
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  'Church "${_churchNameController.text}" registered successfully!\nDocument ID: ${docRef.id}'),
+                  'Church "$churchName" registered successfully for $_selectedDay!\nDocument ID: ${docRef.id}'),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 4),
             ),
           );
-
+  
           // Clear form
-          _churchNameController.clear();
-          setState(() {
-            _isKG1 = false;
-            _isKg2 = false;
-            _isKgG = false;
-            _isOulaTanya1 = false;
-            _isOulaTanya2 = false;
-            _isOulaTanyaG = false;
-            _isTaltaRaba1 = false;
-            _isTaltaRaba2 = false;
-            _isTaltaRabaG = false;
-            _isKhamsaSadsa1 = false;
-            _isKhamsaSadsa2 = false;
-            _isKhamsaSadsaG = false;
-            _kg.clear();
-            _oulaTanya.clear();
-            _taltaRaba.clear();
-            _khamsaSadsa.clear();
-          });
+          _clearForm();
         }
       } catch (e) {
         setState(() {
           _isLoading = false;
         });
-
+  
         // Show error message
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -565,5 +584,102 @@ class _AddChurchScreenState extends State<AddChurchScreen> {
         }
       }
     }
+  }
+  
+  Future<void> _addChurchToCollection(String collectionName, String dayId, String churchName) async {
+    try {
+      DocumentReference docRef = FirebaseFirestore.instance
+          .collection(collectionName)
+          .doc(dayId);
+  
+      await docRef.update({
+        'churches': FieldValue.arrayUnion([churchName]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+  
+      print('Added $churchName to $collectionName collection for $dayId');
+    } catch (e) {
+      print('Error adding church to $collectionName: $e');
+      // If document doesn't exist, create it
+      try {
+        await FirebaseFirestore.instance
+            .collection(collectionName)
+            .doc(dayId)
+            .set({
+          'day': dayId,
+          'judges': [],
+          'churches': [churchName],
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        print('Created new document and added $churchName to $collectionName for $dayId');
+      } catch (createError) {
+        print('Error creating document: $createError');
+      }
+    }
+  }
+  
+  Future<void> _handleDynamicInputs(String dayId, String churchName) async {
+    // Handle dynamic input arrays for individual gifted categories
+    if (_kg.isNotEmpty) {
+      for (String childName in _kg) {
+        await _addChurchToCollection('kgF', dayId, '$churchName - $childName');
+      }
+    }
+    
+    if (_oulaTanya.isNotEmpty) {
+      for (String childName in _oulaTanya) {
+        await _addChurchToCollection('oulaTanyaF', dayId, '$churchName - $childName');
+      }
+    }
+    
+    if (_taltaRaba.isNotEmpty) {
+      for (String childName in _taltaRaba) {
+        await _addChurchToCollection('taltaRabaF', dayId, '$churchName - $childName');
+      }
+    }
+    
+    if (_khamsaSadsa.isNotEmpty) {
+      for (String childName in _khamsaSadsa) {
+        await _addChurchToCollection('khamsaSadsaF', dayId, '$churchName - $childName');
+      }
+    }
+  }
+  
+  String _convertDayToEnglish(String arabicDay) {
+    Map<String, String> dayMapping = {
+      'السبت': 'saturday',
+      'الأحد': 'sunday',
+      'الإثنين': 'monday',
+      'الثلاثاء': 'tuesday',
+      'الأربعاء': 'wednesday',
+      'الخميس': 'thursday',
+      'الجمعة': 'friday',
+      'السبت (النهائي)': 'final',
+    };
+    return dayMapping[arabicDay] ?? 'saturday';
+  }
+  
+  void _clearForm() {
+    _churchNameController.clear();
+    setState(() {
+      _selectedDay = null;
+      _isKG1 = false;
+      _isKg2 = false;
+      _isKgG = false;
+      _isOulaTanya1 = false;
+      _isOulaTanya2 = false;
+      _isOulaTanyaG = false;
+      _isTaltaRaba1 = false;
+      _isTaltaRaba2 = false;
+      _isTaltaRabaG = false;
+      _isKhamsaSadsa1 = false;
+      _isKhamsaSadsa2 = false;
+      _isKhamsaSadsaG = false;
+      _kg.clear();
+      _oulaTanya.clear();
+      _taltaRaba.clear();
+      _khamsaSadsa.clear();
+    });
   }
 }

@@ -36,6 +36,18 @@ class _DynamicDropdownWidgetState extends State<DynamicDropdownWidget> {
     _selectedItems = List.from(widget.initialSelectedItems);
   }
 
+  @override
+  void didUpdateWidget(DynamicDropdownWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update _selectedItems when initialSelectedItems changes
+    if (widget.initialSelectedItems != oldWidget.initialSelectedItems) {
+      setState(() {
+        _selectedItems = List.from(widget.initialSelectedItems);
+        _currentSelection = null; // Reset current selection as well
+      });
+    }
+  }
+
   Color get _primaryColor => widget.primaryColor ?? Colors.purple.shade700;
 
   List<String> get _availableItems {

@@ -581,42 +581,23 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
     );
   }
 
-  void _submitForm() async {
+    void _submitForm() async {
     // Validate that a day is selected
     if (_selectedDay == null || _selectedDay!.isEmpty) {
       _showErrorMessage('يرجى اختيار اليوم أولاً');
       return;
     }
-
-    // Validate that at least one item is selected in each required field
-    if (_selectedKg1.isEmpty ||
-        _selectedKg2.isEmpty ||
-        _selectedKgG.isEmpty ||
-        _selectedKgF.isEmpty ||
-        _selectedOulaTanya1.isEmpty ||
-        _selectedOulaTanya2.isEmpty ||
-        _selectedOulaTanyaG.isEmpty ||
-        _selectedOulaTanyaF.isEmpty ||
-        _selectedTaltaRaba1.isEmpty ||
-        _selectedTaltaRaba2.isEmpty ||
-        _selectedTaltaRabaG.isEmpty ||
-        _selectedTaltaRabaF.isEmpty ||
-        _selectedKhamsaSadsa1.isEmpty ||
-        _selectedKhamsaSadsa2.isEmpty ||
-        _selectedKhamsaSadsaG.isEmpty ||
-        _selectedKhamsaSadsaF.isEmpty) {
-      _showErrorMessage('يرجى اختيار اسم محكم واحد على الأقل في كل حقل.');
-      return;
-    }
-
+  
     setState(() {
       _isLoading = true;
     });
-
+  
     try {
-      // Prepare judge data for Firestore
-      final judgeData = {
-        'day': _selectedDay,
+      // Convert Arabic day to English for document ID
+      String dayId = _convertDayToEnglish(_selectedDay!);
+      
+      // Map of judge lists to collection names
+      Map<String, List<String>> judgeMappings = {
         'kg1': _selectedKg1,
         'kg2': _selectedKg2,
         'kgG': _selectedKgG,
@@ -634,14 +615,45 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
         'khamsaSadsaG': _selectedKhamsaSadsaG,
         'khamsaSadsaF': _selectedKhamsaSadsaF,
       };
-
-      // Save to Firestore
+  
+      // Update Firestore collections for each list that has judges
+      for (String collectionName in judgeMappings.keys) {
+        List<String> judges = judgeMappings[collectionName]!;
+        if (judges.isNotEmpty) {
+          await _addJudgesToCollection(collectionName, dayId, judges);
+        }
+      }
+  
+      // Also save to main judges collection for backup/reference
+      final judgeData = {
+        'day': _selectedDay,
+        'dayId': dayId,
+        'kg1': _selectedKg1,
+        'kg2': _selectedKg2,
+        'kgG': _selectedKgG,
+        'kgF': _selectedKgF,
+        'oulaTanya1': _selectedOulaTanya1,
+        'oulaTanya2': _selectedOulaTanya2,
+        'oulaTanyaG': _selectedOulaTanyaG,
+        'oulaTanyaF': _selectedOulaTanyaF,
+        'taltaRaba1': _selectedTaltaRaba1,
+        'taltaRaba2': _selectedTaltaRaba2,
+        'taltaRabaG': _selectedTaltaRabaG,
+        'taltaRabaF': _selectedTaltaRabaF,
+        'khamsaSadsa1': _selectedKhamsaSadsa1,
+        'khamsaSadsa2': _selectedKhamsaSadsa2,
+        'khamsaSadsaG': _selectedKhamsaSadsaG,
+        'khamsaSadsaF': _selectedKhamsaSadsaF,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+  
       await FirebaseFirestore.instance.collection('judges').add(judgeData);
-
+  
       setState(() {
         _isLoading = false;
       });
-
+  
       // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -651,33 +663,15 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
             duration: const Duration(seconds: 3),
           ),
         );
-
+  
         // Clear form
-        setState(() {
-          _selectedDay = null;
-          _selectedKg1 = [];
-          _selectedKg2 = [];
-          _selectedKgG = [];
-          _selectedKgF = [];
-          _selectedOulaTanya1 = [];
-          _selectedOulaTanya2 = [];
-          _selectedOulaTanyaG = [];
-          _selectedOulaTanyaF = [];
-          _selectedTaltaRaba1 = [];
-          _selectedTaltaRaba2 = [];
-          _selectedTaltaRabaG = [];
-          _selectedTaltaRabaF = [];
-          _selectedKhamsaSadsa1 = [];
-          _selectedKhamsaSadsa2 = [];
-          _selectedKhamsaSadsaG = [];
-          _selectedKhamsaSadsaF = [];
-        });
+        _clearForm();
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
-
+  
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -689,7 +683,77 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
       }
     }
   }
-
+  
+  Future<void> _addJudgesToCollection(String collectionName, String dayId, List<String> judges) async {
+    try {
+      DocumentReference docRef = FirebaseFirestore.instance
+          .collection(collectionName)
+          .doc(dayId);
+  
+      // Add judges to the judges array using arrayUnion to prevent duplicates
+      await docRef.update({
+        'judges': FieldValue.arrayUnion(judges),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+  
+      print('Added ${judges.length} judges to $collectionName collection for $dayId');
+    } catch (e) {
+      print('Error adding judges to $collectionName: $e');
+      // If document doesn't exist, create it
+      try {
+        await FirebaseFirestore.instance
+            .collection(collectionName)
+            .doc(dayId)
+            .set({
+          'day': dayId,
+          'judges': judges,
+          'churches': [],
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        print('Created new document and added ${judges.length} judges to $collectionName for $dayId');
+      } catch (createError) {
+        print('Error creating document: $createError');
+      }
+    }
+  }
+  
+  String _convertDayToEnglish(String arabicDay) {
+    Map<String, String> dayMapping = {
+      'السبت': 'saturday',
+      'الأحد': 'sunday',
+      'الإثنين': 'monday',
+      'الثلاثاء': 'tuesday',
+      'الأربعاء': 'wednesday',
+      'الخميس': 'thursday',
+      'الجمعة': 'friday',
+      'السبت (النهائي)': 'saturday',
+    };
+    return dayMapping[arabicDay] ?? 'saturday';
+  }
+  
+  void _clearForm() {
+    setState(() {
+      _selectedDay = null;
+      _selectedKg1.clear();
+      _selectedKg2.clear();
+      _selectedKgG.clear();
+      _selectedKgF.clear();
+      _selectedOulaTanya1.clear();
+      _selectedOulaTanya2.clear();
+      _selectedOulaTanyaG.clear();
+      _selectedOulaTanyaF.clear();
+      _selectedTaltaRaba1.clear();
+      _selectedTaltaRaba2.clear();
+      _selectedTaltaRabaG.clear();
+      _selectedTaltaRabaF.clear();
+      _selectedKhamsaSadsa1.clear();
+      _selectedKhamsaSadsa2.clear();
+      _selectedKhamsaSadsaG.clear();
+      _selectedKhamsaSadsaF.clear();
+    });
+  }
+  
   void _showErrorMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
