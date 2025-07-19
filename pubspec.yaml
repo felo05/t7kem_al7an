@@ -21,7 +21,6 @@ dependencies:
   cached_network_image:
   flutter_local_notifications:
   flutter_launcher_icons:
-  cloud_firestore:
 
 
 dev_dependencies:
