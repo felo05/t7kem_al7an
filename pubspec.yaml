@@ -12,6 +12,9 @@ dependencies:
     sdk: flutter
   firebase_core:
   flutter_native_splash: ^2.4.6
+  cloud_firestore:
+  firebase_database:
+  firebase_storage:
   flutter_bloc:
   hive_flutter:
   cupertino_icons:

@@ -1,51 +1,69 @@
-
-
-
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:t7kem_al7an/authentication/cubit/auth_cubit.dart';
 import 'package:t7kem_al7an/churches/churchs_screen.dart';
 
-class AuthScreen extends StatelessWidget{
+import '../widgets/custom_form_field.dart';
+import '../widgets/marks_form_fields.dart';
+
+class AuthScreen extends StatelessWidget {
   const AuthScreen({super.key});
 
   @override
-    Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     TextEditingController nameController = TextEditingController();
-    TextEditingController passwordController = TextEditingController();
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
-                ),
+    return BlocProvider(
+      create: (context) => AuthCubit(),
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 100),
+                  Image.asset(
+                    "assets/images/logo.png",
+                    width: 250,
+                    height: 250,
+                  ),
+                  const SizedBox(height: 100),
+                  CustomTextFormField(
+                    text: 'الاسم',
+                    controller: nameController,
+                    floatingLabel: true,
+                  ),
+                  const SizedBox(height: 20),
+                  BlocConsumer<AuthCubit, AuthState>(
+                    listener: (context, state) {
+                      if (state is AuthSuccess) {
+                        Navigator.pushAndRemoveUntil(context,
+                        MaterialPageRoute(builder: (context) =>  ChurchesScreen(data: state.data,)),
+                        (route) => false);
+                      }
+                      else if (state is AuthError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("جرب تاني",style: TextStyle(fontWeight: FontWeight.w500,fontSize: 20),),
+                          ),
+                        );
+                      }
+                    },
+                    builder: (context, state) {
+                      if (state is AuthLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(color: Colors.indigo,),
+                        );
+                      }
+                      return MarksFormFields.submitButton(onPressed: (){
+                        context.read<AuthCubit>().login(nameController.text);
+                      },text: "دخول");
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              TextFormField(
-                controller: passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
-              ),const SizedBox(height: 20,),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ChurchesScreen(),
-                    ),
-                  );
-                },
-                child: const Text('Login'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
