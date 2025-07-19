@@ -707,7 +707,7 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
             Text(
               title,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
@@ -719,7 +719,7 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
             Text(
               '🏆 $winnerChurch',
 style: TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 color: Colors.grey.shade600,
                 fontWeight: FontWeight.w500,
               ),
