@@ -15,6 +15,10 @@ dependencies:
   cloud_firestore:
   firebase_database:
   firebase_storage:
+  permission_handler: ^11.0.0
+  saver_gallery: ^4.0.0
+  device_info_plus:
+  screenshot:
   flutter_bloc:
   hive_flutter:
   cupertino_icons:

@@ -9,11 +9,10 @@ import '../marks_forms/talta2.dart';
 
 class ChurchesScreen extends StatelessWidget {
   const ChurchesScreen({super.key, required this.data});
-  final Map<String, String> data;
+  final List<MapEntry<String, String>> data;
 
   @override
   Widget build(BuildContext context) {
-    List<String> churches = data.keys.toList();
     return Scaffold(
       appBar: AppBar(
         title: const Text('الكنائس'),
@@ -24,7 +23,8 @@ class ChurchesScreen extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: ListView.builder(
           itemBuilder: (context, i) {
-            String level = data[churches[i]]!;
+              String level = data.elementAt(i).value;
+              String church = data.elementAt(i).key;
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -39,7 +39,7 @@ class ChurchesScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            churches[i],
+                            church,
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w500,
@@ -94,71 +94,71 @@ class ChurchesScreen extends StatelessWidget {
                         builder:
                             (context) =>
                                 level == "kg1"
-                                    ? Kg1(isKg: true, churchName: churches[i])
+                                    ? Kg1(isKg: true, churchName: church)
                                     : level == "kg2"
-                                    ? Kg2(isKg: true, churchName: churches[i])
+                                    ? Kg2(isKg: true, churchName: church)
                                     : level == "kgF"
                                     ? MohobenIndividual(
                                       level: 0,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     )
                                     : level == "kgG"
                                     ? MohobenGroup(
                                       level: 0,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     )
                                     : level == "ola1"
-                                    ? Kg1(isKg: false, churchName: churches[i])
+                                    ? Kg1(isKg: false, churchName: church)
                                     : level == "ola2"
-                                    ? Kg2(isKg: false, churchName: churches[i])
+                                    ? Kg2(isKg: false, churchName: church)
                                     : level == "olaF"
                                     ? MohobenIndividual(
                                       level: 1,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     )
                                     : level == "olaG"
                                     ? MohobenGroup(
                                       level: 1,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     )
                                     : level == "talta1"
                                     ? Talta1(
                                       isTalta: true,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     )
                                     : level == "talta2"
                                     ? Talta2(
                                       isTalta: true,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     )
                                     : level == "taltaF"
                                     ? MohobenIndividual(
                                       level: 2,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     )
                                     : level == "taltaG"
                                     ? MohobenGroup(
                                       level: 2,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     )
                                     : level == "khamsa1"
                                     ? Talta1(
                                       isTalta: false,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     )
                                     : level == "khamsa2"
                                     ? Talta2(
                                       isTalta: false,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     )
                                     : level == "khamsaF"
                                     ? MohobenIndividual(
                                       level: 3,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     )
                                     : MohobenGroup(
                                       level: 3,
-                                      churchName: churches[i],
+                                      churchName: church,
                                     ),
                       ),
                     );
@@ -167,7 +167,7 @@ class ChurchesScreen extends StatelessWidget {
               ],
             );
           },
-          itemCount: churches.length, // Example count of churches
+          itemCount: data.length, // Example count of churche
         ),
       ),
     );

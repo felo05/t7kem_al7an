@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:t7kem_al7an/authentication/cubit/auth_cubit.dart';
 import 'package:t7kem_al7an/churches/churchs_screen.dart';
 
+import '../screens/admin_screen.dart';
 import '../widgets/custom_form_field.dart';
 import '../widgets/marks_form_fields.dart';
 
@@ -39,13 +40,13 @@ class AuthScreen extends StatelessWidget {
                     listener: (context, state) {
                       if (state is AuthSuccess) {
                         Navigator.pushAndRemoveUntil(context,
-                        MaterialPageRoute(builder: (context) =>  ChurchesScreen(data: state.data,)),
+                        MaterialPageRoute(builder: (context) =>  state.isAadmin?const AdminScreen():ChurchesScreen(data: state.data!,)),
                         (route) => false);
                       }
                       else if (state is AuthError) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("جرب تاني",style: TextStyle(fontWeight: FontWeight.w500,fontSize: 20),),
+                          SnackBar(
+                            content: Text(state.message??"جرب تاني",style: const TextStyle(fontWeight: FontWeight.w500,fontSize: 20),),
                           ),
                         );
                       }
