@@ -1,20 +1,21 @@
 import 'dart:typed_data';
 import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:t7kem_al7an/constants/al7an.dart';
 
-import '../authentication/cubit/auth_cubit.dart';
-import '../constants/firebase.dart';
 import '../widgets/marks_form_fields.dart';
+import 'cubit/submit_cubit.dart';
 
 class MohobenIndividual extends StatefulWidget {
   const MohobenIndividual(
       {super.key, required this.level, required this.churchName});
+
   final int level;
   final String churchName;
+
   @override
   State<MohobenIndividual> createState() => _MohobenIndividualState();
 }
@@ -31,28 +32,28 @@ class _MohobenIndividualState extends State<MohobenIndividual> {
   late List<String> al7anList;
 
   Future<void> _captureAndSave() async {
-    try {
       RenderRepaintBoundary boundary =
       _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
       if (boundary.debugNeedsPaint) {
         await Future.delayed(const Duration(milliseconds: 20));
       }
       final image = await boundary.toImage(pixelRatio: 3.0);
-      final ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
+      final ByteData? byteData = await image.toByteData(
+          format: ImageByteFormat.png);
 
       if (byteData != null) {
         final Uint8List pngBytes = byteData.buffer.asUint8List();
         await SaverGallery.saveImage(
           pngBytes,
-          fileName: "form_${DateTime.now().millisecondsSinceEpoch}.png",
+          fileName: "form_${DateTime
+              .now()
+              .millisecondsSinceEpoch}.png",
           skipIfExists: true,
         );
-        print("Image saved successfully");
       }
-    } catch (e) {
-      print("Error capturing screenshot: $e");
-    }
+
   }
+
   @override
   void initState() {
     super.initState();
@@ -65,25 +66,25 @@ class _MohobenIndividualState extends State<MohobenIndividual> {
     al7anList = widget.level == 0
         ? Al7an.kg3
         : widget.level == 1
-            ? Al7an.ola3
-            : widget.level == 2
-                ? Al7an.talta3
-                : Al7an.khamsa3;
+        ? Al7an.ola3
+        : widget.level == 2
+        ? Al7an.talta3
+        : Al7an.khamsa3;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(appBar: AppBar(
-        title: Text(
-          widget.level == 0
-              ? "موهوبين فردى مرحلة حضانة"
-              : widget.level == 1
-                  ? "موهوبين فردى مرحلة اولي وتانية"
-                  : widget.level == 2
-                      ? "موهوبين فردى مرحلة تالتة ورابعة"
-                      : "موهوبين فردى مرحلة خامسة وسادسة",
-        ),
+      title: Text(
+        widget.level == 0
+            ? "موهوبين فردى مرحلة حضانة"
+            : widget.level == 1
+            ? "موهوبين فردى مرحلة اولي وتانية"
+            : widget.level == 2
+            ? "موهوبين فردى مرحلة تالتة ورابعة"
+            : "موهوبين فردى مرحلة خامسة وسادسة",
       ),
+    ),
       body: SingleChildScrollView(
         controller: _scrollController,
         child: RepaintBoundary(
@@ -119,74 +120,47 @@ class _MohobenIndividualState extends State<MohobenIndividual> {
                   });
                 }),
                 const SizedBox(height: 10),
-                MarksFormFields.submitButton(onPressed: () async {
-                  await _captureAndSave();
-                  double factor = 1;
-                  Map<String, dynamic> estmara = {
-                    "churchName": widget.churchName,
-                    "judge": AuthCubit.name,
-                    al7anList[0]: {
-                      Al7an.tslem: controllers1[0].text,
-                      Al7an.copticReading: controllers1[1].text,
-                      Al7an.ro7ania: controllers1[2].text,
-                      Al7an.taks: bool1[0],
-                      Al7an.df: bool1[1],
-                    },
-                    al7anList[1]: {
-                      Al7an.tslem: controllers2[0].text,
-                      Al7an.copticReading: controllers2[1].text,
-                      Al7an.ro7ania: controllers2[2].text,
-                      Al7an.taks: bool2[0],
-                      Al7an.df: bool2[1],
-                    },
-                    al7anList[2]: {
-                      Al7an.tslem: controllers3[0].text,
-                      Al7an.copticReading: controllers3[1].text,
-                      Al7an.ro7ania: controllers3[2].text,
-                      Al7an.taks: bool3[0],
-                      Al7an.df: bool3[1]
-                    },
-                  };
-                  double sum = 0;
-                  for (var controller in controllers3) {
-                    sum += int.parse(controller.text);
-                  }
-                  sum += bool3[0] ? 1 : 0;
-                  sum += bool3[1] ? 1 : 0;
-                  factor = (sum >= 50 && sum <= 53)
-                      ? 1.01
-                      : (sum >= 54 && sum <= 56)
-                          ? 1.02
-                          : (sum >= 57 && sum <= 59)
-                              ? 1.05
-                              : (sum >= 60 && sum <= 61)
-                                  ? 1.07
-                                  : 1;
-                  for (var controller in controllers1) {
-                    sum += int.parse(controller.text);
-                  }
-                  for (var controller in controllers2) {
-                    sum += int.parse(controller.text);
-                  }
+                BlocConsumer<SubmitCubit, SubmitState>(
+                  listener: (context, state) {
+                    if(state is SubmitSuccess) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("تم حفظ البيانات بنجاح"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } else if (state is SubmitFailure) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.error),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }                  },
+                  builder: (context, state) {
+                    if (state is SubmitLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: Colors.indigo,),
+                      );
+                    }
+                    return MarksFormFields.submitButton(onPressed: () {
+                      context.read<SubmitCubit>().mohobenIndividual(
+                        widget.churchName,
+                        widget.level,
+                        al7anList,
+                        controllers1,
+                        controllers2,
+                        controllers3,
+                        bool1,
+                        bool2,
+                        bool3,
+                        _captureAndSave,
 
-                  sum += bool1[0] ? 1 : 0;
-                  sum += bool1[1] ? 1 : 0;
-                  sum += bool2[0] ? 1 : 0;
-                  sum += bool2[1] ? 1 : 0;
-
-                  sum *= factor;
-                  estmara["total"] = sum;
-                  estmara["percentage"] = sum / 111;
-                  final FirebaseFirestore fireStore =
-                      FirebaseFirestore.instance;
-                  await fireStore
-                      .collection(
-                          "${widget.level == 0 ? Firebase.kgg : widget.level == 1 ? Firebase.olag : widget.level == 2 ? Firebase.taltag : Firebase.khamsag}result")
-                      .add(estmara)
-                      .then((val) {
-                    Navigator.pop(context);
-                  });
-                }),
+                      );
+                    });
+                  },
+                ),
               ],
             ),
           ),

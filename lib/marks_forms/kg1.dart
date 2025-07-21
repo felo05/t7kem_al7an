@@ -1,13 +1,12 @@
 import 'dart:typed_data';
 import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:saver_gallery/saver_gallery.dart';
-import 'package:t7kem_al7an/authentication/cubit/auth_cubit.dart';
 import 'package:t7kem_al7an/widgets/marks_form_fields.dart';
 import '../constants/al7an.dart';
-import '../constants/firebase.dart';
+import 'cubit/submit_cubit.dart';
 
 class Kg1 extends StatefulWidget {
   const Kg1({super.key, required this.isKg, required this.churchName});
@@ -24,7 +23,7 @@ class _Kg1State extends State<Kg1> {
   final ScrollController _scrollController = ScrollController();
 
   Future<void> _captureAndSave() async {
-    try {
+
       RenderRepaintBoundary boundary = _globalKey.currentContext!
           .findRenderObject() as RenderRepaintBoundary;
       if (boundary.debugNeedsPaint) {
@@ -32,20 +31,19 @@ class _Kg1State extends State<Kg1> {
       }
       final image = await boundary.toImage(pixelRatio: 3.0);
       final ByteData? byteData =
-          await image.toByteData(format: ImageByteFormat.png);
+      await image.toByteData(format: ImageByteFormat.png);
 
       if (byteData != null) {
         final Uint8List pngBytes = byteData.buffer.asUint8List();
         await SaverGallery.saveImage(
           pngBytes,
-          fileName: "form_${DateTime.now().millisecondsSinceEpoch}.png",
+          fileName: "form_${DateTime
+              .now()
+              .millisecondsSinceEpoch}.png",
           skipIfExists: true,
         );
-        print("Image saved successfully");
       }
-    } catch (e) {
-      print("Error capturing screenshot: $e");
-    }
+
   }
 
   @override
@@ -53,19 +51,19 @@ class _Kg1State extends State<Kg1> {
     List<String> al7anList = widget.isKg ? Al7an.kg1 : Al7an.ola1;
     List<TextEditingController> controllers1 = List.generate(
       3,
-      (index) => TextEditingController(),
+          (index) => TextEditingController(),
     );
     List<TextEditingController> controllers2 = List.generate(
       3,
-      (index) => TextEditingController(),
+          (index) => TextEditingController(),
     );
     List<TextEditingController> controllers3 = List.generate(
       3,
-      (index) => TextEditingController(),
+          (index) => TextEditingController(),
     );
     List<TextEditingController> controllers4 = List.generate(
       3,
-      (index) => TextEditingController(),
+          (index) => TextEditingController(),
     );
     TextEditingController totalController = TextEditingController();
 
@@ -103,59 +101,48 @@ class _Kg1State extends State<Kg1> {
                   const SizedBox(height: 10),
                   MarksFormFields.total(totalController),
                   const SizedBox(height: 10),
-                  MarksFormFields.submitButton(onPressed: () async {
-                    await _captureAndSave();
+                  BlocConsumer<SubmitCubit, SubmitState>(
+                    listener: (context, state) {
+                      if(state is SubmitSuccess) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("تم حفظ البيانات بنجاح"),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } else if (state is SubmitFailure) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.error),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                    builder: (context, state) {
+                      if (state is SubmitLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(color: Colors.indigo,),
+                        );
+                      }
+                      return MarksFormFields.submitButton(onPressed: () {
+                        context.read<SubmitCubit>().kg1(
+                            widget.churchName,
+                            al7anList,
+                            controllers1,
+                            controllers2,
+                            controllers3,
+                            controllers4,
+                            totalController,
+                            widget.isKg,
 
-                    Map<String, dynamic> estmara = {
-                      "churchName": widget.churchName,
-                      "kidsTotal": totalController.text,
-                      "judge": AuthCubit.name
-                    };
-                    double sum = 10;
+                            _captureAndSave
 
-                    estmara[al7anList[0]] = {
-                      Al7an.tslem: controllers1[0].text,
-                      Al7an.tempo: controllers1[1].text,
-                      Al7an.ro7ania: controllers1[2].text,
-                    };
-                    estmara[al7anList[1]] = {
-                      Al7an.tslem: controllers2[0].text,
-                      Al7an.tempo: controllers2[1].text,
-                      Al7an.ro7ania: controllers2[2].text,
-                    };
-                    estmara[al7anList[2]] = {
-                      Al7an.tslem: controllers3[0].text,
-                      Al7an.tempo: controllers3[1].text,
-                      Al7an.ro7ania: controllers3[2].text,
-                    };
-                    estmara[al7anList[3]] = {
-                      Al7an.tslem: controllers4[0].text,
-                      Al7an.tempo: controllers4[1].text,
-                      Al7an.ro7ania: controllers4[2].text,
-                    };
-
-                    for (var controller in [
-                      ...controllers1,
-                      ...controllers2,
-                      ...controllers3,
-                      ...controllers4
-                    ]) {
-                      sum += int.tryParse(controller.text) ?? 0;
-                    }
-
-                    estmara["total"] = sum;
-                    estmara["percent"] = sum / 174;
-
-                    final FirebaseFirestore fireStore =
-                        FirebaseFirestore.instance;
-                    await fireStore
-                        .collection(
-                            "${widget.isKg ? Firebase.kg1 : Firebase.ola1}result")
-                        .add(estmara)
-                        .then((val) {
-                      Navigator.pop(context);
-                    });
-                  }),
+                        );
+                      });
+                    },
+                  ),
                 ],
               ),
             ),

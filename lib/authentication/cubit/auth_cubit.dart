@@ -38,50 +38,91 @@ class AuthCubit extends Cubit<AuthState> {
   void login(String name) async {
     name = name.trim();
     AuthCubit.name = name;
-    print("[$name]");
     String dayName = "saturday";
-    // days[DateTime.now().weekday - 1];
     List<MapEntry<String, String>> result = [];
+
     try {
       emit(AuthLoading());
-
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
-      print("+++++++++++++++");
-      final x = await fireStore
+
+      final userSnapshot = await fireStore
           .collection(Firebase.users)
           .where(Firebase.name, isEqualTo: name)
           .get();
-      print("+++++++++++++++");
-      if (x.size < 1) {
+
+      if (userSnapshot.size < 1) {
         emit(AuthError(message: "اكتب الاسم صح"));
         return;
       }
 
-      print(x.docs[0].data());
-      if (x.docs[0].data()["isAdmin"] ?? false) {
+      final userData = userSnapshot.docs.first.data();
+
+      if (userData["isAdmin"] == true) {
         emit(AuthSuccess(isAadmin: true));
         return;
       }
-      print("==============");
+
+      List<Future<void>> tasks = [];
+
       for (String level in levels) {
-        await fireStore
-            .collection(level)
-            .doc(dayName.toLowerCase())
-            .get()
-            .then((value) {
-          if ((value.data()?["judges"] as List<dynamic>)
-              .contains(name.trim())) {
-            for (String church in value.data()!["churches"] as List<dynamic>) {
-              result.add(MapEntry(church, level));
-            }
-          }
-        });
+        tasks.add(
+          _getLevelDataWithFallback(fireStore, level, dayName, name, result),
+        );
       }
+
+      await Future.wait(tasks);
+
       emit(AuthSuccess(data: result));
-      print("=================");
-      //print(result);
     } catch (e) {
-      emit(AuthError());
+      emit(AuthError(message: "في مشكلة في الاتصال أو البيانات"));
     }
   }
+  void _extractChurchesFromDoc(
+      DocumentSnapshot doc,
+      String name,
+      String level,
+      List<MapEntry<String, String>> result,
+      ) {
+    final data = doc.data() as Map<String, dynamic>?;
+
+    if (data == null) return;
+
+    final judges = data["judges"] as List<dynamic>? ?? [];
+    final churches = data["churches"] as List<dynamic>? ?? [];
+
+    if (judges.contains(name.trim())) {
+      for (final church in churches) {
+        result.add(MapEntry(church, level));
+      }
+    }
+  }
+
+  Future<void> _getLevelDataWithFallback(
+      FirebaseFirestore fireStore,
+      String level,
+      String dayName,
+      String name,
+      List<MapEntry<String, String>> result,
+      ) async {
+    try {
+      // حاول الاتصال أونلاين
+      final doc = await fireStore
+          .collection(level)
+          .doc(dayName.toLowerCase())
+          .get();
+      _extractChurchesFromDoc(doc, name, level, result);
+    } catch (_) {
+      try {
+        // fallback للكاش
+        final doc = await fireStore
+            .collection(level)
+            .doc(dayName.toLowerCase())
+            .get(const GetOptions(source: Source.cache));
+        _extractChurchesFromDoc(doc, name, level, result);
+      } catch (_) {
+        // فشل حتى من الكاش → تجاهل
+      }
+    }
+  }
+
 }
