@@ -1,4 +1,4 @@
-# ios/Podfile
+# This is a standard Flutter Podfile with iOS 13.0 minimum deployment target
 
 platform :ios, '13.0'
 
@@ -11,11 +11,19 @@ project 'Runner', {
   'Release' => :release,
 }
 
-install! 'cocoapods', :deterministic_uuids => false
+def flutter_installation
+  # Load the Flutter pods
+  flutter_application_path = File.expand_path('../..', __FILE__)
+  eval(File.read(File.join(flutter_application_path, '.flutter-plugins-dependencies')))
+end
+
+# Flutter-specific setup
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), __dir__)
+flutter_install_all_ios_pods(File.dirname(File.realpath(__FILE__)))
 
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
-  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  flutter_install_all_ios_pods(File.dirname(File.realpath(__FILE__)))
 end
