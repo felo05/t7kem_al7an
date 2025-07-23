@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'church_details_screen.dart';
 
 class CheckStatusScreen extends StatefulWidget {
   const CheckStatusScreen({super.key});
@@ -15,22 +16,22 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
 
   // Collection names for the 16 stat cards
   final List<String> _collections = [
-    'kg1Results',
-    'kg2Results', 
-    'kgGResults',
-    'kgFResults',
-    'oulaTanya1Results',
-    'oulaTanya2Results',
-    'oulaTanyaGResults',
-    'oulaTanyaFResults',
-    'taltaRaba1Results',
-    'taltaRaba2Results',
-    'taltaRabaGResults',
-    'taltaRabaFResults',
-    'khamsaSadsa1Results',
-    'khamsaSadsa2Results',
-    'khamsaSadsaGResults',
-    'khamsaSadsaFResults',
+    'kg1result',
+    'kg2result', 
+    'kgGresult',
+    'kgFresult',
+    'oulaTanya1result',
+    'oulaTanya2result',
+    'oulaTanyaGresult',
+    'oulaTanyaFresult',
+    'taltaRaba1result',
+    'taltaRaba2result',
+    'taltaRabaGresult',
+    'taltaRabaFresult',
+    'khamsaSadsa1result',
+    'khamsaSadsa2result',
+    'khamsaSadsaGresult',
+    'khamsaSadsaFresult',
   ];
 
   // Store the maximum document data for each collection
@@ -140,20 +141,56 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
     try {
       final QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection(collectionName)
-          .orderBy('total', descending: true)
-          .limit(1)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
-        final doc = snapshot.docs.first;
-        final data = doc.data() as Map<String, dynamic>;
-        final churchName = data['church'] ?? 'غير محدد';
+        // Group documents by church name and calculate averages
+        Map<String, List<Map<String, dynamic>>> churchGroups = {};
+        
+        for (var doc in snapshot.docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          final churchName = data['churchName'] ?? data['church'] ?? 'غير محدد';
+          
+          if (!churchGroups.containsKey(churchName)) {
+            churchGroups[churchName] = [];
+          }
+          
+          churchGroups[churchName]!.add({
+            'id': doc.id,
+            'total': data['total'] ?? 0,
+            'data': data,
+          });
+        }
+        
+        // Find the church with highest average total
+        String topChurch = 'غير محدد';
+        double highestAverage = 0;
+        Map<String, dynamic> topData = {};
+        
+        for (var entry in churchGroups.entries) {
+          final churchName = entry.key;
+          final documents = entry.value;
+          
+          // Calculate average total for this church
+          double totalSum = 0;
+          for (var doc in documents) {
+            totalSum += (doc['total'] as num).toDouble();
+          }
+          double average = totalSum / documents.length;
+          
+          if (average > highestAverage) {
+            highestAverage = average;
+            topChurch = churchName;
+            topData = documents.first['data']; // Use first document data as reference
+          }
+        }
         
         _collectionMaxData[collectionName] = {
-          'docId': doc.id,
-          'total': data['total'] ?? 0,
-          'church': churchName,
-          'data': data,
+          'docId': 'Average',
+          'total': highestAverage.round(),
+          'church': topChurch,
+          'data': topData,
+          'churchGroups': churchGroups, // Store all church data for details screen
         };
       } else {
         _collectionMaxData[collectionName] = {
@@ -161,6 +198,7 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
           'total': 0,
           'church': 'لا توجد بيانات',
           'data': {},
+          'churchGroups': {},
         };
       }
     } catch (e) {
@@ -170,6 +208,7 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
         'total': 0,
         'church': 'خطأ في التحميل',
         'data': {},
+        'churchGroups': {},
       };
     }
   }
@@ -299,7 +338,7 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
               return _buildCollectionStatCard(
                 displayName,
                 winnerChurch,
-                total.toString(),
+                '$total (متوسط)',
                 _getCollectionIcon(collection),
                 _getCollectionColor(collection),
                 collection,
@@ -707,7 +746,7 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
             Text(
               title,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
@@ -719,7 +758,7 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
             Text(
               '🏆 $winnerChurch',
 style: TextStyle(
-                fontSize: 14,
+                fontSize: 16,
                 color: Colors.grey.shade600,
                 fontWeight: FontWeight.w500,
               ),
@@ -735,7 +774,7 @@ style: TextStyle(
 
   String _formatCollectionName(String collection) {
     // Remove "Results" and format the name
-    String name = collection.replaceAll('Results', '');
+    String name = collection.replaceAll('Results', '').replaceAll('result', '');
     switch (name) {
       case 'kg1': return 'حضانة المستوى الأول';
       case 'kg2': return 'حضانة المستوى الثاني';
@@ -875,17 +914,52 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen> {
     try {
       final QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection(widget.collectionName)
-          .orderBy('total', descending: true)
           .get();
 
-      _documents = snapshot.docs.map((doc) {
+      // Group documents by church name and calculate averages
+      Map<String, List<Map<String, dynamic>>> churchGroups = {};
+      
+      for (var doc in snapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
-        return {
+        final churchName = data['churchName'] ?? data['church'] ?? 'غير محدد';
+        
+        if (!churchGroups.containsKey(churchName)) {
+          churchGroups[churchName] = [];
+        }
+        
+        churchGroups[churchName]!.add({
           'id': doc.id,
           'total': data['total'] ?? 0,
           'data': data,
-        };
-      }).toList();
+        });
+      }
+      
+      // Calculate averages for each church
+      _documents = [];
+      for (var entry in churchGroups.entries) {
+        final churchName = entry.key;
+        final documents = entry.value;
+        
+        // Calculate average total for this church
+        double totalSum = 0;
+        for (var doc in documents) {
+          totalSum += (doc['total'] as num).toDouble();
+        }
+        double average = totalSum / documents.length;
+        
+        _documents.add({
+          'id': 'average_$churchName',
+          'churchName': churchName,
+          'total': average.round(),
+          'documentCount': documents.length,
+          'data': documents.first['data'], // Use first document data as reference
+          'allDocuments': documents, // Store all documents for this church
+        });
+      }
+      
+      // Sort by average total descending
+      _documents.sort((a, b) => (b['total'] as int).compareTo(a['total'] as int));
+      
     } catch (e) {
       print('Error loading collection data: $e');
       _documents = [];
@@ -948,9 +1022,9 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen> {
                     itemCount: _documents.length,
                     itemBuilder: (context, index) {
                       final doc = _documents[index];
-                      final data = doc['data'] as Map<String, dynamic>;
-                      final churchName = data['church'] ?? 'غير محدد';
+                      final churchName = doc['churchName'] ?? 'غير محدد';
                       final total = doc['total'] ?? 0;
+                      final documentCount = doc['documentCount'] ?? 1;
                       final isWinner = index == 0;
                       
                       return Container(
@@ -1005,35 +1079,73 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen> {
                             ),
                             const SizedBox(width: 16),
                             
-                            // Church Name
+                            // Church Name and Info
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    churchName,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: isWinner ? FontWeight.bold : FontWeight.w600,
-                                      color: isWinner ? Colors.amber.shade700 : Colors.black87,
-                                    ),
-                                  ),
-                                  if (isWinner) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '🏆 الفائز الأول',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.amber.shade600,
-                                        fontWeight: FontWeight.w500,
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ChurchDetailsScreen(
+                                        churchName: churchName,
+                                        collectionName: widget.collectionName,
                                       ),
                                     ),
-                                  ],
-                                ],
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              churchName,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: isWinner ? FontWeight.bold : FontWeight.w600,
+                                                color: isWinner ? Colors.amber.shade700 : Colors.blue.shade700,
+                                                decoration: TextDecoration.underline,
+                                                decorationColor: isWinner ? Colors.amber.shade700 : Colors.blue.shade700,
+                                              ),
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.arrow_forward_ios,
+                                            size: 12,
+                                            color: Colors.grey.shade400,
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      if (isWinner) ...[
+                                        Text(
+                                          '🏆 الفائز الأول (متوسط من $documentCount مشاركة)',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.amber.shade600,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ] else ...[
+                                        Text(
+                                          'متوسط من $documentCount مشاركة - انقر للتفاصيل',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.grey.shade500,
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                             
-                            // Total Score
+                            // Average Score
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -1045,13 +1157,25 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen> {
                                     : Colors.grey.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(16),
                               ),
-                              child: Text(
-                                '$total',
-                                style: TextStyle(
-                                  color: isWinner ? Colors.amber.shade700 : Colors.grey.shade700,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '$total',
+                                    style: TextStyle(
+                                      color: isWinner ? Colors.amber.shade700 : Colors.grey.shade700,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    'متوسط',
+                                    style: TextStyle(
+                                      color: isWinner ? Colors.amber.shade600 : Colors.grey.shade600,
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],

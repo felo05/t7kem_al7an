@@ -148,7 +148,7 @@ class _DynamicDropdownWidgetState extends State<DynamicDropdownWidget> {
                       },
                       isExpanded: true,
                       dropdownColor: Colors.white,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.black87,
                         fontSize: 14,
                       ),
