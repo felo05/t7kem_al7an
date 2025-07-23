@@ -1,29 +1,35 @@
-# This is a standard Flutter Podfile with iOS 13.0 minimum deployment target
-
+# Define the platform for your project
 platform :ios, '13.0'
 
-# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
-ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+# CocoaPods installation settings
+install! 'cocoapods', :deterministic_uuids => false
 
-project 'Runner', {
-  'Debug' => :debug,
-  'Profile' => :release,
-  'Release' => :release,
-}
-
-def flutter_installation
-  # Load the Flutter pods
-  flutter_application_path = File.expand_path('../..', __FILE__)
-  eval(File.read(File.join(flutter_application_path, '.flutter-plugins-dependencies')))
+# Dynamically locate Flutter SDK
+flutter_root = ENV['FLUTTER_ROOT'] # Set by GitHub Actions
+if !flutter_root || !File.exist?(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb'))
+  # Fallback for local macOS environment (assuming ~/flutter if not set)
+  flutter_root = File.expand_path('~/flutter')
 end
-
-# Flutter-specific setup
-require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), __dir__)
-flutter_install_all_ios_pods(File.dirname(File.realpath(__FILE__)))
+# Verify the path exists
+unless File.exist?(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb'))
+  raise "Could not find podhelper.rb at #{flutter_root}/packages/flutter_tools/bin/. Please set FLUTTER_ROOT correctly."
+end
+require File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb')
 
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
-  flutter_install_all_ios_pods(File.dirname(File.realpath(__FILE__)))
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
+    end
+  end
 end
