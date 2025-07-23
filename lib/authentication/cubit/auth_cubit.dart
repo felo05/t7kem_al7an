@@ -38,7 +38,10 @@ class AuthCubit extends Cubit<AuthState> {
   void login(String name) async {
     name = name.trim();
     AuthCubit.name = name;
-    String dayName = "saturday";
+    String dayName ="Saturday";
+    // DateTime.now().day!=2
+    //     ? days[DateTime.now().weekday - 1]
+    //     : "final";
     List<MapEntry<String, String>> result = [];
 
     try {
@@ -105,7 +108,6 @@ class AuthCubit extends Cubit<AuthState> {
       List<MapEntry<String, String>> result,
       ) async {
     try {
-      // حاول الاتصال أونلاين
       final doc = await fireStore
           .collection(level)
           .doc(dayName.toLowerCase())
@@ -113,14 +115,12 @@ class AuthCubit extends Cubit<AuthState> {
       _extractChurchesFromDoc(doc, name, level, result);
     } catch (_) {
       try {
-        // fallback للكاش
         final doc = await fireStore
             .collection(level)
             .doc(dayName.toLowerCase())
             .get(const GetOptions(source: Source.cache));
         _extractChurchesFromDoc(doc, name, level, result);
       } catch (_) {
-        // فشل حتى من الكاش → تجاهل
       }
     }
   }

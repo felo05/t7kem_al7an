@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../authentication/cubit/auth_cubit.dart';
 import '../../constants/al7an.dart';
-import '../../constants/firebase.dart';
 
 part 'submit_state.dart';
 
@@ -71,12 +70,12 @@ class SubmitCubit extends Cubit<SubmitState> {
 
       estmara["total"] = sum;
       estmara["percent"] = sum / 174;
+      emit(SubmitSuccess());
 
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
-          .collection("${isKg ? Firebase.kg1 : Firebase.ola1}result")
+          .collection(isKg ? "kg1Results" : "oulaTanya1Results")
           .add(estmara);
-      emit(SubmitSuccess());
     } catch (e) {
       emit(SubmitFailure(e.toString()));
     }
@@ -155,11 +154,12 @@ class SubmitCubit extends Cubit<SubmitState> {
 
       estmara["total"] = sum;
       estmara["percent"] = sum /= 256;
+      emit(SubmitSuccess());
+
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
-          .collection("${isKg ? Firebase.kg2 : Firebase.ola2}result")
+          .collection(isKg ? "kg2Results" : "oulaTanya2Results")
           .add(estmara);
-      emit(SubmitSuccess());
     } catch (e) {
       emit(SubmitFailure(e.toString()));
     }
@@ -265,13 +265,13 @@ class SubmitCubit extends Cubit<SubmitState> {
       estmara["copticReading"] = int.parse(copticReadingController.text);
       estmara["total"] = sum;
       estmara["percent"] = sum / 227;
+      emit(SubmitSuccess());
 
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
-          .collection("${isTalta ? Firebase.talta1 : Firebase.khamsa1}result")
+          .collection(isTalta ? "taltaRaba1Results" : "khamsaSadsa1Results")
           .add(estmara);
 
-      emit(SubmitSuccess());
     } catch (e) {
       emit(SubmitFailure(e.toString()));
     }
@@ -402,12 +402,13 @@ class SubmitCubit extends Cubit<SubmitState> {
       estmara["total"] = sum;
 
       estmara["percent"] = sum / 328;
+      emit(SubmitSuccess());
+
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
-          .collection("${isTalta ? Firebase.talta2 : Firebase.khamsa2}result")
+          .collection(isTalta ? "taltaRaba2Results" : "khamsaSadsa2Results")
           .add(estmara);
 
-      emit(SubmitSuccess());
     } catch (e) {
       emit(SubmitFailure(e.toString()));
     }
@@ -492,12 +493,12 @@ class SubmitCubit extends Cubit<SubmitState> {
       sum *= factor;
       estmara["total"] = sum;
       estmara["percentage"] = sum / 111;
+      emit(SubmitSuccess());
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
           .collection(
-              "${level == 0 ? Firebase.kgg : level == 1 ? Firebase.olag : level == 2 ? Firebase.taltag : Firebase.khamsag}result")
+              level == 0 ? "kgFResults" : level == 1 ? "oulaTanyaFResults" : level == 2 ? "taltaRabaFResults" : "khamsaSadsaFResults")
           .add(estmara);
-      emit(SubmitSuccess());
     } catch (e) {
       emit(SubmitFailure(e.toString()));
     }
@@ -597,12 +598,13 @@ class SubmitCubit extends Cubit<SubmitState> {
       estmara["total"] = sum;
 
       estmara["percent"] = sum / 196;
+      emit(SubmitSuccess());
+
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
           .collection(
-              "${level == 0 ? Firebase.kgg : level == 1 ? Firebase.olag : level == 2 ? Firebase.taltag : Firebase.khamsag}result")
+              level == 0 ? "kgGResults" : level == 1 ? "oulaTanyaGResults" : level == 2 ? "taltaRabaGResults" : "khamsaSadsaGResults")
           .add(estmara);
-      emit(SubmitSuccess());
     } catch (e) {
       emit(SubmitFailure(e.toString()));
     }
