@@ -16,6 +16,7 @@ class CustomTextFormField extends StatefulWidget {
   final bool floatingLabel;
   final bool clearIcon;
   final void Function()? onClear;
+  final Color? textColor;
 
   const CustomTextFormField({
     super.key,
@@ -32,7 +33,7 @@ class CustomTextFormField extends StatefulWidget {
     this.clearIcon = false,
     this.initText,
     this.onClear,
-    this.floatingLabel = true,
+    this.floatingLabel = true,  this.textColor,
   });
 
   @override
@@ -73,10 +74,10 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
           floatingLabelBehavior: widget.floatingLabel
               ? FloatingLabelBehavior.auto // Do not float the label
               : FloatingLabelBehavior.never, // Default behavior
-          floatingLabelStyle: const TextStyle(
+          floatingLabelStyle:  TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: Color(0xff37474F),
+            color: widget.textColor??Color(0xff37474F),
           ),
           labelStyle: const TextStyle(
             fontSize: 19,

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:t7kem_al7an/widgets/custom_form_field.dart';
+import '../notification/create_notification_service.dart';
 import 'add_church_screen.dart';
 import 'add_judge_screen.dart';
 import 'check_status_screen.dart';
-import 'seed_data_screen.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
@@ -12,7 +13,7 @@ class AdminScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Admin Panel',
+          'صفحة المنسق',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -23,6 +24,7 @@ class AdminScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: Container(
+        height: MediaQuery.sizeOf(context).height,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -36,118 +38,119 @@ class AdminScreen extends StatelessWidget {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 40),
-                const Text(
-                  'صفحة المنسق',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                _buildAdminButton(
-                  context,
-                  icon: Icons.church,
-                  title: 'أضف اللجان',
-                  onTap: () {
-                    Navigator.push(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 50),
+                    _buildAdminButton(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const AddChurchScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
-                _buildAdminButton(
-                  context,
-                  icon: Icons.person_add,
-                  title: 'أضف المحكمين',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AddJudgeScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
-                _buildAdminButton(
-                  context,
-                  icon: Icons.analytics,
-                  title: 'النتائج',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CheckStatusScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
-                _buildAdminButton(
-                  context,
-                  icon: Icons.storage,
-                  title: 'البيانات التجريبية',
-                  subtitle: 'إضافة أو مسح البيانات للاختبار',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SeedDataScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Colors.white70,
-                        size: 20,
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Admin privileges required for all operations',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
+                      icon: Icons.church,
+                      title: 'أضف اللجان',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AddChurchScreen(),
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    _buildAdminButton(
+                      context,
+                      icon: Icons.person_add,
+                      title: 'أضف المحكمين',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AddJudgeScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    _buildAdminButton(
+                      context,
+                      icon: Icons.analytics,
+                      title: 'النتائج',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CheckStatusScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    _buildAdminButton(
+                      context,
+                      icon: Icons.notification_add,
+                      title: "ابعت رسالة",
+                      onTap: () async {
+                        final titleController = TextEditingController();
+                        final bodyController = TextEditingController();
+                        showDialog(
+                          context: context,
+                          builder: (dialogContext) => AlertDialog(
+                            backgroundColor: Colors.lightBlue.shade900,
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CustomTextFormField(
+                                  textColor: Colors.amber.shade700,
+                                  text:"العنوان",
+                                  controller: titleController,
+                                  floatingLabel: true,
+                                ),
+                                const SizedBox(height: 10),
+                                CustomTextFormField(
+                                  textColor: Colors.amber.shade700,
+                                  text: "الرسالة",
+                                  controller: bodyController,
+                                  floatingLabel: true,
+                                ),
+                                const SizedBox(height: 10),
+                                ElevatedButton(
+                                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.amber.shade700)),
+                                  onPressed: () async {
+                                    CreateNotificationService()
+                                        .showNotificationWithImage(
+                                        0,
+                                        titleController.text,
+                                        bodyController.text,
+                                        "payload",
+                                        null);
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text("ابعت"),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 50),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildAdminButton(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    required VoidCallback onTap,
-  }) {
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        String? subtitle,
+        required VoidCallback onTap,
+      }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(

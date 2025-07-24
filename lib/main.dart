@@ -1,44 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:t7kem_al7an/authentication/auth_screen.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-
 import 'firebase_options.dart';
-
-import 'dart:io';
-import 'package:permission_handler/permission_handler.dart';
-
 import 'marks_forms/cubit/submit_cubit.dart';
+import 'notification/notification_service.dart';
+Future<void> handleBackgroundMessage(RemoteMessage message) async {}
 
-Future<bool> checkAndRequestPermissions({required bool skipIfExists}) async {
-  if (!Platform.isAndroid && !Platform.isIOS) {
-    return false; // Only Android and iOS platforms are supported
-  }
-
-  if (Platform.isAndroid) {
-    final deviceInfo = await DeviceInfoPlugin().androidInfo;
-    final sdkInt = deviceInfo.version.sdkInt;
-
-    if (skipIfExists) {
-      // Read permission is required to check if the file already exists
-      return sdkInt >= 33
-          ? await Permission.photos.request().isGranted
-          : await Permission.storage.request().isGranted;
-    } else {
-      // No read permission required for Android SDK 29 and above
-      return sdkInt >= 29 ? true : await Permission.storage.request().isGranted;
-    }
-  } else if (Platform.isIOS) {
-    // iOS permission for saving images to the gallery
-    return skipIfExists
-        ? await Permission.photos.request().isGranted
-        : await Permission.photosAddOnly.request().isGranted;
-  }
-
-  return false; // Unsupported platforms
-}
 void main() async{
 
  // HiveHelper.init();
@@ -51,8 +21,25 @@ void main() async{
      persistenceEnabled: true,
       cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
    );
-  checkAndRequestPermissions(skipIfExists: true);
+  final NotificationService notificationService = NotificationService();
+  await notificationService.initialize();
+  await FirebaseMessaging.instance.getToken();
+  FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    if (message.notification != null) {
+      String? imageUrl =
+          message.data['imageUrl'] ?? message.notification!.android?.imageUrl;
+
+      notificationService.showNotification(
+        title: message.notification!.title,
+        body: message.notification!.body,
+        imageUrl: imageUrl,
+      );
+    }
+  }
+  );
   runApp(const MyApp());
+
 }
 
 class MyApp extends StatelessWidget {
