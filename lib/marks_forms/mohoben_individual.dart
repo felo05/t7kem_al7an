@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'dart:ui';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,27 +32,34 @@ class _MohobenIndividualState extends State<MohobenIndividual> {
   late List<String> al7anList;
 
   Future<void> _captureAndSave() async {
+    try {
+      WidgetsBinding.instance.endOfFrame;
       RenderRepaintBoundary boundary =
       _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      if (boundary.debugNeedsPaint) {
-        await Future.delayed(const Duration(milliseconds: 20));
-      }
-      final image = await boundary.toImage(pixelRatio: 3.0);
-      final ByteData? byteData = await image.toByteData(
-          format: ImageByteFormat.png);
+
+      // Ensure the boundary is fully painted
+
+
+      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
       if (byteData != null) {
         final Uint8List pngBytes = byteData.buffer.asUint8List();
+
+        // Use PNG format but save with JPG extension
+        // The system will handle the conversion
         await SaverGallery.saveImage(
           pngBytes,
-          fileName: "form_${DateTime
-              .now()
-              .millisecondsSinceEpoch}.png",
+          fileName: "form_${DateTime.now().millisecondsSinceEpoch}.jpg",
           skipIfExists: true,
         );
+        print("Image saved successfully");
       }
-
+    } catch (e) {
+      print("Error capturing screenshot: $e");
+    }
   }
+
 
   @override
   void initState() {
@@ -96,7 +103,7 @@ class _MohobenIndividualState extends State<MohobenIndividual> {
                 Text(
                   widget.churchName,
                   style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w500),
+                      fontSize: 20, fontWeight: FontWeight.w500,color: Colors.indigo),
                 ),
                 const SizedBox(height: 10),
                 MarksFormFields.mohobenIndividualForm(
@@ -104,21 +111,22 @@ class _MohobenIndividualState extends State<MohobenIndividual> {
                   setState(() {
                     bool1[index] = value ?? false;
                   });
-                }),
+                },widget.level
+                ),
                 const SizedBox(height: 10),
                 MarksFormFields.mohobenIndividualForm(
                     al7anList[1], controllers2, bool2, (index, value) {
                   setState(() {
                     bool2[index] = value ?? false;
                   });
-                }),
+                },widget.level),
                 const SizedBox(height: 10),
                 MarksFormFields.mohobenIndividualForm(
                     al7anList[2], controllers3, bool3, (index, value) {
                   setState(() {
                     bool3[index] = value ?? false;
                   });
-                }),
+                },widget.level),
                 const SizedBox(height: 10),
                 BlocConsumer<SubmitCubit, SubmitState>(
                   listener: (context, state) {

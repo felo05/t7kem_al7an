@@ -55,30 +55,30 @@ class ChurchesScreen extends StatelessWidget {
                                               ? "موهوبين فردى مرحلة حضانة"
                                               : level == "kgG"
                                                   ? "موهوبين جماعى مرحلة حضانة"
-                                                  : level == "ola1"
+                                                  : level == "oulaTanya1"
                                                       ? "مرحلة اولى وتانية المستوى الاول"
-                                                      : level == "ola2"
+                                                      : level == "oulaTanya2"
                                                           ? "مرحلة اولى وتانية المستوى الثانى"
-                                                          : level == "olaF"
+                                                          : level == "oulaTanyaF"
                                                               ? "موهوبين فردى مرحلة اولي وتانية"
-                                                              : level == "olaG"
+                                                              : level == "oulaTanya2G"
                                                                   ? "موهوبين جماعى مرحلة اولي وتانية"
                                                                   : level ==
-                                                                          "talta1"
+                                                                          "taltaRaba1"
                                                                       ? "مرحلة تالتة ورابعة المستوى الاول"
                                                                       : level ==
-                                                                              "talta2"
+                                                                              "taltaRaba2"
                                                                           ? "مرحلة تالتة ورابعة المستوى الثانى"
                                                                           : level ==
-                                                                                  "taltaF"
+                                                                                  "taltaRabaF"
                                                                               ? "موهوبين فردى مرحلة تالتة ورابعة"
-                                                                              : level == "taltaG"
+                                                                              : level == "taltaRabaG"
                                                                                   ? "موهوبين جماعى مرحلة تالتة ورابعة"
-                                                                                  : level == "khamsa1"
+                                                                                  : level == "khamsaSadsa1"
                                                                                       ? "مرحلة خامسة وسادسة المستوى الاول"
-                                                                                      : level == "khamsa2"
+                                                                                      : level == "khamsaSadsa2"
                                                                                           ? "مرحلة خامسة وسادسة المستوى الثانى"
-                                                                                          : level == "khamsaF"
+                                                                                          : level == "khamsaSadsaF"
                                                                                               ? "موهوبين فردى مرحلة خامسة وسادسة"
                                                                                               : "موهوبين جماعى مرحلة خامسة وسادسة",
                                   style: const TextStyle(
@@ -108,33 +108,33 @@ class ChurchesScreen extends StatelessWidget {
                                                   level: 0,
                                                   churchName: church,
                                                 )
-                                              : level == "ola1"
+                                              : level == "oulaTanya1"
                                                   ? Kg1(
                                                       isKg: false,
                                                       churchName: church)
-                                                  : level == "ola2"
+                                                  : level == "oulaTanya2"
                                                       ? Kg2(
                                                           isKg: false,
                                                           churchName: church)
-                                                      : level == "olaF"
+                                                      : level == "oulaTanyaF"
                                                           ? MohobenIndividual(
                                                               level: 1,
                                                               churchName: church,
                                                             )
-                                                          : level == "olaG"
+                                                          : level == "oulaTanyaG"
                                                               ? MohobenGroup(
                                                                   level: 1,
                                                                   churchName:
                                                                       church,
                                                                 )
-                                                              : level == "talta1"
+                                                              : level == "taltaRaba1"
                                                                   ? Talta1(
                                                                       isTalta: true,
                                                                       churchName:
                                                                           church,
                                                                     )
                                                                   : level ==
-                                                                          "talta2"
+                                                                          "taltaRaba2"
                                                                       ? Talta2(
                                                                           isTalta:
                                                                               true,
@@ -142,7 +142,7 @@ class ChurchesScreen extends StatelessWidget {
                                                                               church,
                                                                         )
                                                                       : level ==
-                                                                              "taltaF"
+                                                                              "taltaRabaF"
                                                                           ? MohobenIndividual(
                                                                               level:
                                                                                   2,
@@ -150,22 +150,22 @@ class ChurchesScreen extends StatelessWidget {
                                                                                   church,
                                                                             )
                                                                           : level ==
-                                                                                  "taltaG"
+                                                                                  "taltaRabaG"
                                                                               ? MohobenGroup(
                                                                                   level: 2,
                                                                                   churchName: church,
                                                                                 )
-                                                                              : level == "khamsa1"
+                                                                              : level == "khamsaSadsa1"
                                                                                   ? Talta1(
                                                                                       isTalta: false,
                                                                                       churchName: church,
                                                                                     )
-                                                                                  : level == "khamsa2"
+                                                                                  : level == "khamsaSadsa2"
                                                                                       ? Talta2(
                                                                                           isTalta: false,
                                                                                           churchName: church,
                                                                                         )
-                                                                                      : level == "khamsaF"
+                                                                                      : level == "khamsaSadsaF"
                                                                                           ? MohobenIndividual(
                                                                                               level: 3,
                                                                                               churchName: church,

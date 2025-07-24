@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'dart:ui';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -30,26 +30,35 @@ class _MohobenGroupState extends State<MohobenGroup> {
   late List<bool> bool2;
   late List<bool> bool3;
   late List<String> al7anList;
+  late TextEditingController slokController;
 
   Future<void> _captureAndSave() async {
-      RenderRepaintBoundary boundary = _globalKey.currentContext!
-          .findRenderObject() as RenderRepaintBoundary;
-      if (boundary.debugNeedsPaint) {
-        await Future.delayed(const Duration(milliseconds: 20));
-      }
-      final image = await boundary.toImage(pixelRatio: 3.0);
-      final ByteData? byteData =
-          await image.toByteData(format: ImageByteFormat.png);
+    try {
+      WidgetsBinding.instance.endOfFrame;
+      RenderRepaintBoundary boundary =
+      _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+
+      // Ensure the boundary is fully painted
+
+
+      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
       if (byteData != null) {
         final Uint8List pngBytes = byteData.buffer.asUint8List();
+
+        // Use PNG format but save with JPG extension
+        // The system will handle the conversion
         await SaverGallery.saveImage(
           pngBytes,
-          fileName: "form_${DateTime.now().millisecondsSinceEpoch}.png",
+          fileName: "form_${DateTime.now().millisecondsSinceEpoch}.jpg",
           skipIfExists: true,
         );
+        print("Image saved successfully");
       }
-
+    } catch (e) {
+      print("Error capturing screenshot: $e");
+    }
   }
 
   @override
@@ -58,6 +67,7 @@ class _MohobenGroupState extends State<MohobenGroup> {
     controllers1 = List.generate(5, (_) => TextEditingController());
     controllers2 = List.generate(5, (_) => TextEditingController());
     controllers3 = List.generate(5, (_) => TextEditingController());
+    slokController = TextEditingController(text: "10");
     bool1 = List.generate(2, (_) => false);
     bool2 = List.generate(2, (_) => false);
     bool3 = List.generate(2, (_) => false);
@@ -95,7 +105,7 @@ class _MohobenGroupState extends State<MohobenGroup> {
                 Text(
                   widget.churchName,
                   style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w500),
+                      fontSize: 20, fontWeight: FontWeight.w500,color: Colors.indigo),
                 ),
                 const SizedBox(height: 10),
                 MarksFormFields.mohobenGroupForm(
@@ -106,7 +116,7 @@ class _MohobenGroupState extends State<MohobenGroup> {
                     setState(() {
                       bool1[index] = value ?? false;
                     });
-                  },
+                  },widget.level
                 ),
                 const SizedBox(height: 20),
                 MarksFormFields.mohobenGroupForm(
@@ -117,7 +127,7 @@ class _MohobenGroupState extends State<MohobenGroup> {
                     setState(() {
                       bool2[index] = value ?? false;
                     });
-                  },
+                  },widget.level
                 ),
                 const SizedBox(height: 20),
                 MarksFormFields.mohobenGroupForm(
@@ -128,10 +138,12 @@ class _MohobenGroupState extends State<MohobenGroup> {
                     setState(() {
                       bool3[index] = value ?? false;
                     });
-                  },
+                  },widget.level
                 ),
                 const SizedBox(height: 10),
                 MarksFormFields.total(totalController),
+                const SizedBox(height: 10),
+                MarksFormFields.slok(slokController),
                 const SizedBox(height: 10),
                 BlocConsumer<SubmitCubit, SubmitState>(
                   listener: (context, state) {
@@ -170,6 +182,7 @@ class _MohobenGroupState extends State<MohobenGroup> {
                               controllers2,
                               controllers3,
                               totalController,
+                              slokController,
                               bool1,
                               bool2,
                               bool3,

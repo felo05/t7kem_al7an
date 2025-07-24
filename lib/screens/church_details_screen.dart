@@ -34,7 +34,6 @@ class _ChurchDetailsScreenState extends State<ChurchDetailsScreen> {
           .where('churchName', isEqualTo: widget.churchName)
           .get();
 
-
       _churchDocuments = snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return {'id': doc.id, 'percent': data['percent'] ?? 0, 'data': data};
@@ -207,6 +206,9 @@ class _ChurchDetailsScreenState extends State<ChurchDetailsScreen> {
                                   final total = data['total'] ?? 0;
                                   final judge = data['judge'] ?? 'غير محدد';
                                   final kidsTotal = data['kidsTotal'] ?? '';
+                                  final slok = data['slok'] ;
+                                  final taks =data["taks"];
+                                  final copticReading=data["copticReading"];
                                   final percent = doc['percent'] ?? 0.0;
                                   final isHighest = index == 0;
 
@@ -376,18 +378,51 @@ class _ChurchDetailsScreenState extends State<ChurchDetailsScreen> {
                                                                     color: Colors
                                                                         .blue
                                                                         .shade700)),
-                                                            if (kidsTotal
-                                                                .isNotEmpty) ...[
-                                                              const SizedBox(
-                                                                  height: 4),
+                                                            const SizedBox(
+                                                                height: 4),
+                                                            Text(
+                                                                'عدد الأطفال: $kidsTotal',
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                    12,
+                                                                    color: Colors
+                                                                        .blue
+                                                                        .shade600)),
+                                                            if (slok != null) ...[
+
+                                                              const SizedBox(height: 4,),
                                                               Text(
-                                                                  'عدد الأطفال: $kidsTotal',
+                                                                  'السلوك: $slok',
                                                                   style: TextStyle(
                                                                       fontSize:
-                                                                          12,
+                                                                      12,
                                                                       color: Colors
                                                                           .blue
-                                                                          .shade600))
+                                                                          .shade600)),
+                                                            ],
+                                                            if (copticReading != null) ...[
+
+                                                              const SizedBox(height: 4,),
+                                                              Text(
+                                                                  'قراءة القبطى: $copticReading',
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                      12,
+                                                                      color: Colors
+                                                                          .blue
+                                                                          .shade600)),
+                                                            ],
+                                                            if (taks != null) ...[
+
+                                                              const SizedBox(height: 4,),
+                                                              Text(
+                                                                  'الطقس: $taks',
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                      12,
+                                                                      color: Colors
+                                                                          .blue
+                                                                          .shade600)),
                                                             ],
                                                             if (percent >
                                                                 0) ...[
@@ -497,7 +532,6 @@ class _ChurchDetailsScreenState extends State<ChurchDetailsScreen> {
       Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade600))
     ]);
   }
-
 
   Widget _buildDetailedScoreChip(String label, String value) {
     Color color = Colors.orange;

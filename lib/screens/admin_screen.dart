@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:googleapis_auth/auth_io.dart';
 import 'package:t7kem_al7an/widgets/custom_form_field.dart';
-import '../notification/create_notification_service.dart';
 import 'add_church_screen.dart';
 import 'add_judge_screen.dart';
 import 'check_status_screen.dart';
@@ -115,15 +118,12 @@ class AdminScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 10),
                                 ElevatedButton(
-                                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.amber.shade700)),
+                                  style: ButtonStyle(backgroundColor: WidgetStateProperty.all(Colors.amber.shade700)),
                                   onPressed: () async {
-                                    CreateNotificationService()
-                                        .showNotificationWithImage(
-                                        0,
-                                        titleController.text,
-                                        bodyController.text,
-                                        "payload",
-                                        null);
+                                    sendFcmMessage(
+                                       titleController.text,
+                                      bodyController.text,
+                                    );
                                     Navigator.pop(context);
                                   },
                                   child: const Text("ابعت"),
@@ -221,4 +221,43 @@ class AdminScreen extends StatelessWidget {
       ),
     );
   }
+}
+Future<void> sendFcmMessage(String title,String body) async {
+  // 1. Load service account credentials from assets
+  final jsonStr = await rootBundle.loadString('assets/t7kem-al7an-firebase-adminsdk-fbsvc-d28c9e62f0.json');
+  final credentials = ServiceAccountCredentials.fromJson(json.decode(jsonStr));
+
+  // 2. Define scopes for FCM
+  const scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+
+  // 3. Get authenticated client
+  final client = await clientViaServiceAccount(credentials, scopes);
+
+  // 4. Construct the message
+  final message = {
+    "message": {
+      "topic": "all",
+      "notification": {
+        "title": title,
+        "body": body
+      },
+      "android": {
+        "priority": "high"
+      }
+    }
+  };
+
+  const String projectId = "t7kem-al7an";
+  final url = Uri.parse("https://fcm.googleapis.com/v1/projects/$projectId/messages:send");
+
+  // 5. Send the message
+  final response = await client.post(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode(message),
+  );
+
+  print('FCM response: ${response.statusCode} => ${response.body}');
 }

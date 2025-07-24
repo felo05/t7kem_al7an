@@ -18,6 +18,20 @@ class MarksFormFields {
     );
   }
 
+  static Widget slok(TextEditingController controller) {
+    return Column(
+      children: [
+        const Divider(indent: 20, endIndent: 20),
+        const SizedBox(height: 10),
+        CustomTextFormField(
+          inputType: TextInputType.number,
+          controller: controller,
+          text: "${Al7an.slok} 10 درجات",
+        ),
+      ],
+    );
+  }
+
   static Widget copticReading(TextEditingController controller) {
     return Column(
       children: [
@@ -26,13 +40,13 @@ class MarksFormFields {
         CustomTextFormField(
           inputType: TextInputType.number,
           controller: controller,
-          text: Al7an.copticReading,
+          text: "${Al7an.copticReading} 5 درجات",
         ),
       ],
     );
   }
 
-  static Widget taks(TextEditingController controller) {
+  static Widget taks(TextEditingController controller,int maxMark) {
     return Column(
       children: [
         const Divider(indent: 20, endIndent: 20),
@@ -40,7 +54,7 @@ class MarksFormFields {
         CustomTextFormField(
           inputType: TextInputType.number,
           controller: controller,
-          text: Al7an.taks,
+          text: "${Al7an.taks} $maxMark درجات",
         ),
       ],
     );
@@ -61,21 +75,21 @@ class MarksFormFields {
         CustomTextFormField(
           controller: controllers[0],
           inputType: TextInputType.number,
-          text: Al7an.tslem,
+          text: "${Al7an.tslem} 20 درجة",
         ),
         const SizedBox(height: 10),
 
         CustomTextFormField(
           controller: controllers[1],
           inputType: TextInputType.number,
-          text: Al7an.tempo,
+          text: "${Al7an.tempo} 10 درجات",
         ),
         const SizedBox(height: 10),
 
         CustomTextFormField(
           controller: controllers[2],
           inputType: TextInputType.number,
-          text: Al7an.ro7ania,
+          text: "${Al7an.ro7ania} 10 درجات",
         ),
       ],
     );
@@ -101,27 +115,27 @@ class MarksFormFields {
         CustomTextFormField(
           controller: controllers[0],
           inputType: TextInputType.number,
-          text: Al7an.tslem,
+          text: "${Al7an.tslem} 20 درجة",
         ),
         const SizedBox(height: 10),
 
         CustomTextFormField(
           controller: controllers[1],
           inputType: TextInputType.number,
-          text: Al7an.tempo,
+          text: "${Al7an.tempo} 10 درجات",
         ),
         const SizedBox(height: 10),
 
         CustomTextFormField(
           controller: controllers[2],
           inputType: TextInputType.number,
-          text: Al7an.ro7ania,
+          text: "${Al7an.ro7ania} 10 درجات",
         ),
 
         CustomTextFormField(
           controller: controllers[3],
           inputType: TextInputType.number,
-          text: Al7an.copticSpelling,
+          text: "${Al7an.copticSpelling} 10 درجات",
         ),
 
         Row(
@@ -168,6 +182,7 @@ class MarksFormFields {
     List<TextEditingController> controllers,
     List<bool> isChecked,
     void Function(int index, bool? value) onChanged,
+      int level
   ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -183,24 +198,24 @@ class MarksFormFields {
         CustomTextFormField(
           controller: controllers[0],
           inputType: TextInputType.number,
-          text: Al7an.tslem,
+          text: "${Al7an.tslem}15 درجة",
         ),
         const SizedBox(height: 10),
 
         CustomTextFormField(
           controller: controllers[1],
           inputType: TextInputType.number,
-          text: Al7an.copticReading,
+          text: "${Al7an.copticReading} 10 درجات",
         ),
         const SizedBox(height: 10),
 
         CustomTextFormField(
           controller: controllers[2],
           inputType: TextInputType.number,
-          text: Al7an.ro7ania,
+          text: "${Al7an.ro7ania} 10 درجات",
         ),
         const SizedBox(height: 10),
-        Row(
+        level==0?const SizedBox.shrink():Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
@@ -222,11 +237,13 @@ class MarksFormFields {
       ],
     );
   }
+
   static Column mohobenGroupForm(
       String l7n,
       List<TextEditingController> controllers,
       List<bool> isChecked,
       void Function(int index, bool? value) onChanged,
+      int level
       ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -242,35 +259,35 @@ class MarksFormFields {
         CustomTextFormField(
           controller: controllers[0],
           inputType: TextInputType.number,
-          text: Al7an.tslem,
+          text: "${Al7an.tslem} 20 درجة",
         ),
         const SizedBox(height: 10),
 
         CustomTextFormField(
           controller: controllers[1],
           inputType: TextInputType.number,
-          text: Al7an.tempo,
+          text: "${Al7an.tempo} 10 درجات",
         ),
         const SizedBox(height: 10),
         CustomTextFormField(
           controller: controllers[2],
           inputType: TextInputType.number,
-          text: Al7an.tnas2,
+          text: "${Al7an.tnas2} 10 درجات",
         ),
         const SizedBox(height: 10),
         CustomTextFormField(
           controller: controllers[3],
           inputType: TextInputType.number,
-          text: Al7an.copticReading,
+          text: "${Al7an.copticReading} 10 درجات",
         ),
         const SizedBox(height: 10),
         CustomTextFormField(
           controller: controllers[4],
           inputType: TextInputType.number,
-          text: Al7an.ro7ania,
+          text: "${Al7an.ro7ania} 10 درجات",
         ),
         const SizedBox(height: 10),
-        Row(
+        level==0?const SizedBox.shrink():Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(

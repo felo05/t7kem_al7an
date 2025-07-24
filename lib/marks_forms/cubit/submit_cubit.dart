@@ -18,30 +18,48 @@ class SubmitCubit extends Cubit<SubmitState> {
       List<TextEditingController> controllers3,
       List<TextEditingController> controllers4,
       TextEditingController totalController,
+      TextEditingController slokController,
       bool isKg,
       Future<void> Function() onPressed) async {
     emit(SubmitLoading());
     try {
       onPressed();
-      if (totalController.text.isEmpty) {
-        emit(SubmitFailure("Please fill all fields"));
+      if ((int.tryParse(slokController.text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers4[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers4[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers4[2].text) ?? 21) > 10) {
+        emit(SubmitFailure("اتاكد من الارقام"));
         return;
       }
-
+      if (totalController.text.isEmpty || slokController.text.isEmpty) {
+        emit(SubmitFailure("كمل باقى البيانات"));
+        return;
+      }
       Map<String, dynamic> estmara = {
         "churchName": churchName,
         "kidsTotal": totalController.text,
         "judge": AuthCubit.name
       };
-      double sum = 10;
-      for (var controller in [
+      estmara["slok"] = int.tryParse(slokController.text);
+      double sum = 0;
+      sum += int.tryParse(slokController.text) ?? 10;
+      for (TextEditingController controller in [
         ...controllers1,
         ...controllers2,
         ...controllers3,
         ...controllers4
       ]) {
         if (controller.text.isEmpty) {
-          emit(SubmitFailure("Please fill all fields"));
+          emit(SubmitFailure("كمل باقى البيانات"));
           return;
         }
 
@@ -90,17 +108,42 @@ class SubmitCubit extends Cubit<SubmitState> {
       List<TextEditingController> controllers5,
       List<TextEditingController> controllers6,
       TextEditingController totalController,
+      TextEditingController slokController,
       bool isKg,
       String churchName,
       Future<void> Function() onPressed) async {
     emit(SubmitLoading());
     try {
       onPressed();
-      if (totalController.text.isEmpty) {
-        emit(SubmitFailure("Please fill all fields"));
+      if (totalController.text.isEmpty || slokController.text.isEmpty) {
+        emit(SubmitFailure("كمل باقى البيانات"));
         return;
       }
-      double sum = 10;
+      if ((int.tryParse(slokController.text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers4[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers4[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers4[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers5[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers5[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers5[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers6[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers6[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers6[2].text) ?? 21) > 10) {
+        emit(SubmitFailure("اتاكد من الارقام"));
+        return;
+      }
+      double sum = 0;
+      sum += int.tryParse(slokController.text) ?? 10;
+
       for (var controller in [
         ...controllers1,
         ...controllers2,
@@ -110,7 +153,7 @@ class SubmitCubit extends Cubit<SubmitState> {
         ...controllers6
       ]) {
         if (controller.text.isEmpty) {
-          emit(SubmitFailure("Please fill all fields"));
+          emit(SubmitFailure("كمل باقى البيانات"));
           return;
         }
 
@@ -121,6 +164,7 @@ class SubmitCubit extends Cubit<SubmitState> {
         "kidsTotal": totalController.text,
         "judge": AuthCubit.name
       };
+      estmara["slok"] = int.tryParse(slokController.text);
       estmara[al7anList[0]] = {
         Al7an.tslem: controllers1[0].text,
         Al7an.tempo: controllers1[1].text,
@@ -175,6 +219,7 @@ class SubmitCubit extends Cubit<SubmitState> {
       TextEditingController totalController,
       TextEditingController copticReadingController,
       TextEditingController taksController,
+      TextEditingController slokController,
       bool isTalta,
       List<bool> bool1,
       List<bool> bool2,
@@ -184,11 +229,37 @@ class SubmitCubit extends Cubit<SubmitState> {
     try {
       emit(SubmitLoading());
       onPressed();
-      double sum = 10;
+      if ((int.tryParse(copticReadingController.text) ?? 21) > 5 ||
+          (int.tryParse(taksController.text) ?? 21) > 4 ||
+          (int.tryParse(slokController.text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[3].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[3].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[3].text) ?? 21) > 10 ||
+          (int.tryParse(controllers4[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers4[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers4[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers4[3].text) ?? 21) > 10
+      ) {
+        emit(SubmitFailure("اتاكد من الارقام"));
+        return;
+      }
+      double sum = 0;
+      sum += int.tryParse(slokController.text) ?? 10;
+
       if (totalController.text.isEmpty ||
           copticReadingController.text.isEmpty ||
-          taksController.text.isEmpty) {
-        emit(SubmitFailure("Please fill all fields"));
+          taksController.text.isEmpty ||
+          slokController.text.isEmpty) {
+        emit(SubmitFailure("كمل باقى البيانات"));
         return;
       }
       for (var controller in [
@@ -198,7 +269,7 @@ class SubmitCubit extends Cubit<SubmitState> {
         ...controllers4,
       ]) {
         if (controller.text.isEmpty) {
-          emit(SubmitFailure("Please fill all fields"));
+          emit(SubmitFailure("كمل باقى البيانات"));
           return;
         }
 
@@ -209,6 +280,8 @@ class SubmitCubit extends Cubit<SubmitState> {
         "judge": AuthCubit.name,
         "kidsTotal": totalController.text,
       };
+      estmara["slok"] = int.tryParse(slokController.text);
+
       estmara[al7anList[0]] = {
         Al7an.tslem: controllers1[0].text,
         Al7an.tempo: controllers1[1].text,
@@ -271,7 +344,6 @@ class SubmitCubit extends Cubit<SubmitState> {
       await fireStore
           .collection(isTalta ? "taltaRaba1Results" : "khamsaSadsa1Results")
           .add(estmara);
-
     } catch (e) {
       emit(SubmitFailure(e.toString()));
     }
@@ -288,6 +360,7 @@ class SubmitCubit extends Cubit<SubmitState> {
       List<TextEditingController> controllers6,
       TextEditingController taksController,
       TextEditingController totalController,
+      TextEditingController slokController,
       bool isTalta,
       List<bool> bool1,
       List<bool> bool2,
@@ -299,11 +372,44 @@ class SubmitCubit extends Cubit<SubmitState> {
     emit(SubmitLoading());
     try {
       onPressed();
-      if (totalController.text.isEmpty || taksController.text.isEmpty) {
-        emit(SubmitFailure("Please fill all fields"));
+      if ((int.tryParse(taksController.text) ?? 21) > 6 ||
+          (int.tryParse(slokController.text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[3].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[3].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[3].text) ?? 21) > 10 ||
+          (int.tryParse(controllers4[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers4[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers4[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers4[3].text) ?? 21) > 10 ||
+          (int.tryParse(controllers5[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers5[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers5[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers5[3].text) ?? 21) > 10 ||
+          (int.tryParse(controllers6[0].text) ?? 21) > 20 ||
+          (int.tryParse(controllers6[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers6[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers6[3].text) ?? 21) > 10){
+        emit(SubmitFailure("اتاكد من الارقام"));
         return;
       }
-      double sum = 10;
+      if (totalController.text.isEmpty ||
+          taksController.text.isEmpty ||
+          slokController.text.isEmpty) {
+        emit(SubmitFailure("كمل باقى البيانات"));
+        return;
+      }
+      double sum = 0;
+      sum += int.tryParse(slokController.text) ?? 10;
+
       for (var controller in [
         ...controllers1,
         ...controllers2,
@@ -313,7 +419,7 @@ class SubmitCubit extends Cubit<SubmitState> {
         ...controllers6
       ]) {
         if (controller.text.isEmpty) {
-          emit(SubmitFailure("Please fill all fields"));
+          emit(SubmitFailure("كمل باقى البيانات"));
           return;
         }
 
@@ -324,6 +430,7 @@ class SubmitCubit extends Cubit<SubmitState> {
         "churchName": churchName,
         "kidsTotal": totalController.text,
       };
+      estmara["slok"] = int.tryParse(slokController.text);
       estmara[al7anList[0]] = {
         Al7an.tslem: controllers1[0].text,
         Al7an.tempo: controllers1[1].text,
@@ -408,7 +515,6 @@ class SubmitCubit extends Cubit<SubmitState> {
       await fireStore
           .collection(isTalta ? "taltaRaba2Results" : "khamsaSadsa2Results")
           .add(estmara);
-
     } catch (e) {
       emit(SubmitFailure(e.toString()));
     }
@@ -428,11 +534,17 @@ class SubmitCubit extends Cubit<SubmitState> {
     emit(SubmitLoading());
     try {
       onPressed();
+      if((int.tryParse(controllers1[0].text)??21)>20||(int.tryParse(controllers1[1].text)??21)>10||(int.tryParse(controllers1[2].text)??21)>10||
+          (int.tryParse(controllers2[0].text)??21)>20||(int.tryParse(controllers2[1].text)??21)>10||(int.tryParse(controllers2[2].text)??21)>10
+          ||(int.tryParse(controllers3[0].text)??21)>20||(int.tryParse(controllers3[1].text)??21)>10||(int.tryParse(controllers3[2].text)??21)>10){
+        emit(SubmitFailure("اتاكد من الارقام"));
+        return;
+      }
       double factor = 1;
       double sum = 0;
       for (var controller in controllers3) {
         if (controller.text.isEmpty) {
-          emit(SubmitFailure("Please fill all fields"));
+          emit(SubmitFailure("كمل باقى البيانات"));
           return;
         }
         sum += int.parse(controller.text);
@@ -453,7 +565,7 @@ class SubmitCubit extends Cubit<SubmitState> {
         ...controllers2,
       ]) {
         if (controller.text.isEmpty) {
-          emit(SubmitFailure("Please fill all fields"));
+          emit(SubmitFailure("كمل باقى البيانات"));
           return;
         }
 
@@ -496,8 +608,13 @@ class SubmitCubit extends Cubit<SubmitState> {
       emit(SubmitSuccess());
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
-          .collection(
-              level == 0 ? "kgFResults" : level == 1 ? "oulaTanyaFResults" : level == 2 ? "taltaRabaFResults" : "khamsaSadsaFResults")
+          .collection(level == 0
+              ? "kgFResults"
+              : level == 1
+                  ? "oulaTanyaFResults"
+                  : level == 2
+                      ? "taltaRabaFResults"
+                      : "khamsaSadsaFResults")
           .add(estmara);
     } catch (e) {
       emit(SubmitFailure(e.toString()));
@@ -512,6 +629,7 @@ class SubmitCubit extends Cubit<SubmitState> {
       List<TextEditingController> controllers2,
       List<TextEditingController> controllers3,
       TextEditingController totalController,
+      TextEditingController slokController,
       List<bool> bool1,
       List<bool> bool2,
       List<bool> bool3,
@@ -519,15 +637,34 @@ class SubmitCubit extends Cubit<SubmitState> {
     try {
       emit(SubmitLoading());
       onPressed();
-      if (totalController.text.isEmpty) {
-        emit(SubmitFailure("Please fill all fields"));
+      if ((int.tryParse(slokController.text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[0].text) ?? 21) > 15 ||
+          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[3].text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[4].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[0].text) ?? 21) > 15 ||
+          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[3].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[4].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[0].text) ?? 21) > 15 ||
+          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[3].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[4].text) ?? 21) > 10) {
+        emit(SubmitFailure("اتاكد من الارقام"));
+        return;
+      }
+      if (totalController.text.isEmpty || slokController.text.isEmpty) {
+        emit(SubmitFailure("كمل باقى البيانات"));
         return;
       }
       double factor = 1;
       double sum = 0;
       for (var controller in controllers3) {
         if (controller.text.isEmpty) {
-          emit(SubmitFailure("Please fill all fields"));
+          emit(SubmitFailure("كمل باقى البيانات"));
           return;
         }
         sum += int.parse(controller.text);
@@ -549,7 +686,7 @@ class SubmitCubit extends Cubit<SubmitState> {
         ...controllers2,
       ]) {
         if (controller.text.isEmpty) {
-          emit(SubmitFailure("Please fill all fields"));
+          emit(SubmitFailure("كمل باقى البيانات"));
           return;
         }
 
@@ -594,16 +731,21 @@ class SubmitCubit extends Cubit<SubmitState> {
       sum += bool2[1] ? 1 : 0;
 
       sum *= factor;
-      sum += 10;
+      sum += int.tryParse(slokController.text) ?? 10;
       estmara["total"] = sum;
-
+      estmara["slok"] = int.tryParse(slokController.text);
       estmara["percent"] = sum / 196;
       emit(SubmitSuccess());
 
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
-          .collection(
-              level == 0 ? "kgGResults" : level == 1 ? "oulaTanyaGResults" : level == 2 ? "taltaRabaGResults" : "khamsaSadsaGResults")
+          .collection(level == 0
+              ? "kgGResults"
+              : level == 1
+                  ? "oulaTanyaGResults"
+                  : level == 2
+                      ? "taltaRabaGResults"
+                      : "khamsaSadsaGResults")
           .add(estmara);
     } catch (e) {
       emit(SubmitFailure(e.toString()));

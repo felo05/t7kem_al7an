@@ -82,8 +82,9 @@ class Al7an {
   static const String ro7ania = "روحانية وجمال الاداء";
   static const String copticSpelling = "سلامة النطق لكلمات اللحن";
   static const String tnas2 = "تناسق الاداء الجماعى";
-  static const String total = "مجموع الاولاد";
+  static const String total = "عدد الاولاد";
   static const String hzat ="استخدام ورق هزات";
   static const String copticReading="القراءة باللغة القبطية";
   static const String taks="المادة الطقسية";
+  static const String slok="نظام وسلوك";
 }

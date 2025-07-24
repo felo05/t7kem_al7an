@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'dart:ui';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,28 +22,33 @@ class _Kg1State extends State<Kg1> {
   final GlobalKey _globalKey = GlobalKey();
   final ScrollController _scrollController = ScrollController();
 
-  Future<void> _captureAndSave() async {
+ Future<void> _captureAndSave() async {
+    try {
+      WidgetsBinding.instance.endOfFrame;
+      RenderRepaintBoundary boundary =
+          _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
 
-      RenderRepaintBoundary boundary = _globalKey.currentContext!
-          .findRenderObject() as RenderRepaintBoundary;
-      if (boundary.debugNeedsPaint) {
-        await Future.delayed(const Duration(milliseconds: 20));
-      }
-      final image = await boundary.toImage(pixelRatio: 3.0);
-      final ByteData? byteData =
-      await image.toByteData(format: ImageByteFormat.png);
+      // Ensure the boundary is fully painted
+
+
+      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
       if (byteData != null) {
         final Uint8List pngBytes = byteData.buffer.asUint8List();
+
+        // Use PNG format but save with JPG extension
+        // The system will handle the conversion
         await SaverGallery.saveImage(
           pngBytes,
-          fileName: "form_${DateTime
-              .now()
-              .millisecondsSinceEpoch}.png",
+          fileName: "form_${DateTime.now().millisecondsSinceEpoch}.jpg",
           skipIfExists: true,
         );
+        print("Image saved successfully");
       }
-
+    } catch (e) {
+      print("Error capturing screenshot: $e");
+    }
   }
 
   @override
@@ -66,6 +71,7 @@ class _Kg1State extends State<Kg1> {
           (index) => TextEditingController(),
     );
     TextEditingController totalController = TextEditingController();
+    TextEditingController slokController = TextEditingController(text: "10");
 
     return Scaffold(
       appBar: AppBar(
@@ -88,7 +94,7 @@ class _Kg1State extends State<Kg1> {
                   Text(
                     widget.churchName,
                     style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.w500),
+                        fontSize: 20, fontWeight: FontWeight.w500,color: Colors.indigo),
                   ),
                   const SizedBox(height: 10),
                   MarksFormFields.kgForm(al7anList[0], controllers1),
@@ -100,6 +106,8 @@ class _Kg1State extends State<Kg1> {
                   MarksFormFields.kgForm(al7anList[3], controllers4),
                   const SizedBox(height: 10),
                   MarksFormFields.total(totalController),
+                  const SizedBox(height: 10),
+                  MarksFormFields.slok(slokController),
                   const SizedBox(height: 10),
                   BlocConsumer<SubmitCubit, SubmitState>(
                     listener: (context, state) {
@@ -135,6 +143,7 @@ class _Kg1State extends State<Kg1> {
                             controllers3,
                             controllers4,
                             totalController,
+                            slokController,
                             widget.isKg,
 
                             _captureAndSave

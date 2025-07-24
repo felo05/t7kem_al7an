@@ -24,6 +24,8 @@ dependencies:
   cupertino_icons:
   cached_network_image:
   firebase_messaging:
+  http: ^0.13.6
+  googleapis_auth: ^1.4.1
   flutter_local_notifications:
   flutter_launcher_icons:
 
@@ -41,6 +43,7 @@ flutter:
   assets:
     - shorebird.yaml
     - assets/images/
+    - assets/t7kem-al7an-firebase-adminsdk-fbsvc-d28c9e62f0.json
 
 
 flutter_native_splash:

@@ -33,29 +33,36 @@ class _Talta1State extends State<Talta1> {
   late TextEditingController totalController;
   late TextEditingController copticReadingController;
   late TextEditingController taksController;
-
+  late TextEditingController slokController;
   Future<void> _captureAndSave() async {
+    try {
+      WidgetsBinding.instance.endOfFrame;
       RenderRepaintBoundary boundary =
       _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      if (boundary.debugNeedsPaint) {
-        await Future.delayed(const Duration(milliseconds: 20));
-      }
-      final image = await boundary.toImage(pixelRatio: 3.0);
-      final ByteData? byteData = await image.toByteData(
-          format: ui.ImageByteFormat.png);
+
+      // Ensure the boundary is fully painted
+
+
+      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
       if (byteData != null) {
         final Uint8List pngBytes = byteData.buffer.asUint8List();
+
+        // Use PNG format but save with JPG extension
+        // The system will handle the conversion
         await SaverGallery.saveImage(
           pngBytes,
-          fileName: "form_${DateTime
-              .now()
-              .millisecondsSinceEpoch}.png",
+          fileName: "form_${DateTime.now().millisecondsSinceEpoch}.jpg",
           skipIfExists: true,
         );
+        print("Image saved successfully");
       }
-
+    } catch (e) {
+      print("Error capturing screenshot: $e");
+    }
   }
+
 
   @override
   void initState() {
@@ -65,6 +72,7 @@ class _Talta1State extends State<Talta1> {
     bool2 = List.generate(3, (_) => false);
     bool3 = List.generate(3, (_) => false);
     bool4 = List.generate(3, (_) => false);
+    slokController = TextEditingController(text: "10");
     controllers1 = List.generate(4, (_) => TextEditingController());
     controllers2 = List.generate(4, (_) => TextEditingController());
     controllers3 = List.generate(4, (_) => TextEditingController());
@@ -111,7 +119,7 @@ class _Talta1State extends State<Talta1> {
               children: [
                 Text(widget.churchName,
                     style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.w500)),
+                        fontSize: 20, fontWeight: FontWeight.w500,color: Colors.indigo)),
                 const SizedBox(height: 10),
                 MarksFormFields.taltaForm(al7anList[0], controllers1, bool1,
                         (index, value) {
@@ -141,11 +149,13 @@ class _Talta1State extends State<Talta1> {
                       });
                     }),
                 const SizedBox(height: 10),
-                MarksFormFields.taks(taksController),
+                MarksFormFields.taks(taksController,4),
                 const SizedBox(height: 10),
                 MarksFormFields.copticReading(copticReadingController),
                 const SizedBox(height: 10),
                 MarksFormFields.total(totalController),
+                const SizedBox(height: 10),
+                MarksFormFields.slok(TextEditingController(text: "10")),
                 const SizedBox(height: 10),
                 BlocConsumer<SubmitCubit, SubmitState>(
                   listener: (context, state) {
@@ -183,6 +193,7 @@ class _Talta1State extends State<Talta1> {
                           totalController,
                           copticReadingController,
                           taksController,
+                          slokController,
                           widget.isTalta,
                           bool1,
                           bool2,

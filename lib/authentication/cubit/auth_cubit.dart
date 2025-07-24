@@ -38,7 +38,7 @@ class AuthCubit extends Cubit<AuthState> {
   void login(String name) async {
     name = name.trim();
     AuthCubit.name = name;
-    String dayName ="Saturday";
+    String dayName ="monday";
     // DateTime.now().day!=2
     //     ? days[DateTime.now().weekday - 1]
     //     : "final";
