@@ -40,10 +40,12 @@ class ChurchesScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   church,
+                                  maxLines: 1,
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w500,
                                   ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
@@ -84,7 +86,9 @@ class ChurchesScreen extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w500,
+
                                   ),
+                                  maxLines: 1,
                                 ),
                               ],
                             ),

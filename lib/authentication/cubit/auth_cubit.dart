@@ -10,6 +10,7 @@ class AuthCubit extends Cubit<AuthState> {
   List<String> days = [
     'Monday',
     'Tuesday',
+    'Wednesday',
     'Thursday',
     'Friday',
     'Saturday',
@@ -35,17 +36,18 @@ class AuthCubit extends Cubit<AuthState> {
   ];
 
   static String? name;
-  void login(String name) async {
+  void login(String name, String pass,) async {
+    emit(AuthLoading());
     name = name.trim();
     AuthCubit.name = name;
-    String dayName ="monday";
-    // DateTime.now().day!=2
-    //     ? days[DateTime.now().weekday - 1]
-    //     : "final";
+    String dayName =
+    DateTime.now().day!=2
+        ? days[DateTime.now().weekday - 1].toLowerCase()
+        : "final";
+    print(dayName);
     List<MapEntry<String, String>> result = [];
 
     try {
-      emit(AuthLoading());
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
 
       final userSnapshot = await fireStore
@@ -59,7 +61,10 @@ class AuthCubit extends Cubit<AuthState> {
       }
 
       final userData = userSnapshot.docs.first.data();
-
+      if (userData["pass"] != pass) {
+        emit(AuthError(message: "الباسورد غلط"));
+        return;
+      }
       if (userData["isAdmin"] == true) {
         emit(AuthSuccess(isAadmin: true));
         return;

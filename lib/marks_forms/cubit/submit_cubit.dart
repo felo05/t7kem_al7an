@@ -247,8 +247,7 @@ class SubmitCubit extends Cubit<SubmitState> {
           (int.tryParse(controllers4[0].text) ?? 21) > 20 ||
           (int.tryParse(controllers4[1].text) ?? 21) > 10 ||
           (int.tryParse(controllers4[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers4[3].text) ?? 21) > 10
-      ) {
+          (int.tryParse(controllers4[3].text) ?? 21) > 10) {
         emit(SubmitFailure("اتاكد من الارقام"));
         return;
       }
@@ -397,7 +396,7 @@ class SubmitCubit extends Cubit<SubmitState> {
           (int.tryParse(controllers6[0].text) ?? 21) > 20 ||
           (int.tryParse(controllers6[1].text) ?? 21) > 10 ||
           (int.tryParse(controllers6[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers6[3].text) ?? 21) > 10){
+          (int.tryParse(controllers6[3].text) ?? 21) > 10) {
         emit(SubmitFailure("اتاكد من الارقام"));
         return;
       }
@@ -534,9 +533,15 @@ class SubmitCubit extends Cubit<SubmitState> {
     emit(SubmitLoading());
     try {
       onPressed();
-      if((int.tryParse(controllers1[0].text)??21)>20||(int.tryParse(controllers1[1].text)??21)>10||(int.tryParse(controllers1[2].text)??21)>10||
-          (int.tryParse(controllers2[0].text)??21)>20||(int.tryParse(controllers2[1].text)??21)>10||(int.tryParse(controllers2[2].text)??21)>10
-          ||(int.tryParse(controllers3[0].text)??21)>20||(int.tryParse(controllers3[1].text)??21)>10||(int.tryParse(controllers3[2].text)??21)>10){
+      if ((int.tryParse(controllers1[0].text) ?? 21) > 15 ||
+          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[0].text) ?? 21) > 15 ||
+          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[0].text) ?? 21) > 15 ||
+          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (int.tryParse(controllers3[2].text) ?? 21) > 10) {
         emit(SubmitFailure("اتاكد من الارقام"));
         return;
       }

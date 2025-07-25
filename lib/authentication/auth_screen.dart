@@ -46,6 +46,7 @@ class AuthScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     checkAndRequestPermissions(skipIfExists: true);
     TextEditingController nameController = TextEditingController();
+    TextEditingController passController = TextEditingController();
     return BlocProvider(
       create: (context) => AuthCubit(),
       child: Scaffold(
@@ -62,11 +63,18 @@ class AuthScreen extends StatelessWidget {
                     width: 250,
                     height: 250,
                   ),
-                  const SizedBox(height: 100),
+                  const SizedBox(height: 70),
                   CustomTextFormField(
                     text: 'الاسم',
                     controller: nameController,
                     floatingLabel: true,
+                  ),
+                  const SizedBox(height: 20),
+                  CustomTextFormField(
+                    text: 'الباسورد',
+                    controller: passController,
+                    floatingLabel: true,
+                    isPassword: true,
                   ),
                   const SizedBox(height: 20),
                   BlocConsumer<AuthCubit, AuthState>(
@@ -91,7 +99,7 @@ class AuthScreen extends StatelessWidget {
                         );
                       }
                       return MarksFormFields.submitButton(onPressed: (){
-                        context.read<AuthCubit>().login(nameController.text);
+                        context.read<AuthCubit>().login(nameController.text, passController.text);
                       },text: "دخول");
                     },
                   ),
