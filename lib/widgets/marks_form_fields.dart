@@ -222,7 +222,7 @@ class MarksFormFields {
               Al7an.taks,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
-            Checkbox(value: isChecked[0], onChanged: (val) => onChanged(2, val)),
+            Checkbox(value: isChecked[0], onChanged: (val) => onChanged(0, val)),
             const SizedBox(width: 30),
             const Text(
               Al7an.df,
@@ -294,7 +294,7 @@ class MarksFormFields {
               Al7an.taks,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
-            Checkbox(value: isChecked[0], onChanged: (val) => onChanged(2, val)),
+            Checkbox(value: isChecked[0], onChanged: (val) => onChanged(0, val)),
             const SizedBox(width: 30),
             const Text(
               Al7an.df,

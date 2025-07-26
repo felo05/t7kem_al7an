@@ -63,7 +63,7 @@ class ChurchesScreen extends StatelessWidget {
                                                           ? "مرحلة اولى وتانية المستوى الثانى"
                                                           : level == "oulaTanyaF"
                                                               ? "موهوبين فردى مرحلة اولي وتانية"
-                                                              : level == "oulaTanya2G"
+                                                              : level == "oulaTanyaG"
                                                                   ? "موهوبين جماعى مرحلة اولي وتانية"
                                                                   : level ==
                                                                           "taltaRaba1"

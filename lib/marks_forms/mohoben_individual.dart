@@ -64,9 +64,9 @@ class _MohobenIndividualState extends State<MohobenIndividual> {
   @override
   void initState() {
     super.initState();
-    controllers1 = List.generate(4, (_) => TextEditingController());
-    controllers2 = List.generate(4, (_) => TextEditingController());
-    controllers3 = List.generate(4, (_) => TextEditingController());
+    controllers1 = List.generate(3, (_) => TextEditingController());
+    controllers2 = List.generate(3, (_) => TextEditingController());
+    controllers3 = List.generate(3, (_) => TextEditingController());
     bool1 = List.generate(2, (_) => false);
     bool2 = List.generate(2, (_) => false);
     bool3 = List.generate(2, (_) => false);

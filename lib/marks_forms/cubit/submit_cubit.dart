@@ -25,18 +25,18 @@ class SubmitCubit extends Cubit<SubmitState> {
     try {
       onPressed();
       if ((int.tryParse(slokController.text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers4[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers4[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers4[2].text) ?? 21) > 10) {
+          (double.tryParse(controllers1[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers4[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers4[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers4[2].text) ?? 21) > 10) {
         emit(SubmitFailure("اتاكد من الارقام"));
         return;
       }
@@ -49,9 +49,9 @@ class SubmitCubit extends Cubit<SubmitState> {
         "kidsTotal": totalController.text,
         "judge": AuthCubit.name
       };
-      estmara["slok"] = int.tryParse(slokController.text);
+      estmara["slok"] = double.tryParse(slokController.text);
       double sum = 0;
-      sum += int.tryParse(slokController.text) ?? 10;
+      sum += double.tryParse(slokController.text) ?? 10;
       for (TextEditingController controller in [
         ...controllers1,
         ...controllers2,
@@ -63,7 +63,7 @@ class SubmitCubit extends Cubit<SubmitState> {
           return;
         }
 
-        sum += int.tryParse(controller.text) ?? 0;
+        sum += double.tryParse(controller.text) ?? 0;
       }
       estmara[al7anList[0]] = {
         Al7an.tslem: controllers1[0].text,
@@ -120,29 +120,29 @@ class SubmitCubit extends Cubit<SubmitState> {
         return;
       }
       if ((int.tryParse(slokController.text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers4[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers4[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers4[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers5[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers5[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers5[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers6[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers6[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers6[2].text) ?? 21) > 10) {
+          (double.tryParse(controllers1[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers4[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers4[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers4[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers5[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers5[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers5[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers6[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers6[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers6[2].text) ?? 21) > 10) {
         emit(SubmitFailure("اتاكد من الارقام"));
         return;
       }
       double sum = 0;
-      sum += int.tryParse(slokController.text) ?? 10;
+      sum += double.tryParse(slokController.text) ?? 10;
 
       for (var controller in [
         ...controllers1,
@@ -157,14 +157,14 @@ class SubmitCubit extends Cubit<SubmitState> {
           return;
         }
 
-        sum += int.tryParse(controller.text) ?? 0;
+        sum += double.tryParse(controller.text) ?? 0;
       }
       Map<String, dynamic> estmara = {
         "churchName": churchName,
         "kidsTotal": totalController.text,
         "judge": AuthCubit.name
       };
-      estmara["slok"] = int.tryParse(slokController.text);
+      estmara["slok"] = double.tryParse(slokController.text);
       estmara[al7anList[0]] = {
         Al7an.tslem: controllers1[0].text,
         Al7an.tempo: controllers1[1].text,
@@ -229,30 +229,30 @@ class SubmitCubit extends Cubit<SubmitState> {
     try {
       emit(SubmitLoading());
       onPressed();
-      if ((int.tryParse(copticReadingController.text) ?? 21) > 5 ||
-          (int.tryParse(taksController.text) ?? 21) > 4 ||
+      if ((double.tryParse(copticReadingController.text) ?? 21) > 5 ||
+          (double.tryParse(taksController.text) ?? 21) > 4 ||
           (int.tryParse(slokController.text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[3].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[3].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[3].text) ?? 21) > 10 ||
-          (int.tryParse(controllers4[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers4[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers4[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers4[3].text) ?? 21) > 10) {
+          (double.tryParse(controllers1[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers1[3].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[3].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[3].text) ?? 21) > 10 ||
+          (double.tryParse(controllers4[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers4[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers4[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers4[3].text) ?? 21) > 10) {
         emit(SubmitFailure("اتاكد من الارقام"));
         return;
       }
       double sum = 0;
-      sum += int.tryParse(slokController.text) ?? 10;
+      sum += double.tryParse(slokController.text) ?? 10;
 
       if (totalController.text.isEmpty ||
           copticReadingController.text.isEmpty ||
@@ -272,14 +272,14 @@ class SubmitCubit extends Cubit<SubmitState> {
           return;
         }
 
-        sum += int.tryParse(controller.text) ?? 0;
+        sum += double.tryParse(controller.text) ?? 0;
       }
       Map<String, dynamic> estmara = {
         "churchName": churchName,
         "judge": AuthCubit.name,
         "kidsTotal": totalController.text,
       };
-      estmara["slok"] = int.tryParse(slokController.text);
+      estmara["slok"] = double.tryParse(slokController.text);
 
       estmara[al7anList[0]] = {
         Al7an.tslem: controllers1[0].text,
@@ -330,11 +330,11 @@ class SubmitCubit extends Cubit<SubmitState> {
       sum += bool4[0] ? .5 : 0;
       sum += bool4[1] ? .5 : 0;
       sum += !bool4[2] ? 1 : 0;
-      sum += int.parse(taksController.text);
-      estmara["taks"] = int.tryParse(taksController.text);
+      sum += double.parse(taksController.text);
+      estmara["taks"] = double.tryParse(taksController.text);
 
-      sum += int.parse(copticReadingController.text);
-      estmara["copticReading"] = int.parse(copticReadingController.text);
+      sum += double.parse(copticReadingController.text);
+      estmara["copticReading"] = double.parse(copticReadingController.text);
       estmara["total"] = sum;
       estmara["percent"] = sum / 227;
       emit(SubmitSuccess());
@@ -371,32 +371,32 @@ class SubmitCubit extends Cubit<SubmitState> {
     emit(SubmitLoading());
     try {
       onPressed();
-      if ((int.tryParse(taksController.text) ?? 21) > 6 ||
+      if ((double.tryParse(taksController.text) ?? 21) > 6 ||
           (int.tryParse(slokController.text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[3].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[3].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[3].text) ?? 21) > 10 ||
-          (int.tryParse(controllers4[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers4[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers4[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers4[3].text) ?? 21) > 10 ||
-          (int.tryParse(controllers5[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers5[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers5[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers5[3].text) ?? 21) > 10 ||
-          (int.tryParse(controllers6[0].text) ?? 21) > 20 ||
-          (int.tryParse(controllers6[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers6[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers6[3].text) ?? 21) > 10) {
+          (double.tryParse(controllers1[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers1[3].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[3].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[3].text) ?? 21) > 10 ||
+          (double.tryParse(controllers4[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers4[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers4[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers4[3].text) ?? 21) > 10 ||
+          (double.tryParse(controllers5[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers5[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers5[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers5[3].text) ?? 21) > 10 ||
+          (double.tryParse(controllers6[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers6[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers6[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers6[3].text) ?? 21) > 10) {
         emit(SubmitFailure("اتاكد من الارقام"));
         return;
       }
@@ -407,7 +407,7 @@ class SubmitCubit extends Cubit<SubmitState> {
         return;
       }
       double sum = 0;
-      sum += int.tryParse(slokController.text) ?? 10;
+      sum += double.tryParse(slokController.text) ?? 10;
 
       for (var controller in [
         ...controllers1,
@@ -422,14 +422,14 @@ class SubmitCubit extends Cubit<SubmitState> {
           return;
         }
 
-        sum += int.tryParse(controller.text) ?? 0;
+        sum += double.tryParse(controller.text) ?? 0;
       }
       Map<String, dynamic> estmara = {
         "judge": AuthCubit.name,
         "churchName": churchName,
         "kidsTotal": totalController.text,
       };
-      estmara["slok"] = int.tryParse(slokController.text);
+      estmara["slok"] = double.tryParse(slokController.text);
       estmara[al7anList[0]] = {
         Al7an.tslem: controllers1[0].text,
         Al7an.tempo: controllers1[1].text,
@@ -503,8 +503,8 @@ class SubmitCubit extends Cubit<SubmitState> {
       sum += bool6[0] ? .5 : 0;
       sum += bool6[1] ? .5 : 0;
       sum += !bool6[2] ? 1 : 0;
-      sum += int.parse(taksController.text);
-      estmara["taks"] = int.parse(taksController.text);
+      sum += double.parse(taksController.text);
+      estmara["taks"] = double.parse(taksController.text);
       estmara["total"] = sum;
 
       estmara["percent"] = sum / 328;
@@ -533,26 +533,28 @@ class SubmitCubit extends Cubit<SubmitState> {
     emit(SubmitLoading());
     try {
       onPressed();
-      if ((int.tryParse(controllers1[0].text) ?? 21) > 15 ||
-          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[0].text) ?? 21) > 15 ||
-          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[0].text) ?? 21) > 15 ||
-          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[2].text) ?? 21) > 10) {
+      if ((double.tryParse(controllers1[0].text) ?? 21) > 15 ||
+          (double.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[0].text) ?? 21) > 15 ||
+          (double.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[0].text) ?? 21) > 15 ||
+          (double.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[2].text) ?? 21) > 10) {
         emit(SubmitFailure("اتاكد من الارقام"));
         return;
       }
       double factor = 1;
       double sum = 0;
-      for (var controller in controllers3) {
+      for (TextEditingController controller in controllers3) {
+        print(controller.text);
         if (controller.text.isEmpty) {
+
           emit(SubmitFailure("كمل باقى البيانات"));
           return;
         }
-        sum += int.parse(controller.text);
+        sum += double.parse(controller.text);
       }
       sum += bool3[0] ? 1 : 0;
       sum += bool3[1] ? 1 : 0;
@@ -565,7 +567,7 @@ class SubmitCubit extends Cubit<SubmitState> {
                   : (sum >= 60 && sum <= 61)
                       ? 1.07
                       : 1;
-      for (var controller in [
+      for (TextEditingController controller in [
         ...controllers1,
         ...controllers2,
       ]) {
@@ -574,7 +576,7 @@ class SubmitCubit extends Cubit<SubmitState> {
           return;
         }
 
-        sum += int.tryParse(controller.text) ?? 0;
+        sum += double.tryParse(controller.text) ?? 0;
       }
       Map<String, dynamic> estmara = {
         "churchName": churchName,
@@ -609,7 +611,7 @@ class SubmitCubit extends Cubit<SubmitState> {
 
       sum *= factor;
       estmara["total"] = sum;
-      estmara["percentage"] = sum / 111;
+      estmara["percent"] = sum / 111;
       emit(SubmitSuccess());
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
@@ -643,21 +645,21 @@ class SubmitCubit extends Cubit<SubmitState> {
       emit(SubmitLoading());
       onPressed();
       if ((int.tryParse(slokController.text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[0].text) ?? 21) > 15 ||
-          (int.tryParse(controllers1[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[3].text) ?? 21) > 10 ||
-          (int.tryParse(controllers1[4].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[0].text) ?? 21) > 15 ||
-          (int.tryParse(controllers2[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[3].text) ?? 21) > 10 ||
-          (int.tryParse(controllers2[4].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[0].text) ?? 21) > 15 ||
-          (int.tryParse(controllers3[1].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[2].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[3].text) ?? 21) > 10 ||
-          (int.tryParse(controllers3[4].text) ?? 21) > 10) {
+          (double.tryParse(controllers1[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers1[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers1[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers1[3].text) ?? 21) > 10 ||
+          (double.tryParse(controllers1[4].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers2[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[3].text) ?? 21) > 10 ||
+          (double.tryParse(controllers2[4].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[0].text) ?? 21) > 20 ||
+          (double.tryParse(controllers3[1].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[2].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[3].text) ?? 21) > 10 ||
+          (double.tryParse(controllers3[4].text) ?? 21) > 10) {
         emit(SubmitFailure("اتاكد من الارقام"));
         return;
       }
@@ -672,7 +674,7 @@ class SubmitCubit extends Cubit<SubmitState> {
           emit(SubmitFailure("كمل باقى البيانات"));
           return;
         }
-        sum += int.parse(controller.text);
+        sum += double.parse(controller.text);
       }
       sum += bool3[0] ? 1 : 0;
       sum += bool3[1] ? 1 : 0;
@@ -695,7 +697,7 @@ class SubmitCubit extends Cubit<SubmitState> {
           return;
         }
 
-        sum += int.tryParse(controller.text) ?? 0;
+        sum += double.tryParse(controller.text) ?? 0;
       }
       Map<String, dynamic> estmara = {
         "churchName": churchName,
@@ -736,9 +738,9 @@ class SubmitCubit extends Cubit<SubmitState> {
       sum += bool2[1] ? 1 : 0;
 
       sum *= factor;
-      sum += int.tryParse(slokController.text) ?? 10;
+      sum += double.tryParse(slokController.text) ?? 10;
       estmara["total"] = sum;
-      estmara["slok"] = int.tryParse(slokController.text);
+      estmara["slok"] = double.tryParse(slokController.text);
       estmara["percent"] = sum / 196;
       emit(SubmitSuccess());
 
