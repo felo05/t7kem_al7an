@@ -88,52 +88,6 @@ class AdminScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    const SizedBox(height: 20),
-                    _buildAdminButton(
-                      context,
-                      icon: Icons.notification_add,
-                      title: "ابعت رسالة",
-                      onTap: () async {
-                        final titleController = TextEditingController();
-                        final bodyController = TextEditingController();
-                        showDialog(
-                          context: context,
-                          builder: (dialogContext) => AlertDialog(
-                            backgroundColor: Colors.lightBlue.shade900,
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                CustomTextFormField(
-                                  textColor: Colors.amber.shade700,
-                                  text:"العنوان",
-                                  controller: titleController,
-                                  floatingLabel: true,
-                                ),
-                                const SizedBox(height: 10),
-                                CustomTextFormField(
-                                  textColor: Colors.amber.shade700,
-                                  text: "الرسالة",
-                                  controller: bodyController,
-                                  floatingLabel: true,
-                                ),
-                                const SizedBox(height: 10),
-                                ElevatedButton(
-                                  style: ButtonStyle(backgroundColor: WidgetStateProperty.all(Colors.amber.shade700)),
-                                  onPressed: () async {
-                                    sendFcmMessage(
-                                       titleController.text,
-                                      bodyController.text,
-                                    );
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text("ابعت"),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
                     const SizedBox(height: 50),
                   ],
                 ),

@@ -344,6 +344,28 @@ class _ChurchDetailsScreenState extends State<ChurchDetailsScreen> {
                                                                 size: 20,
                                                                 color: Colors
                                                                     .blue
+                                                                    .shade700))),
+                                                    const SizedBox(width: 8),
+                                                    GestureDetector(
+                                                        onTap: () => _showDeleteDialog(
+                                                            context, doc, index),
+                                                        child: Container(
+                                                            padding:
+                                                                const EdgeInsets.all(
+                                                                    8),
+                                                            decoration: BoxDecoration(
+                                                                color: Colors
+                                                                    .red
+                                                                    .withOpacity(
+                                                                        0.1),
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                        8)),
+                                                            child: Icon(
+                                                                Icons.delete,
+                                                                size: 20,
+                                                                color: Colors
+                                                                    .red
                                                                     .shade700)))
                                                   ])
                                                 ]),
@@ -581,6 +603,62 @@ class _ChurchDetailsScreenState extends State<ChurchDetailsScreen> {
               });
         });
   }
+
+  void _showDeleteDialog(
+      BuildContext context, Map<String, dynamic> document, int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('تأكيد الحذف'),
+          content: const Text('هل أنت متأكد من حذف هذه النتيجة؟ لا يمكن التراجع عن هذا الإجراء.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('إلغاء'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _deleteDocumentFromMain(document);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('حذف', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteDocumentFromMain(Map<String, dynamic> document) async {
+    try {
+      final documentId = document['id'] as String;
+      
+      // Delete the document from Firestore
+      await FirebaseFirestore.instance
+          .collection(widget.collectionName)
+          .doc(documentId)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تم حذف النتيجة بنجاح'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Refresh the data
+      _loadChurchData();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('حدث خطأ أثناء الحذف: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 }
 
 class EditResultDialog extends StatefulWidget {
@@ -628,6 +706,7 @@ class _EditResultDialogState extends State<EditResultDialog> {
               _buildTextField('اسم الكنيسة', 'churchName'),
               _buildTextField('المحكم', 'judge'),
               _buildTextField('عدد الأطفال', 'kidsTotal'),
+              _buildTextField('السلوك', 'slok'),
               _buildTextField('النسبة المئوية', 'percent'),
               _buildTextField('المجموع الكلي', 'total'),
 
@@ -647,6 +726,9 @@ class _EditResultDialogState extends State<EditResultDialog> {
           TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('إلغاء')),
+          TextButton(
+              onPressed: _isLoading ? null : _deleteDocument,
+              child: const Text('حذف', style: TextStyle(color: Colors.red))),
           ElevatedButton(
               onPressed: _isLoading ? null : _saveChanges,
               style: ElevatedButton.styleFrom(
@@ -691,7 +773,7 @@ class _EditResultDialogState extends State<EditResultDialog> {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
             keyboardType:
-                (key == 'total' || key == 'percent' || key == 'kidsTotal')
+                (key == 'total' || key == 'percent' || key == 'kidsTotal' || key == 'slok')
                     ? TextInputType.number
                     : TextInputType.text,
             onChanged: (value) {
@@ -700,6 +782,8 @@ class _EditResultDialogState extends State<EditResultDialog> {
                   _editedData[key] = int.tryParse(value) ?? 0;
                 } else if (key == 'percent') {
                   _editedData[key] = double.tryParse(value) ?? 0.0;
+                } else if (key == 'slok') {
+                  _editedData[key] = int.tryParse(value) ?? 10; // Default to 10 for behavior
                 } else if (key == 'kidsTotal') {
 // kidsTotal can be either string or number, handle both
                   final intValue = int.tryParse(value);
@@ -779,6 +863,64 @@ class _EditResultDialogState extends State<EditResultDialog> {
     return editors;
   }
 
+  Future<void> _deleteDocument() async {
+    // Show confirmation dialog
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('تأكيد الحذف'),
+          content: const Text('هل أنت متأكد من حذف هذه النتيجة؟ لا يمكن التراجع عن هذا الإجراء.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('إلغاء'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('حذف', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        // Delete the document from Firestore
+        await FirebaseFirestore.instance
+            .collection(widget.collectionName)
+            .doc(widget.documentId)
+            .delete();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم حذف النتيجة بنجاح'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        widget.onSaved();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('حدث خطأ أثناء الحذف: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   Future<void> _saveChanges() async {
     setState(() {
       _isLoading = true;
@@ -787,6 +929,24 @@ class _EditResultDialogState extends State<EditResultDialog> {
     try {
 // Calculate new total if hymn scores were changed
       double newTotal = 0;
+      
+      // Add السلوك (behavior) score - usually 10 points
+      if (_editedData['slok'] != null) {
+        final slokValue = _editedData['slok'];
+        if (slokValue is num) {
+          newTotal += slokValue.toDouble();
+        } else if (slokValue is String) {
+          final parsedValue = double.tryParse(slokValue);
+          if (parsedValue != null) {
+            newTotal += parsedValue;
+          } else {
+            // If slok is not a number, assume default 10
+            newTotal += 10;
+          }
+        }
+      }
+      
+      // Add other scores from hymn categories
       _editedData.forEach((key, value) {
         if (value is Map<String, dynamic> &&
             ![
@@ -796,7 +956,10 @@ class _EditResultDialogState extends State<EditResultDialog> {
               'kidsTotal',
               'percent',
               'total',
-              'notes'
+              'notes',
+              'slok',
+              'taks',
+              'copticReading'
             ].contains(key)) {
           value.forEach((scoreKey, scoreValue) {
 // Handle both int and double values
