@@ -215,7 +215,7 @@ class MarksFormFields {
           text: "${Al7an.ro7ania} 10 درجات",
         ),
         const SizedBox(height: 10),
-        level==0?const SizedBox.shrink():Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
@@ -223,12 +223,12 @@ class MarksFormFields {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             Checkbox(value: isChecked[0], onChanged: (val) => onChanged(0, val)),
-            const SizedBox(width: 30),
-            const Text(
+            level==0?const SizedBox.shrink():const SizedBox(width: 30),
+            level==0?const SizedBox.shrink():const Text(
               Al7an.df,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
-            Checkbox(
+            level==0?const SizedBox.shrink():Checkbox(
               value: isChecked[1],
               onChanged: (val) => onChanged(1, val),
             ),
@@ -287,7 +287,7 @@ class MarksFormFields {
           text: "${Al7an.ro7ania} 10 درجات",
         ),
         const SizedBox(height: 10),
-        level==0?const SizedBox.shrink():Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
@@ -295,14 +295,23 @@ class MarksFormFields {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             Checkbox(value: isChecked[0], onChanged: (val) => onChanged(0, val)),
-            const SizedBox(width: 30),
-            const Text(
+            level==0?const SizedBox.shrink():const SizedBox(width: 20),
+            level==0?const SizedBox.shrink():const Text(
               Al7an.df,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
-            Checkbox(
+            level==0?const SizedBox.shrink():Checkbox(
               value: isChecked[1],
               onChanged: (val) => onChanged(1, val),
+            ),
+            level==0?const SizedBox.shrink():const SizedBox(width: 20),
+            level==0?const SizedBox.shrink():const Text(
+              Al7an.treanto,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            level==0?const SizedBox.shrink():Checkbox(
+              value: isChecked[2],
+              onChanged: (val) => onChanged(2, val),
             ),
           ],
         ),
@@ -334,5 +343,25 @@ class MarksFormFields {
         onPressed(),
 
     );
+  }
+  static Future<bool> showExitConfirmationDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تأكيد'),
+        content: const Text('هل تريد الخروج؟ سيتم فقد البيانات غير المحفوظة'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('لا'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('نعم'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
   }
 }

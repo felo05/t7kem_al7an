@@ -677,7 +677,8 @@ class SubmitCubit extends Cubit<SubmitState> {
         sum += double.parse(controller.text);
       }
       sum += bool3[0] ? 1 : 0;
-      sum += bool3[1] ? 1 : 0;
+      sum += bool3[1] ? .5 : 0;
+      sum += bool3[2] ? .5 : 0;
       factor = (sum >= 50 && sum <= 53)
           ? 1.01
           : (sum >= 54 && sum <= 56)
@@ -733,9 +734,11 @@ class SubmitCubit extends Cubit<SubmitState> {
       };
 
       sum += bool1[0] ? 1 : 0;
-      sum += bool1[1] ? 1 : 0;
+      sum += bool1[1] ? .5 : 0;
+      sum += bool1[3] ? .5 : 0;
       sum += bool2[0] ? 1 : 0;
-      sum += bool2[1] ? 1 : 0;
+      sum += bool2[1] ? .5 : 0;
+      sum += bool2[3] ? .5 : 0;
 
       sum *= factor;
       sum += double.tryParse(slokController.text) ?? 10;

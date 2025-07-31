@@ -6,10 +6,9 @@ sealed class AuthState {}
 final class AuthInitial extends AuthState {}
 
 final class AuthSuccess extends AuthState {
-  final List<MapEntry<String, String>>? data;
   final bool isAadmin;
 
-  AuthSuccess({this.isAadmin=false,  this.data });
+  AuthSuccess({required this.isAadmin });
 }
 
 final class AuthLoading extends AuthState {}

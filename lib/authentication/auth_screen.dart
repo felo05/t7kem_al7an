@@ -81,7 +81,7 @@ class AuthScreen extends StatelessWidget {
                     listener: (context, state) {
                       if (state is AuthSuccess) {
                         Navigator.pushAndRemoveUntil(context,
-                        MaterialPageRoute(builder: (context) =>  state.isAadmin?const AdminScreen():ChurchesScreen(data: state.data!,)),
+                        MaterialPageRoute(builder: (context) =>  state.isAadmin?const AdminScreen():const ChurchesScreen()),
                         (route) => false);
                       }
                       else if (state is AuthError) {

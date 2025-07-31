@@ -111,128 +111,133 @@ class _Talta2State extends State<Talta2> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.isTalta
-              ? "مرحلة تالتة ورابعة المستوى التانى"
-              : "مرحلة خامسة وسادسة المستوى التانى",
+    return WillPopScope(
+      onWillPop: () async {
+        return await MarksFormFields.showExitConfirmationDialog(context);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            widget.isTalta
+                ? "مرحلة تالتة ورابعة المستوى التانى"
+                : "مرحلة خامسة وسادسة المستوى التانى",
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        child: RepaintBoundary(
-          key: _globalKey,
-          child: Container(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Text(
-                  widget.churchName,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w500,color: Colors.indigo),
-                ),
-                const SizedBox(height: 10),
-                MarksFormFields.taltaForm(al7anList[0], controllers1, bool1,
-                        (index, value) {
-                      setState(() {
-                        bool1[index] = value ?? false;
+        body: SingleChildScrollView(
+          controller: _scrollController,
+          child: RepaintBoundary(
+            key: _globalKey,
+            child: Container(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Text(
+                    widget.churchName,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.w500,color: Colors.indigo),
+                  ),
+                  const SizedBox(height: 10),
+                  MarksFormFields.taltaForm(al7anList[0], controllers1, bool1,
+                          (index, value) {
+                        setState(() {
+                          bool1[index] = value ?? false;
+                        });
+                      }),
+                  const SizedBox(height: 10),
+                  MarksFormFields.taltaForm(al7anList[1], controllers2, bool2,
+                          (index, value) {
+                        setState(() {
+                          bool2[index] = value ?? false;
+                        });
+                      }),
+                  const SizedBox(height: 10),
+                  MarksFormFields.taltaForm(al7anList[2], controllers3, bool3,
+                          (index, value) {
+                        setState(() {
+                          bool3[index] = value ?? false;
+                        });
+                      }),
+                  const SizedBox(height: 10),
+                  MarksFormFields.taltaForm(al7anList[3], controllers4, bool4,
+                          (index, value) {
+                        setState(() {
+                          bool4[index] = value ?? false;
+                        });
+                      }),
+                  const SizedBox(height: 10),
+                  MarksFormFields.taltaForm(al7anList[4], controllers5, bool5,
+                          (index, value) {
+                        setState(() {
+                          bool5[index] = value ?? false;
+                        });
+                      }),
+                  const SizedBox(height: 10),
+                  MarksFormFields.taltaForm(al7anList[5], controllers6, bool6,
+                          (index, value) {
+                        setState(() {
+                          bool6[index] = value ?? false;
+                        });
+                      }),
+                  const SizedBox(height: 10),
+                  MarksFormFields.taks(taksController,6),
+                  const SizedBox(height: 10),
+                  MarksFormFields.total(totalController),
+                  const SizedBox(height: 10),
+                  MarksFormFields.slok(slokController),
+                  const SizedBox(height: 10),
+                  BlocConsumer<SubmitCubit, SubmitState>(
+                    listener: (context, state) {
+                      if(state is SubmitSuccess) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("تم حفظ البيانات بنجاح"),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } else if (state is SubmitFailure) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.error),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                    builder: (context, state) {
+                      if (state is SubmitLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(color: Colors.indigo,),
+                        );
+                      }
+                      return MarksFormFields.submitButton(onPressed: () {
+                        context.read<SubmitCubit>().talta2(
+                            widget.churchName,
+                            al7anList,
+                            controllers1,
+                            controllers2,
+                            controllers3,
+                            controllers4,
+                            controllers5,
+                            controllers6,
+                            taksController,
+                            totalController,
+                            slokController,
+                            widget.isTalta,
+                            bool1,
+                            bool2,
+                            bool3,
+                            bool4,
+                            bool5,
+                            bool6,
+                            _captureAndSave
+                        );
                       });
-                    }),
-                const SizedBox(height: 10),
-                MarksFormFields.taltaForm(al7anList[1], controllers2, bool2,
-                        (index, value) {
-                      setState(() {
-                        bool2[index] = value ?? false;
-                      });
-                    }),
-                const SizedBox(height: 10),
-                MarksFormFields.taltaForm(al7anList[2], controllers3, bool3,
-                        (index, value) {
-                      setState(() {
-                        bool3[index] = value ?? false;
-                      });
-                    }),
-                const SizedBox(height: 10),
-                MarksFormFields.taltaForm(al7anList[3], controllers4, bool4,
-                        (index, value) {
-                      setState(() {
-                        bool4[index] = value ?? false;
-                      });
-                    }),
-                const SizedBox(height: 10),
-                MarksFormFields.taltaForm(al7anList[4], controllers5, bool5,
-                        (index, value) {
-                      setState(() {
-                        bool5[index] = value ?? false;
-                      });
-                    }),
-                const SizedBox(height: 10),
-                MarksFormFields.taltaForm(al7anList[5], controllers6, bool6,
-                        (index, value) {
-                      setState(() {
-                        bool6[index] = value ?? false;
-                      });
-                    }),
-                const SizedBox(height: 10),
-                MarksFormFields.taks(taksController,6),
-                const SizedBox(height: 10),
-                MarksFormFields.total(totalController),
-                const SizedBox(height: 10),
-                MarksFormFields.slok(slokController),
-                const SizedBox(height: 10),
-                BlocConsumer<SubmitCubit, SubmitState>(
-                  listener: (context, state) {
-                    if(state is SubmitSuccess) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("تم حفظ البيانات بنجاح"),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } else if (state is SubmitFailure) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(state.error),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state is SubmitLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: Colors.indigo,),
-                      );
-                    }
-                    return MarksFormFields.submitButton(onPressed: () {
-                      context.read<SubmitCubit>().talta2(
-                          widget.churchName,
-                          al7anList,
-                          controllers1,
-                          controllers2,
-                          controllers3,
-                          controllers4,
-                          controllers5,
-                          controllers6,
-                          taksController,
-                          totalController,
-                          slokController,
-                          widget.isTalta,
-                          bool1,
-                          bool2,
-                          bool3,
-                          bool4,
-                          bool5,
-                          bool6,
-                          _captureAndSave
-                      );
-                    });
-                  },
-                ),
-              ],
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -77,7 +77,7 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
           floatingLabelStyle:  TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: widget.textColor??Color(0xff37474F),
+            color: widget.textColor??const Color(0xff37474F),
           ),
           labelStyle: const TextStyle(
             fontSize: 19,

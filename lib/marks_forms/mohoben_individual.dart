@@ -81,95 +81,100 @@ class _MohobenIndividualState extends State<MohobenIndividual> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(
-      title: Text(
-        widget.level == 0
-            ? "موهوبين فردى مرحلة حضانة"
-            : widget.level == 1
-            ? "موهوبين فردى مرحلة اولي وتانية"
-            : widget.level == 2
-            ? "موهوبين فردى مرحلة تالتة ورابعة"
-            : "موهوبين فردى مرحلة خامسة وسادسة",
+    return WillPopScope(
+      onWillPop: () async {
+        return await MarksFormFields.showExitConfirmationDialog(context);
+      },
+      child: Scaffold(appBar: AppBar(
+        title: Text(
+          widget.level == 0
+              ? "موهوبين فردى مرحلة حضانة"
+              : widget.level == 1
+              ? "موهوبين فردى مرحلة اولي وتانية"
+              : widget.level == 2
+              ? "موهوبين فردى مرحلة تالتة ورابعة"
+              : "موهوبين فردى مرحلة خامسة وسادسة",
+        ),
       ),
-    ),
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        child: RepaintBoundary(
-          key: _globalKey,
-          child: Container(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Text(
-                  widget.churchName,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w500,color: Colors.indigo),
-                ),
-                const SizedBox(height: 10),
-                MarksFormFields.mohobenIndividualForm(
-                    al7anList[0], controllers1, bool1, (index, value) {
-                  setState(() {
-                    bool1[index] = value ?? false;
-                  });
-                },widget.level
-                ),
-                const SizedBox(height: 10),
-                MarksFormFields.mohobenIndividualForm(
-                    al7anList[1], controllers2, bool2, (index, value) {
-                  setState(() {
-                    bool2[index] = value ?? false;
-                  });
-                },widget.level),
-                const SizedBox(height: 10),
-                MarksFormFields.mohobenIndividualForm(
-                    al7anList[2], controllers3, bool3, (index, value) {
-                  setState(() {
-                    bool3[index] = value ?? false;
-                  });
-                },widget.level),
-                const SizedBox(height: 10),
-                BlocConsumer<SubmitCubit, SubmitState>(
-                  listener: (context, state) {
-                    if(state is SubmitSuccess) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("تم حفظ البيانات بنجاح"),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } else if (state is SubmitFailure) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(state.error),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }                  },
-                  builder: (context, state) {
-                    if (state is SubmitLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: Colors.indigo,),
-                      );
-                    }
-                    return MarksFormFields.submitButton(onPressed: () {
-                      context.read<SubmitCubit>().mohobenIndividual(
-                        widget.churchName,
-                        widget.level,
-                        al7anList,
-                        controllers1,
-                        controllers2,
-                        controllers3,
-                        bool1,
-                        bool2,
-                        bool3,
-                        _captureAndSave,
-
-                      );
+        body: SingleChildScrollView(
+          controller: _scrollController,
+          child: RepaintBoundary(
+            key: _globalKey,
+            child: Container(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Text(
+                    widget.churchName,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.w500,color: Colors.indigo),
+                  ),
+                  const SizedBox(height: 10),
+                  MarksFormFields.mohobenIndividualForm(
+                      al7anList[0], controllers1, bool1, (index, value) {
+                    setState(() {
+                      bool1[index] = value ?? false;
                     });
-                  },
-                ),
-              ],
+                  },widget.level
+                  ),
+                  const SizedBox(height: 10),
+                  MarksFormFields.mohobenIndividualForm(
+                      al7anList[1], controllers2, bool2, (index, value) {
+                    setState(() {
+                      bool2[index] = value ?? false;
+                    });
+                  },widget.level),
+                  const SizedBox(height: 10),
+                  MarksFormFields.mohobenIndividualForm(
+                      al7anList[2], controllers3, bool3, (index, value) {
+                    setState(() {
+                      bool3[index] = value ?? false;
+                    });
+                  },widget.level),
+                  const SizedBox(height: 10),
+                  BlocConsumer<SubmitCubit, SubmitState>(
+                    listener: (context, state) {
+                      if(state is SubmitSuccess) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("تم حفظ البيانات بنجاح"),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } else if (state is SubmitFailure) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.error),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }                  },
+                    builder: (context, state) {
+                      if (state is SubmitLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(color: Colors.indigo,),
+                        );
+                      }
+                      return MarksFormFields.submitButton(onPressed: () {
+                        context.read<SubmitCubit>().mohobenIndividual(
+                          widget.churchName,
+                          widget.level,
+                          al7anList,
+                          controllers1,
+                          controllers2,
+                          controllers3,
+                          bool1,
+                          bool2,
+                          bool3,
+                          _captureAndSave,
+
+                        );
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

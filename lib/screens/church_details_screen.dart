@@ -779,7 +779,7 @@ class _EditResultDialogState extends State<EditResultDialog> {
             onChanged: (value) {
               setState(() {
                 if (key == 'total') {
-                  _editedData[key] = int.tryParse(value) ?? 0;
+                  _editedData[key] = double.tryParse(value) ?? 0;
                 } else if (key == 'percent') {
                   _editedData[key] = double.tryParse(value) ?? 0.0;
                 } else if (key == 'slok') {

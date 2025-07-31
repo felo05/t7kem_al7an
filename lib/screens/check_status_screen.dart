@@ -1,9 +1,9 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:screenshot/screenshot.dart';
+import 'package:flutter/rendering.dart';
 import 'package:saver_gallery/saver_gallery.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'dart:typed_data';
 
 import 'church_details_screen.dart';
 
@@ -204,8 +204,8 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 16,
-            mainAxisSpacing: 20,
-            childAspectRatio: 1.07,
+            mainAxisSpacing: 30,
+            childAspectRatio: 0.95,
             children: _collections.map((collection) {
               final data = _collectionMaxData[collection];
               final displayName = _formatCollectionName(collection);
@@ -379,7 +379,7 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _documents = [];
   bool _isSelectionMode = false;
-  Set<String> _selectedChurches = {};
+  final Set<String> _selectedChurches = {};
 
   @override
   void initState() {
@@ -778,70 +778,68 @@ class SelectedChurchesDisplayScreen extends StatefulWidget {
 
 class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayScreen> {
   bool _isLoading = false;
-  final ScreenshotController _screenshotController = ScreenshotController();
+  final GlobalKey _globalKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.green.shade700,
-              Colors.green.shade50,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(10.0), // Reduced from 20 to 10
-            child: Column(
-              children: [
-                // Screenshot Widget containing the design to be saved
-                Expanded(
-                  child: Screenshot(
-                    controller: _screenshotController,
-                    child: _buildCertificateDesign(),
-                  ),
-                ),
-                
-                // Save button
-                const SizedBox(height: 10), // Reduced from 20 to 10
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _isLoading ? null : _saveToGalleryAndFirestore,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade700,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 4,
-                    ),
-                    icon: _isLoading 
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Icon(Icons.save),
-                    label: Text(
-                      _isLoading ? 'جاري الحفظ...' : 'حفظ في المعرض وإضافة للمجموعات',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        controller: ScrollController(),
+        child: RepaintBoundary(
+          key: _globalKey,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.green.shade700,
+                  Colors.green.shade50,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  children: [
+                    _buildCertificateDesign(),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _saveToGalleryAndFirestore,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade700,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 4,
+                        ),
+                        icon: _isLoading
+                            ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                            : const Icon(Icons.save),
+                        label: Text(
+                          _isLoading ? 'جاري الحفظ...' : 'حفظ في المعرض وإضافة للمجموعات',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -851,10 +849,11 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
 
   Widget _buildCertificateDesign() {
     String levelName = _formatCollectionName(widget.collectionName);
-    
+
     return Container(
       width: double.infinity,
-      height: double.infinity,
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -866,222 +865,147 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(15.0), // Reduced from 20 to 15
-        child: Column(
-          children: [
-            // Compact header with logos and title
-            Row(
-              children: [
-                // Left logo placeholder - smaller
-                Image.asset(
-                  'assets/images/logo2.jpg',
-                  width: 60, // Reduced from 50 to 40
-                  height: 60, // Reduced from 50 to 40
-                ),
-                
-                // Center title - compact
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        'الكنائس المصعدة',
+      child: Column(
+        children: [
+          // Header
+          Row(
+            children: [
+              Image.asset('assets/images/logo2.jpg', width: 60, height: 60),
+              Expanded(
+                child: Column(
+                  children: [
+                    Text(
+                      'الكنائس المصعدة للتصفيات النهائية\nيوم السبت 2 اغسطس 2025 بكنيسة القديسة دميانة بالهرم',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green.shade800,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.green.shade300),
+                      ),
+                      child: Text(
+                        levelName,
                         style: TextStyle(
-                          fontSize: 18, // Reduced from 20 to 18
-                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                           color: Colors.green.shade800,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 2), // Reduced from 4 to 2
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), // Reduced padding
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade100,
-                          borderRadius: BorderRadius.circular(12), // Reduced from 15 to 12
-                          border: Border.all(color: Colors.green.shade300),
-                        ),
-                        child: Text(
-                          levelName,
-                          style: TextStyle(
-                            fontSize: 10, // Reduced from 12 to 10
-                            fontWeight: FontWeight.w600,
-                            color: Colors.green.shade800,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Image.asset(
-                  'assets/images/logo.png',
-                  width:60, // Reduced from 50 to 40
-                  height: 60, // Reduced from 50 to 40
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 8), // Reduced from 15 to 8
-            
-            // Decorative line - thinner
-            Container(
-              height: 1, // Reduced from 2 to 1
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.green.shade200,
-                    Colors.green.shade600,
-                    Colors.green.shade200,
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(1),
-              ),
-            ),
-            
-            const SizedBox(height: 8), // Reduced from 15 to 8
-            
-            // Churches list - fill remaining space
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(10), // Reduced from 15 to 10
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(10), // Reduced from 12 to 10
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [// Reduced from 10 to 6
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: widget.selectedChurches.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 2), // Reduced from 4 to 2
-                            padding: const EdgeInsets.all(6), // Reduced from 8 to 6
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6), // Reduced from 8 to 6
-                              border: Border.all(color: Colors.green.shade200),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.green.shade100,
-                                  blurRadius: 1, // Reduced from 2 to 1
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                // Container(
-                                //   width: 16, // Reduced from 20 to 16
-                                //   height: 16, // Reduced from 20 to 16
-                                //   decoration: BoxDecoration(
-                                //     color: Colors.green.shade600,
-                                //     shape: BoxShape.circle,
-                                //   ),
-                                //   child: Center(
-                                //     child: Text(
-                                //       '${index + 1}',
-                                //       style: const TextStyle(
-                                //         color: Colors.white,
-                                //         fontWeight: FontWeight.bold,
-                                //         fontSize: 8, // Reduced from 10 to 8
-                                //       ),
-                                //     ),
-                                //   ),
-                                // ),
-                                // const SizedBox(width: 8), // Reduced from 10 to 8
-                                Expanded(
-                                  child: Text(
-                                    widget.selectedChurches[index],
-                                    style: TextStyle(
-                                      fontSize: 12, // Reduced from 13 to 12
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.grey.shade800,
-                                    ),
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.church,
-                                  color: Colors.green.shade600,
-                                  size: 12, // Reduced from 14 to 12
-                                ),
-                              ],
-                            ),
-                          );
-                        },
                       ),
                     ),
                   ],
                 ),
               ),
+              Image.asset('assets/images/logo.png', width: 60, height: 60),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.green.shade200,
+                  Colors.green.shade600,
+                  Colors.green.shade200,
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+
+          // List Section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: widget.selectedChurches.length * 42.0, // Approximate height per item
+                  child: ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: widget.selectedChurches.length,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        height: 40,
+                        margin: const EdgeInsets.only(bottom: 2),
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.green.shade200),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.green.shade100,
+                              blurRadius: 1,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          widget.selectedChurches[index],
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
   String _formatCollectionName(String collection) {
-    // Remove "Results" and format the name
     String name = collection.replaceAll('Results', '');
     switch (name) {
-      case 'kg1':
-        return 'حضانة المستوى الأول';
-      case 'kg2':
-        return 'حضانة المستوى الثاني';
-      case 'kgG':
-        return 'حضانة موهوبين جماعي';
-      case 'kgF':
-        return 'حضانة موهوبين فردي';
-      case 'oulaTanya1':
-        return 'أولى وثانية المستوى الأول';
-      case 'oulaTanya2':
-        return 'أولى وثانية المستوى الثاني';
-      case 'oulaTanyaG':
-        return 'أولى وثانية موهوبين جماعي';
-      case 'oulaTanyaF':
-        return 'أولى وثانية موهوبين فردي';
-      case 'taltaRaba1':
-        return 'ثالثة ورابعة المستوى الأول';
-      case 'taltaRaba2':
-        return 'ثالثة ورابعة المستوى الثاني';
-      case 'taltaRabaG':
-        return 'ثالثة ورابعة موهوبين جماعي';
-      case 'taltaRabaF':
-        return 'ثالثة ورابعة موهوبين فردي';
-      case 'khamsaSadsa1':
-        return 'خامسة وسادسة المستوى الأول';
-      case 'khamsaSadsa2':
-        return 'خامسة وسادسة المستوى الثاني';
-      case 'khamsaSadsaG':
-        return 'خامسة وسادسة موهوبين جماعي';
-      case 'khamsaSadsaF':
-        return 'خامسة وسادسة موهوبين فردي';
-      default:
-        return name;
+      case 'kg1': return 'حضانة المستوى الأول';
+      case 'kg2': return 'حضانة المستوى الثاني';
+      case 'kgG': return 'حضانة موهوبين جماعي';
+      case 'kgF': return 'حضانة موهوبين فردي';
+      case 'oulaTanya1': return 'أولى وثانية المستوى الأول';
+      case 'oulaTanya2': return 'أولى وثانية المستوى الثاني';
+      case 'oulaTanyaG': return 'أولى وثانية موهوبين جماعي';
+      case 'oulaTanyaF': return 'أولى وثانية موهوبين فردي';
+      case 'taltaRaba1': return 'ثالثة ورابعة المستوى الأول';
+      case 'taltaRaba2': return 'ثالثة ورابعة المستوى الثاني';
+      case 'taltaRabaG': return 'ثالثة ورابعة موهوبين جماعي';
+      case 'taltaRabaF': return 'ثالثة ورابعة موهوبين فردي';
+      case 'khamsaSadsa1': return 'خامسة وسادسة المستوى الأول';
+      case 'khamsaSadsa2': return 'خامسة وسادسة المستوى الثاني';
+      case 'khamsaSadsaG': return 'خامسة وسادسة موهوبين جماعي';
+      case 'khamsaSadsaF': return 'خامسة وسادسة موهوبين فردي';
+      default: return name;
     }
   }
 
   Future<void> _saveToGalleryAndFirestore() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      // Save to Firestore collections for "final" day
+      await _captureAndSave();
       await _saveToFirestore();
-      
-      // Save screenshot to gallery
-      await _saveToGallery();
+      setState(() => _isLoading = false);
 
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -1090,15 +1014,10 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
             duration: Duration(seconds: 3),
           ),
         );
-        
-        // Navigate back to main screen
         Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-
+      setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1111,43 +1030,30 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
     }
   }
 
-  Future<void> _saveToGallery() async {
+  Future<void> _captureAndSave() async {
     try {
-      // Request storage permission
-      // final permission = await Permission.storage.request();
-      // if (!permission.isGranted) {
-      //   throw Exception('Permission denied for gallery access');
-      // }
+      await Future.delayed(const Duration(milliseconds: 100)); // Ensure build is complete
+      final boundary = _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
-      // Capture screenshot
-      final Uint8List? imageBytes = await _screenshotController.capture();
-      if (imageBytes == null) {
-        throw Exception('Failed to capture screenshot');
+      if (byteData != null) {
+        final pngBytes = byteData.buffer.asUint8List();
+        await SaverGallery.saveImage(
+          pngBytes,
+          fileName: "form_${DateTime.now().millisecondsSinceEpoch}.jpg",
+          skipIfExists: true,
+        );
       }
-
-      // Save to gallery
-      String levelName = _formatCollectionName(widget.collectionName);
-      String fileName = 'الكنائس_المختارة_${levelName}_${DateTime.now().millisecondsSinceEpoch}.png';
-      
-      final result = await SaverGallery.saveImage(
-        imageBytes,
-        fileName: fileName,
-        skipIfExists: true
-      );
-
-      print('Image saved to gallery: $result');
     } catch (e) {
-      print('Error saving to gallery: $e');
-      throw e;
+      print("Error capturing screenshot: $e");
+      rethrow;
     }
   }
 
   Future<void> _saveToFirestore() async {
     try {
-      // Remove "Results" suffix from collection name to get the base collection name
       String baseCollectionName = widget.collectionName.replaceAll('Results', '');
-      
-      // Add churches to the base collection (without "Results") for "final" day
       DocumentReference docRef = FirebaseFirestore.instance
           .collection(baseCollectionName)
           .doc('final');
@@ -1158,11 +1064,10 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-
-      print('Added ${widget.selectedChurches.length} churches to $baseCollectionName for final day');
     } catch (e) {
       print('Error saving to Firestore: $e');
-      throw e;
+      rethrow;
     }
   }
 }
+

@@ -72,84 +72,89 @@ class _Kg2State extends State<Kg2> {
     TextEditingController totalController = TextEditingController();
     TextEditingController slokController = TextEditingController(text: "10");
 
-    return Scaffold(
-        appBar: AppBar(
-            title: Text(widget.isKg
-                ? "مرحلة حضانة المستوى الثانى"
-                : "مرحلة اولى وتانية المستوى الثانى"),
-            centerTitle: true),
-        body: SingleChildScrollView(
-            controller: _scrollController,
-            child: RepaintBoundary(
-              key: _globalKey,
-              child: Container(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(children: [
-                  Text(widget.churchName,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.w500,color: Colors.indigo)),
-                  const SizedBox(height: 10),
-                  MarksFormFields.kgForm(al7anList[0], controllers1),
-                  const SizedBox(height: 10),
-                  MarksFormFields.kgForm(al7anList[1], controllers2),
-                  const SizedBox(height: 10),
-                  MarksFormFields.kgForm(al7anList[2], controllers3),
-                  const SizedBox(height: 10),
-                  MarksFormFields.kgForm(al7anList[3], controllers4),
-                  const SizedBox(height: 10),
-                  MarksFormFields.kgForm(al7anList[4], controllers5),
-                  const SizedBox(height: 10),
-                  MarksFormFields.kgForm(al7anList[5], controllers6),
-                  const SizedBox(height: 10),
-                  MarksFormFields.total(totalController),
-                  const SizedBox(height: 10),
-                  MarksFormFields.slok(slokController),
-                  const SizedBox(height: 10),
-                  BlocConsumer<SubmitCubit, SubmitState>(
-                    listener: (context, state) {
-                      if(state is SubmitSuccess) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("تم حفظ البيانات بنجاح"),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      } else if (state is SubmitFailure) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(state.error),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    },
-                    builder: (context, state) {
-                      if (state is SubmitLoading) {
-                        return const Center(
-                          child: CircularProgressIndicator(color: Colors.indigo,),
-                        );
-                      }
-                      return MarksFormFields.submitButton(onPressed: () {
-                        context.read<SubmitCubit>().kg2(
-                            al7anList,
-                            controllers1,
-                            controllers2,
-                            controllers3,
-                            controllers4,
-                            controllers5,
-                            controllers6,
-                            totalController,
-                            slokController,
-                            widget.isKg,
-                            widget.churchName,
-                            _captureAndSave
-                        );
-                      });
-                    },
-                  )
-                ]),
-              ),
-            )));
+    return WillPopScope(
+      onWillPop: () async {
+        return await MarksFormFields.showExitConfirmationDialog(context);
+      },
+      child: Scaffold(
+          appBar: AppBar(
+              title: Text(widget.isKg
+                  ? "مرحلة حضانة المستوى الثانى"
+                  : "مرحلة اولى وتانية المستوى الثانى"),
+              centerTitle: true),
+          body: SingleChildScrollView(
+              controller: _scrollController,
+              child: RepaintBoundary(
+                key: _globalKey,
+                child: Container(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(children: [
+                    Text(widget.churchName,
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w500,color: Colors.indigo)),
+                    const SizedBox(height: 10),
+                    MarksFormFields.kgForm(al7anList[0], controllers1),
+                    const SizedBox(height: 10),
+                    MarksFormFields.kgForm(al7anList[1], controllers2),
+                    const SizedBox(height: 10),
+                    MarksFormFields.kgForm(al7anList[2], controllers3),
+                    const SizedBox(height: 10),
+                    MarksFormFields.kgForm(al7anList[3], controllers4),
+                    const SizedBox(height: 10),
+                    MarksFormFields.kgForm(al7anList[4], controllers5),
+                    const SizedBox(height: 10),
+                    MarksFormFields.kgForm(al7anList[5], controllers6),
+                    const SizedBox(height: 10),
+                    MarksFormFields.total(totalController),
+                    const SizedBox(height: 10),
+                    MarksFormFields.slok(slokController),
+                    const SizedBox(height: 10),
+                    BlocConsumer<SubmitCubit, SubmitState>(
+                      listener: (context, state) {
+                        if(state is SubmitSuccess) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("تم حفظ البيانات بنجاح"),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } else if (state is SubmitFailure) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(state.error),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                      builder: (context, state) {
+                        if (state is SubmitLoading) {
+                          return const Center(
+                            child: CircularProgressIndicator(color: Colors.indigo,),
+                          );
+                        }
+                        return MarksFormFields.submitButton(onPressed: () {
+                          context.read<SubmitCubit>().kg2(
+                              al7anList,
+                              controllers1,
+                              controllers2,
+                              controllers3,
+                              controllers4,
+                              controllers5,
+                              controllers6,
+                              totalController,
+                              slokController,
+                              widget.isKg,
+                              widget.churchName,
+                              _captureAndSave
+                          );
+                        });
+                      },
+                    )
+                  ]),
+                ),
+              ))),
+    );
   }
 }
