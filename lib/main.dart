@@ -33,35 +33,35 @@ void main() async {
       cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
     );
     print("+++");
-    // final NotificationService notificationService = NotificationService();
-    // await notificationService.initialize();
-    //
-    // // طلب إذن الإشعارات
-    // await FirebaseMessaging.instance.requestPermission();
+    final NotificationService notificationService = NotificationService();
+    await notificationService.initialize();
+
+    // طلب إذن الإشعارات
+    await FirebaseMessaging.instance.requestPermission();
 
     // الاشتراك في topic عام
     //await FirebaseMessaging.instance.subscribeToTopic("all_users");
     print("++++");
 
     // طباعة الـ token (اختياري)
-    // final token = await FirebaseMessaging.instance.getToken();
-    // print("📲 FCM Token: $token");
+    final token = await FirebaseMessaging.instance.getToken();
+    print("📲 FCM Token: $token");
     // رسائل الخلفية
-    // FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
-    //
-    // // رسائل foreground
-    // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    //   if (message.notification != null) {
-    //     final imageUrl =
-    //         message.data['imageUrl'] ?? message.notification!.android?.imageUrl;
-    //
-    //     notificationService.showNotification(
-    //       title: message.notification!.title,
-    //       body: message.notification!.body,
-    //       imageUrl: imageUrl,
-    //     );
-    //   }
-    // });
+    FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
+
+    // رسائل foreground
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        final imageUrl =
+            message.data['imageUrl'] ?? message.notification!.android?.imageUrl;
+
+        notificationService.showNotification(
+          title: message.notification!.title,
+          body: message.notification!.body,
+          imageUrl: imageUrl,
+        );
+      }
+    });
     print("+++++");
     runApp(const MyApp());
   }catch(e) {
