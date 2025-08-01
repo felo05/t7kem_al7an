@@ -52,7 +52,7 @@ class _ChurchDetailsScreenState extends State<ChurchDetailsScreen> {
   }
 
   String _formatCollectionName(String collection) {
-    String name = collection.replaceAll('Results', '');
+    String name = collection.replaceAll('ResultsFinal', '');
     switch (name) {
       case 'kg1':
         return 'حضانة المستوى الأول';

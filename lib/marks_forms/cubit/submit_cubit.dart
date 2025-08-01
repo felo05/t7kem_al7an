@@ -92,7 +92,7 @@ class SubmitCubit extends Cubit<SubmitState> {
 
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
-          .collection(isKg ? "kg1Results" : "oulaTanya1Results")
+          .collection(isKg ? "kg1ResultsFinal" : "oulaTanya1ResultsFinal")
           .add(estmara);
     } catch (e) {
       emit(SubmitFailure(e.toString()));
@@ -202,7 +202,7 @@ class SubmitCubit extends Cubit<SubmitState> {
 
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
-          .collection(isKg ? "kg2Results" : "oulaTanya2Results")
+          .collection(isKg ? "kg2ResultsFinal" : "oulaTanya2ResultsFinal")
           .add(estmara);
     } catch (e) {
       emit(SubmitFailure(e.toString()));
@@ -341,7 +341,7 @@ class SubmitCubit extends Cubit<SubmitState> {
 
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
-          .collection(isTalta ? "taltaRaba1Results" : "khamsaSadsa1Results")
+          .collection(isTalta ? "taltaRaba1ResultsFinal" : "khamsaSadsa1ResultsFinal")
           .add(estmara);
     } catch (e) {
       emit(SubmitFailure(e.toString()));
@@ -512,7 +512,7 @@ class SubmitCubit extends Cubit<SubmitState> {
 
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
-          .collection(isTalta ? "taltaRaba2Results" : "khamsaSadsa2Results")
+          .collection(isTalta ? "taltaRaba2ResultsFinal" : "khamsaSadsa2ResultsFinal")
           .add(estmara);
     } catch (e) {
       emit(SubmitFailure(e.toString()));
@@ -616,12 +616,12 @@ class SubmitCubit extends Cubit<SubmitState> {
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
           .collection(level == 0
-              ? "kgFResults"
+              ? "kgFResultsFinal"
               : level == 1
-                  ? "oulaTanyaFResults"
+                  ? "oulaTanyaFResultsFinal"
                   : level == 2
-                      ? "taltaRabaFResults"
-                      : "khamsaSadsaFResults")
+                      ? "taltaRabaFResultsFinal"
+                      : "khamsaSadsaFResultsFinal")
           .add(estmara);
     } catch (e) {
       emit(SubmitFailure(e.toString()));
@@ -750,12 +750,12 @@ class SubmitCubit extends Cubit<SubmitState> {
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
       await fireStore
           .collection(level == 0
-              ? "kgGResults"
+              ? "kgGResultsFinal"
               : level == 1
-                  ? "oulaTanyaGResults"
+                  ? "oulaTanyaGResultsFinal"
                   : level == 2
-                      ? "taltaRabaGResults"
-                      : "khamsaSadsaGResults")
+                      ? "taltaRabaGResultsFinal"
+                      : "khamsaSadsaGResultsFinal")
           .add(estmara);
     } catch (e) {
       emit(SubmitFailure(e.toString()));

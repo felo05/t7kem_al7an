@@ -24,7 +24,7 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
     'الإثنين',
     'الثلاثاء',
     'الخميس',
-    'السبت (النهائي)'
+    'النهائي'
   ];
 
   // Selected items lists
@@ -727,9 +727,9 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
       'الأربعاء': 'wednesday',
       'الخميس': 'thursday',
       'الجمعة': 'friday',
-      'السبت (النهائي)': 'saturday',
+      'النهائي': 'final',
     };
-    return dayMapping[arabicDay] ?? 'saturday';
+    return dayMapping[arabicDay] ?? 'final';
   }
   
   void _clearForm() {

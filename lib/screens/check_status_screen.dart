@@ -3,7 +3,12 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:saver_gallery/saver_gallery.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'church_details_screen.dart';
 
@@ -21,22 +26,22 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
 
   // Collection names for the 16 stat cards
   final List<String> _collections = [
-    'kg1Results',
-    'kg2Results',
-    'kgGResults',
-    'kgFResults',
-    'oulaTanya1Results',
-    'oulaTanya2Results',
-    'oulaTanyaGResults',
-    'oulaTanyaFResults',
-    'taltaRaba1Results',
-    'taltaRaba2Results',
-    'taltaRabaGResults',
-    'taltaRabaFResults',
-    'khamsaSadsa1Results',
-    'khamsaSadsa2Results',
-    'khamsaSadsaGResults',
-    'khamsaSadsaFResults',
+    'kg1ResultsFinal',
+    'kg2ResultsFinal',
+    'kgGResultsFinal',
+    'kgFResultsFinal',
+    'oulaTanya1ResultsFinal',
+    'oulaTanya2ResultsFinal',
+    'oulaTanyaGResultsFinal',
+    'oulaTanyaFResultsFinal',
+    'taltaRaba1ResultsFinal',
+    'taltaRaba2ResultsFinal',
+    'taltaRabaGResultsFinal',
+    'taltaRabaFResultsFinal',
+    'khamsaSadsa1ResultsFinal',
+    'khamsaSadsa2ResultsFinal',
+    'khamsaSadsaGResultsFinal',
+    'khamsaSadsaFResultsFinal',
   ];
 
   // Store the maximum document data for each collection
@@ -109,16 +114,22 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
 
           // Calculate average total for this church
           double totalSum = 0;
+          int validDocs = 0;
           for (var doc in documents) {
-            totalSum += (doc['percent'] as num).toDouble();
+            final percent = (doc['percent'] as num?)?.toDouble() ?? 0;
+            if (percent > 0) {
+              totalSum += percent;
+              validDocs++;
+            }
           }
-          double average = totalSum / documents.length;
-
-          if (average > highestAverage) {
-            highestAverage = average;
-            topChurch = churchName;
-            topData =
-                documents.first['data']; // Use first document data as reference
+          
+          if (validDocs > 0) {
+            double average = totalSum / validDocs;
+            if (average > highestAverage) {
+              highestAverage = average;
+              topChurch = churchName;
+              topData = documents.first['data']; // Use first document data as reference
+            }
           }
         }
 
@@ -128,7 +139,11 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
           'church': topChurch,
           'data': topData,
           'churchGroups': churchGroups,
+          'hasValidData': highestAverage > 0,
         };
+        
+        // Debug print to see what data we have
+        print('Collection $collectionName: churches=${churchGroups.keys.toList()}, topChurch=$topChurch, average=$highestAverage');
       } else {
         _collectionMaxData[collectionName] = {
           'docId': 'No Data',
@@ -150,6 +165,250 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
     }
   }
 
+  Future<void> _exportToPDF() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Load images from assets
+      final Uint8List logo1 = await rootBundle.load('assets/images/logo.png').then((data) => data.buffer.asUint8List());
+      final Uint8List logo2 = await rootBundle.load('assets/images/logo2.jpg').then((data) => data.buffer.asUint8List());
+
+      // Load Arabic font using Google Fonts
+      final arabicFont = await PdfGoogleFonts.notoSansArabicRegular();
+      final arabicBoldFont = await PdfGoogleFonts.notoSansArabicBold();
+
+      final pdf = pw.Document();
+
+      for (String collection in _collections) {
+        final data = _collectionMaxData[collection];
+        final displayName = _formatCollectionName(collection);
+        print(data); // Debug print to see the data structure
+        
+        // Debug print to see what data we have for PDF export
+        print('PDF Export - Collection: $collection, hasData: ${data != null}, hasValidData: ${data?['hasValidData']}, church: ${data?['church']}, percent: ${data?['percent']}');
+        
+        // Determine how many churches to show
+        List<String> topChurches = [];
+        if (collection.contains('1') || collection.contains('2')) {
+          // For levels ending in 1 or 2, show only the highest scoring church
+          if (data != null && data['hasValidData'] == true && data['church'] != null) {
+            topChurches.add(data['church']);
+            print('Top church for $collection: ${data['church']} with average ${data['percent']}');
+          }
+        } else if (collection.contains('G') || collection.contains('F')) {
+          // For levels ending in G or F, show top 2 churches
+          if (data != null && data['churchGroups'] != null) {
+            final churchGroups = data['churchGroups'] as Map<String, List<Map<String, dynamic>>>;
+            
+            // Calculate averages and sort
+            List<MapEntry<String, double>> churchAverages = [];
+            for (var entry in churchGroups.entries) {
+              final churchName = entry.key;
+              final documents = entry.value;
+              
+              // Only exclude if church name is explicitly error messages, allow 'غير محدد'
+              if (churchName != 'لا توجد بيانات' && churchName != 'خطأ في التحميل' && churchName.isNotEmpty) {
+                double totalSum = 0;
+                int validDocs = 0;
+                for (var doc in documents) {
+                  final percent = (doc['percent'] as num?)?.toDouble() ?? 0;
+                  if (percent > 0) {
+                    totalSum += percent;
+                    validDocs++;
+                  }
+                }
+                if (validDocs > 0) {
+                  double average = totalSum / validDocs;
+                  churchAverages.add(MapEntry(churchName, average));
+                }
+              }
+            }
+            
+            churchAverages.sort((a, b) => b.value.compareTo(a.value));
+            topChurches = churchAverages.take(2).map((e) => e.key).toList();
+          }
+        }
+        
+        print('PDF Export - Collection: $collection, topChurches: $topChurches');
+
+        // Create PDF page for this level
+        pdf.addPage(
+          pw.Page(
+            pageFormat: PdfPageFormat.a4,
+            build: (pw.Context context) {
+              return pw.Directionality(
+                textDirection: pw.TextDirection.rtl,
+                child: pw.Container(
+                  padding: const pw.EdgeInsets.all(20),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    children: [
+                      // Header with logos
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Image(pw.MemoryImage(logo1), width: 100, height: 100),
+                          pw.Expanded(
+                            child: pw.Column(
+                              children: [
+                                pw.Text(
+                                  "نتائج مسابقة الألحان والتسبحة",
+                                  style: pw.TextStyle(
+                                    font: arabicBoldFont,
+                                    fontSize: 24,
+                                    fontWeight: pw.FontWeight.bold,
+                                  ),
+                                  textAlign: pw.TextAlign.center,
+                                ),
+                                pw.SizedBox(height: 10),
+                                pw.Text(
+                                  'المصعدين',
+                                  style: pw.TextStyle(
+                                    font: arabicFont,
+                                    fontSize: 18,
+                                    fontWeight: pw.FontWeight.normal,
+                                  ),
+                                  textAlign: pw.TextAlign.center,
+                                ),                              ],
+                            ),
+                          ),
+                          pw.Image(pw.MemoryImage(logo2), width: 100, height: 100),
+                        ],
+                      ),
+                      
+                      pw.SizedBox(height: 40),
+                      
+                      // Level name
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        decoration: pw.BoxDecoration(
+                          color: PdfColors.green100,
+                          borderRadius: pw.BorderRadius.circular(10),
+                          border: pw.Border.all(color: PdfColors.green300),
+                        ),
+                        child: pw.Text(
+                          displayName,
+                          style: pw.TextStyle(
+                            font: arabicBoldFont,
+                            fontSize: 20,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.green800,
+                          ),
+                          textAlign: pw.TextAlign.center,
+                        ),
+                      ),
+                      
+                      pw.SizedBox(height: 40),
+                      
+                      // Churches list
+                      if (topChurches.isNotEmpty) ...[
+                        
+                        ...topChurches.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          String churchName = entry.value;
+                          
+                          return pw.Container(
+                            margin: const pw.EdgeInsets.only(bottom: 15),
+                            padding: const pw.EdgeInsets.all(15),
+                            decoration: pw.BoxDecoration(
+                              color: index == 0 ? PdfColors.amber100 : PdfColors.grey100,
+                              borderRadius: pw.BorderRadius.circular(10),
+                              border: pw.Border.all(
+                                color: index == 0 ? PdfColors.amber300 : PdfColors.grey300,
+                                width: 2,
+                              ),
+                            ),
+                            child: pw.Row(
+                              children: [
+                                pw.Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: pw.BoxDecoration(
+                                    color: index == 0 ? PdfColors.amber : PdfColors.grey400,
+                                    borderRadius: pw.BorderRadius.circular(20),
+                                  ),
+                                  child: pw.Center(
+                                    child: pw.Text(
+                                      '${index + 1}',
+                                      style: pw.TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: pw.FontWeight.bold,
+                                        color: PdfColors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                pw.SizedBox(width: 20),
+                                pw.Expanded(
+                                  child: pw.Text(
+                                    churchName,
+                                    style: pw.TextStyle(
+                                      font: index == 0 ? arabicBoldFont : arabicFont,
+                                      fontSize: 16,
+                                      fontWeight: index == 0 ? pw.FontWeight.bold : pw.FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ] else ...[
+                        pw.Container(
+                          padding: const pw.EdgeInsets.all(20),
+                          decoration: pw.BoxDecoration(
+                            color: PdfColors.red100,
+                            borderRadius: pw.BorderRadius.circular(10),
+                            border: pw.Border.all(color: PdfColors.red300),
+                          ),
+                          child: pw.Text(
+                            'لا توجد بيانات متاحة لهذا المستوى',
+                            style: pw.TextStyle(
+                              font: arabicFont,
+                              fontSize: 16,
+                              color: PdfColors.red800,
+                            ),
+                            textAlign: pw.TextAlign.center,
+                          ),
+                        ),
+                      ],
+                      
+                      pw.Spacer(),
+                      
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      }
+
+      // Show PDF preview and save options
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+        name: 'Church_Competition_Results_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      );
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('خطأ في تصدير PDF: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -166,6 +425,11 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
         centerTitle: true,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            onPressed: _isLoading ? null : _exportToPDF,
+            tooltip: 'تصدير النتائج كـ PDF',
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadData,
@@ -294,7 +558,7 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
 
   String _formatCollectionName(String collection) {
     // Remove "Results" and format the name
-    String name = collection.replaceAll('Results', '');
+    String name = collection.replaceAll('ResultsFinal', '');
     switch (name) {
       case 'kg1':
         return 'حضانة المستوى الأول';
@@ -976,7 +1240,7 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
   }
 
   String _formatCollectionName(String collection) {
-    String name = collection.replaceAll('Results', '');
+    String name = collection.replaceAll('ResultsFinal', '');
     switch (name) {
       case 'kg1': return 'حضانة المستوى الأول';
       case 'kg2': return 'حضانة المستوى الثاني';
@@ -1053,7 +1317,7 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
 
   Future<void> _saveToFirestore() async {
     try {
-      String baseCollectionName = widget.collectionName.replaceAll('Results', '');
+      String baseCollectionName = widget.collectionName.replaceAll('ResultsFinal', '');
       DocumentReference docRef = FirebaseFirestore.instance
           .collection(baseCollectionName)
           .doc('final');

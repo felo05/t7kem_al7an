@@ -35,22 +35,22 @@ def initialize_firebase():
 
 # Collection names for results
 COLLECTIONS = [
-    'kg1Results',
-    'kg2Results', 
-    'kgGResults',
-    'kgFResults',
-    'oulaTanya1Results',
-    'oulaTanya2Results',
-    'oulaTanyaGResults',
-    'oulaTanyaFResults',
-    'taltaRaba1Results',
-    'taltaRaba2Results',
-    'taltaRabaGResults',
-    'taltaRabaFResults',
-    'khamsaSadsa1Results',
-    'khamsaSadsa2Results',
-    'khamsaSadsaGResults',
-    'khamsaSadsaFResults',
+    'kg1ResultsFinal',
+    'kg2ResultsFinal', 
+    'kgGResultsFinal',
+    'kgFResultsFinal',
+    'oulaTanya1ResultsFinal',
+    'oulaTanya2ResultsFinal',
+    'oulaTanyaGResultsFinal',
+    'oulaTanyaFResultsFinal',
+    'taltaRaba1ResultsFinal',
+    'taltaRaba2ResultsFinal',
+    'taltaRabaGResultsFinal',
+    'taltaRabaFResultsFinal',
+    'khamsaSadsa1ResultsFinal',
+    'khamsaSadsa2ResultsFinal',
+    'khamsaSadsaGResultsFinal',
+    'khamsaSadsaFResultsFinal',
 ]
 
 # Sample church names (Arabic)
