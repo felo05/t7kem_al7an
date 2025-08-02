@@ -713,6 +713,7 @@ class SubmitCubit extends Cubit<SubmitState> {
         Al7an.ro7ania: controllers1[4].text,
         Al7an.taks: bool1[0],
         Al7an.df: bool1[1],
+        Al7an.treanto: bool1[2],
       };
       estmara[al7anList[1]] = {
         Al7an.tslem: controllers2[0].text,
@@ -722,6 +723,7 @@ class SubmitCubit extends Cubit<SubmitState> {
         Al7an.ro7ania: controllers2[4].text,
         Al7an.taks: bool2[0],
         Al7an.df: bool2[1],
+        Al7an.treanto: bool2[2],
       };
       estmara[al7anList[2]] = {
         Al7an.tslem: controllers3[0].text,
@@ -731,14 +733,15 @@ class SubmitCubit extends Cubit<SubmitState> {
         Al7an.ro7ania: controllers3[4].text,
         Al7an.taks: bool3[0],
         Al7an.df: bool3[1],
+        Al7an.treanto: bool3[2],
       };
 
       sum += bool1[0] ? 1 : 0;
       sum += bool1[1] ? .5 : 0;
-      sum += bool1[3] ? .5 : 0;
+      sum += bool1[2] ? .5 : 0;
       sum += bool2[0] ? 1 : 0;
       sum += bool2[1] ? .5 : 0;
-      sum += bool2[3] ? .5 : 0;
+      sum += bool2[2] ? .5 : 0;
 
       sum *= factor;
       sum += double.tryParse(slokController.text) ?? 10;

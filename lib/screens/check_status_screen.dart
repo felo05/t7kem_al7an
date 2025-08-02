@@ -8,7 +8,6 @@ import 'package:saver_gallery/saver_gallery.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'church_details_screen.dart';
 
