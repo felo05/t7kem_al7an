@@ -47,31 +47,30 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC70pXzSZobYtIEu_wZSJQptKfTs3L7WzA',
-    appId: '1:364367652354:android:d997b2e38578fb4745a91b',
-    messagingSenderId: '364367652354',
-    projectId: 't7kem-al7an',
-    storageBucket: 't7kem-al7an.firebasestorage.app',
+    apiKey: 'AIzaSyCgauejgFyJdK-UtvK3mKc7M7lnjs6-cu4',
+    appId: '1:71530923889:android:0e3915f5886ccb7de298d0',
+    messagingSenderId: '71530923889',
+    projectId: 't7kem-al7an-c4a5f',
+    storageBucket: 't7kem-al7an-c4a5f.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCzvR6ND-VfP72f3YG0CgoA6TdebHBMR44',
-    appId: '1:364367652354:ios:da480f3677bbe91345a91b',
-    messagingSenderId: '364367652354',
-    projectId: 't7kem-al7an',
-    storageBucket: 't7kem-al7an.firebasestorage.app',
+    apiKey: 'AIzaSyDoGUyeWmu4VN8bgFozQPrbLP7FbJSU2TI',
+    appId: '1:71530923889:ios:1e66dec02301fbc8e298d0',
+    messagingSenderId: '71530923889',
+    projectId: 't7kem-al7an-c4a5f',
+    storageBucket: 't7kem-al7an-c4a5f.firebasestorage.app',
     iosBundleId: 'com.example.t7kemAl7an',
   );
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: "AIzaSyDt_o8MLpbri4m1s_M7Uks9-OylsLll14o",
-    authDomain: "t7kem-al7an.firebaseapp.com",
-    projectId: "t7kem-al7an",
-    storageBucket: "t7kem-al7an.firebasestorage.app",
-    messagingSenderId: "364367652354",
-    appId: "1:364367652354:web:fc70e4767aa4d7f345a91b",
-    measurementId: "G-Y61QGXNK3W",
+    apiKey: 'AIzaSyCgRCPtP7JazOJSCGx6i4jwYTJ_9M0lx-I',
+    appId: '1:71530923889:web:1b30c5f35535953de298d0',
+    messagingSenderId: '71530923889',
+    projectId: 't7kem-al7an-c4a5f',
+    authDomain: 't7kem-al7an-c4a5f.firebaseapp.com',
+    storageBucket: 't7kem-al7an-c4a5f.firebasestorage.app',
+    measurementId: 'G-GRE9ZWZZFD',
   );
-
 
 }

@@ -2,12 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:t7kem_al7an/authentication/auth_screen.dart';
-import 'churches/cubit/churches_cubit.dart';
+import 'package:t7kem_al7an/features/splash_screen/splash_screen.dart';
+import 'core/notification/notification_service.dart';
+import 'core/services/storage_service.dart';
 import 'firebase_options.dart';
-import 'marks_forms/cubit/submit_cubit.dart';
-import 'notification/notification_service.dart';
 
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
   await Firebase.initializeApp(
@@ -20,36 +18,27 @@ Future<void> handleBackgroundMessage(RemoteMessage message) async {
 
 void main() async {
   try{
-    print("+");
     WidgetsFlutterBinding.ensureInitialized();
+
+    await StorageService().init();
 
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    print("++");
 
     FirebaseFirestore.instance.settings = const Settings(
       persistenceEnabled: true,
       cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
     );
-    print("+++");
+
     final NotificationService notificationService = NotificationService();
     await notificationService.initialize();
 
-    // طلب إذن الإشعارات
     await FirebaseMessaging.instance.requestPermission();
 
-    // الاشتراك في topic عام
-    //await FirebaseMessaging.instance.subscribeToTopic("all_users");
-    print("++++");
-
-    // طباعة الـ token (اختياري)
-    final token = await FirebaseMessaging.instance.getToken();
-    print("📲 FCM Token: $token");
-    // رسائل الخلفية
+    FirebaseMessaging.instance.getToken();
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
 
-    // رسائل foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
         final imageUrl =
@@ -62,7 +51,6 @@ void main() async {
         );
       }
     });
-    print("+++++");
     runApp(const MyApp());
   }catch(e) {
     print("========================================================");
@@ -75,24 +63,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => SubmitCubit(),
-        ),
-        BlocProvider(
-        create: (context) => ChurchesCubit()..getChurches(),
-        )
-      ],
-      child: MaterialApp(
-        builder: (context, child) =>
-            Directionality(
-              textDirection: TextDirection.rtl,
-              child: child ?? const SizedBox.shrink(),
-            ),
-        debugShowCheckedModeBanner: false,
-        home: const AuthScreen(),
-      ),
+    return MaterialApp(
+      builder: (context, child) =>
+          Directionality(
+            textDirection: TextDirection.rtl,
+            child: child ?? const SizedBox.shrink(),
+          ),
+      debugShowCheckedModeBanner: false,
+      home: const SplashScreen(),
     );
   }
 }
