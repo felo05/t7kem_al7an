@@ -4,6 +4,8 @@ import 'package:t7kem_al7an/features/authentication/user.dart';
 class StorageService {
   static const String _boxName = 'user_cache';
   static const String _userKey = 'user';
+  static const String _formImagePathsKey = 'form_image_paths';
+  static const String _formImagePathsValueKey = 'paths';
   User? user;
 
   StorageService._();
@@ -51,6 +53,26 @@ class StorageService {
     final box = await _getBox();
     user = null;
     await box.delete(_userKey);
+  }
+
+
+  Future<void> addFormImagePath(String path) async {
+    final box = await _getBox();
+    final data = box.get(_formImagePathsKey);
+    final List<String> paths = data == null
+        ? <String>[]
+        : List<String>.from((data)[_formImagePathsValueKey] as List? ?? const []);
+    paths.add(path);
+    await box.put(_formImagePathsKey, {_formImagePathsValueKey: paths});
+  }
+
+  Future<List<String>> getFormImagePaths() async {
+    final box = await _getBox();
+    final data = box.get(_formImagePathsKey);
+    if (data == null) {
+      return const [];
+    }
+    return List<String>.from((data)[_formImagePathsValueKey] as List? ?? const []);
   }
 
   Future<Box<Map>> _getBox() async {
