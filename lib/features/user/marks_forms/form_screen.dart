@@ -14,21 +14,28 @@ import 'base_marks_form.dart';
 import 'cubit/submit_cubit.dart';
 
 class FormScreen extends StatefulWidget {
-  const FormScreen({super.key, required this.form, required this.user});
+  const FormScreen({
+    super.key,
+    required this.form,
+    this.user,
+    this.judgeName,
+    this.captureOnSubmit = true,
+    this.editCollectionName,
+    this.editDocumentId,
+  });
 
   final BaseMarksFormModel form;
-  final User user;
+  final User? user;
+  final String? judgeName;
+  final bool captureOnSubmit;
+  final String? editCollectionName;
+  final String? editDocumentId;
 
   @override
   State<FormScreen> createState() => _FormScreenState();
 }
 
 class _FormScreenState extends State<FormScreen> {
-  @override
-  void dispose() {
-    widget.form.dispose();
-    super.dispose();
-  }
 
   Future<String?> _captureAndSaveFormImage() async {
     if (!mounted) {
@@ -36,9 +43,6 @@ class _FormScreenState extends State<FormScreen> {
     }
 
     final overlay = Overlay.of(context);
-    if (overlay == null) {
-      return null;
-    }
 
     final captureKey = GlobalKey();
     final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
@@ -127,7 +131,7 @@ class _FormScreenState extends State<FormScreen> {
       }
 
       final fileName =
-          '${widget.form.churchName}_${DateTime.now().millisecondsSinceEpoch}.png';
+          '${widget.form.churchName}_${widget.user?.name}_${DateTime.now().millisecondsSinceEpoch}.png';
       final filePath = '${formsDir.path}${Platform.pathSeparator}$fileName';
       final file = File(filePath);
       await file.writeAsBytes(pngBytes, flush: true);
@@ -164,17 +168,57 @@ class _FormScreenState extends State<FormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.form.levelInArabic,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500)),
+        title: Text(
+          widget.form.levelInArabic,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         centerTitle: true,
+        backgroundColor: Colors.orange.shade700,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.orange.shade700,
+              Colors.orange.shade50,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            ),
             child: Column(
               children: [
-                widget.form.view(),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: widget.form.view(),
+                ),
                 const SizedBox(height: 20),
                 BlocProvider(
                   create: (context) => SubmitCubit(),
@@ -182,29 +226,114 @@ class _FormScreenState extends State<FormScreen> {
                     listener: (context, state) {
                       if (state is SubmitSuccess) {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text("تم تسليم الاستمارة بنجاح!"),
-                          backgroundColor: Colors.green,
-                        ));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("تم تسليم الاستمارة بنجاح!"),
+                            backgroundColor: Colors.green,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
                       } else if (state is SubmitFailure) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(state.error),
-                          backgroundColor: Colors.red,
-                        ));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.error),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
                       }
                     },
                     builder: (context, state) {
                       if (state is SubmitLoading) {
-                        return const CircularProgressIndicator();
+                        return Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                          child: const SizedBox(
+                            height: 50,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ),
+                        );
                       }
-                      return MarksFormFields.submitButton(
-                        onPressed: () async {
-                          _captureAndSaveFormImage();
-                          if (widget.form.validate()) {
-                            await context.read<SubmitCubit>().submitForm(
-                              () => widget.form.submit(widget.user.name));
-                          }
-                        },
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange.shade700,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 4,
+                          ),
+                          onPressed: () async {
+                            if (widget.captureOnSubmit) {
+                              await _captureAndSaveFormImage();
+                            }
+                            if (widget.form.validate()) {
+                              final judgeName =
+                                  widget.judgeName ?? widget.user?.name;
+                              if (judgeName == null) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(const SnackBar(
+                                  content: Text('برجاء تحديد اسم المحكم'),
+                                  backgroundColor: Colors.red,
+                                ));
+                                return;
+                              }
+                              if (widget.editCollectionName != null &&
+                                  widget.editDocumentId != null) {
+                                await context.read<SubmitCubit>().submitForm(() =>
+                                    widget.form.editSubmit(
+                                        collectionName: widget.editCollectionName!,
+                                        documentId: widget.editDocumentId!,
+                                        judgeName: judgeName));
+                                return;
+                              }
+                              await context.read<SubmitCubit>().submitForm(
+                                  () => widget.form.submit(judgeName));
+                            }
+                          },
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.check_circle, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'تسليم الاستمارة',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     },
                   ),

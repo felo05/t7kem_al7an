@@ -436,6 +436,8 @@ class _CheckStatusScreenState extends State<CheckStatusScreen>
         ],
       ),
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -776,6 +778,8 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen> {
               ],
       ),
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -1046,62 +1050,76 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          "الكنائس المحددة",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.green.shade700,
+        foregroundColor: Colors.white,
+        centerTitle: true,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         controller: ScrollController(),
-        child: RepaintBoundary(
-          key: _globalKey,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.green.shade700,
-                  Colors.green.shade50,
-                ],
-              ),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.green.shade700,
+                Colors.green.shade50,
+              ],
             ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Column(
-                  children: [
-                    _buildCertificateDesign(),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isLoading ? null : _saveToGalleryAndFirestore,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade700,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 4,
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                children: [
+                  RepaintBoundary(
+                      key: _globalKey,
+                      child: _buildCertificateDesign()
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _isLoading ? null : _saveToGalleryAndFirestore,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade700,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        icon: _isLoading
-                            ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                            : const Icon(Icons.save),
-                        label: Text(
-                          _isLoading ? 'جاري الحفظ...' : 'حفظ في المعرض وإضافة للمجموعات',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        elevation: 4,
+                      ),
+                      icon: _isLoading
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : const Icon(Icons.save),
+                      label: Text(
+                        _isLoading ? 'جاري الحفظ...' : 'حفظ في المعرض وإضافة للمجموعات',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -1220,8 +1238,10 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
                         ),
                         child: Text(
                           widget.selectedChurches[index],
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: Colors.grey.shade800,
                           ),
@@ -1266,13 +1286,13 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
 
     try {
       await _captureAndSave();
-      await _saveToFirestore();
+      // await _saveToFirestore();
       setState(() => _isLoading = false);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('تم حفظ الكنائس المختارة في المعرض والمجموعات بنجاح!'),
+            content: Text('تم حفظ الكنائس المختارة في المعرض بنجاح!'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 3),
           ),
@@ -1314,23 +1334,5 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
     }
   }
 
-  Future<void> _saveToFirestore() async {
-    try {
-      String baseCollectionName = widget.collectionName.replaceAll('ResultsFinal', '');
-      DocumentReference docRef = FirebaseFirestore.instance
-          .collection(baseCollectionName)
-          .doc('final');
-
-      await docRef.set({
-        'day': 'final',
-        'churches': widget.selectedChurches,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    } catch (e) {
-      print('Error saving to Firestore: $e');
-      rethrow;
-    }
-  }
 }
 

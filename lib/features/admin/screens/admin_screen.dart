@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:t7kem_al7an/features/admin/screens/judges_screen.dart';
+import 'package:t7kem_al7an/features/authentication/auth_screen.dart';
+import '../../../core/services/storage_service.dart';
 import 'add_church_screen.dart';
 import 'assign_judge_screen.dart';
 import 'check_status_screen.dart';
+import 'push_notifications_screen.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
@@ -25,6 +28,17 @@ class AdminScreen extends StatelessWidget {
         backgroundColor: Colors.blue.shade700,
         centerTitle: true,
         elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () {
+              StorageService.instance.deleteUser();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => const AuthScreen()),
+              );
+            },
+            icon: const Icon(Icons.logout, color: Colors.white, size: 24),
+          )
+        ],
       ),
       body: Container(
         height: MediaQuery.sizeOf(context).height,
@@ -98,6 +112,20 @@ class AdminScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => const CheckStatusScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    _buildAdminButton(
+                      context,
+                      icon: Icons.notifications_active,
+                      title: 'إرسال إشعارات',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PushNotificationsScreen(),
                           ),
                         );
                       },

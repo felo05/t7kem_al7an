@@ -13,13 +13,49 @@ enum MarksFormKind {
   mohobenGroup,
 }
 
+TextEditingController _textControllerFrom(dynamic value) {
+  return TextEditingController(text: value?.toString() ?? '');
+}
+
+Map<String, dynamic> _mapValue(dynamic value) {
+  return value is Map<String, dynamic> ? value : <String, dynamic>{};
+}
+
+bool _parseBoolValue(dynamic value) {
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  if (value is String) {
+    final normalized = value.trim().toLowerCase();
+    return normalized == 'true' || normalized == '1' || normalized == 'yes';
+  }
+  return false;
+}
+
+List<TextEditingController> _controllersForCategory(
+  Map<String, dynamic> data,
+  String hymnKey,
+  List<String> scoreKeys,
+) {
+  final category = _mapValue(data[hymnKey]);
+  return scoreKeys.map((key) => _textControllerFrom(category[key])).toList();
+}
+
+List<bool> _boolsForCategory(
+  Map<String, dynamic> data,
+  String hymnKey,
+  List<String> boolKeys,
+) {
+  final category = _mapValue(data[hymnKey]);
+  return boolKeys.map((key) => _parseBoolValue(category[key])).toList();
+}
+
 abstract class BaseMarksFormModel {
   BaseMarksFormModel({
 	this.churchName,
 	required this.levelInArabic,
   });
 
-  late final String? churchName;
+  String? churchName;
   final String levelInArabic;
 
   Widget view();
@@ -33,6 +69,24 @@ abstract class BaseMarksFormModel {
 	  churchName = name;
 	  return this;
 	}
+
+  Future<bool> editSubmit({
+	required String collectionName,
+	required String documentId,
+	required String judgeName,
+  }) async {
+	try {
+	  final payload = buildPayload(judgeName);
+	  await FirebaseFirestore.instance
+		  .collection(collectionName)
+		  .doc(documentId)
+		  .update(payload);
+	} catch (e) {
+	  print("Error submitting form: $e");
+	  return false;
+	}
+	return true;
+  }
 
   Widget _churchHeader() {
 	return Text(
@@ -205,6 +259,42 @@ class Kg1FormModel extends BaseMarksFormModel {
 		}
     return true;
   }
+
+  static Kg1FormModel fromJson(
+	Map<String, dynamic> data, {
+	required bool isKg,
+	required String levelInArabic,
+  }) {
+	final al7anList = isKg ? Al7an.kg1 : Al7an.ola1;
+	return Kg1FormModel(
+	  churchName: data['churchName']?.toString(),
+	  levelInArabic: levelInArabic,
+	  isKg: isKg,
+	  al7anList: al7anList,
+	  controllers1: _controllersForCategory(
+		data,
+		al7anList[0].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+	  ),
+	  controllers2: _controllersForCategory(
+		data,
+		al7anList[1].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+	  ),
+	  controllers3: _controllersForCategory(
+		data,
+		al7anList[2].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+	  ),
+	  controllers4: _controllersForCategory(
+		data,
+		al7anList[3].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+	  ),
+	  totalController: _textControllerFrom(data['kidsTotal']),
+	  slokController: _textControllerFrom(data['slok'] ?? 10),
+	);
+  }
 }
 
 class Kg2FormModel extends BaseMarksFormModel {
@@ -365,6 +455,52 @@ class Kg2FormModel extends BaseMarksFormModel {
 		.collection(isKg ? "kg2ResultsFinal" : "oulaTanya2ResultsFinal")
 		.add(payload);
 	return true;
+  }
+
+  static Kg2FormModel fromJson(
+	Map<String, dynamic> data, {
+	required bool isKg,
+	required String levelInArabic,
+  }) {
+	final al7anList = isKg ? Al7an.kg2 : Al7an.ola2;
+	return Kg2FormModel(
+	  churchName: data['churchName']?.toString(),
+	  levelInArabic: levelInArabic,
+	  isKg: isKg,
+	  al7anList: al7anList,
+	  controllers1: _controllersForCategory(
+		data,
+		al7anList[0].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+	  ),
+	  controllers2: _controllersForCategory(
+		data,
+		al7anList[1].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+	  ),
+	  controllers3: _controllersForCategory(
+		data,
+		al7anList[2].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+	  ),
+	  controllers4: _controllersForCategory(
+		data,
+		al7anList[3].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+	  ),
+	  controllers5: _controllersForCategory(
+		data,
+		al7anList[4].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+	  ),
+	  controllers6: _controllersForCategory(
+		data,
+		al7anList[5].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+	  ),
+	  totalController: _textControllerFrom(data['kidsTotal']),
+	  slokController: _textControllerFrom(data['slok'] ?? 10),
+	);
   }
 }
 
@@ -583,6 +719,64 @@ class Talta1FormModel extends BaseMarksFormModel {
 			.collection(isTalta ? "taltaRaba1ResultsFinal" : "khamsaSadsa1ResultsFinal")
 			.add(payload);
 	return true;
+  }
+
+  static Talta1FormModel fromJson(
+	Map<String, dynamic> data, {
+	required bool isTalta,
+	required String levelInArabic,
+  }) {
+	final al7anList = isTalta ? Al7an.talta1 : Al7an.khamsa1;
+	return Talta1FormModel(
+	  churchName: data['churchName']?.toString(),
+	  levelInArabic: levelInArabic,
+	  isTalta: isTalta,
+	  al7anList: al7anList,
+	  controllers1: _controllersForCategory(
+		data,
+		al7anList[0].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+	  ),
+	  controllers2: _controllersForCategory(
+		data,
+		al7anList[1].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+	  ),
+	  controllers3: _controllersForCategory(
+		data,
+		al7anList[2].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+	  ),
+	  controllers4: _controllersForCategory(
+		data,
+		al7anList[3].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+	  ),
+	  bool1: _boolsForCategory(
+		data,
+		al7anList[0].name,
+		[Al7an.df, Al7an.treanto, Al7an.hzat],
+	  ),
+	  bool2: _boolsForCategory(
+		data,
+		al7anList[1].name,
+		[Al7an.df, Al7an.treanto, Al7an.hzat],
+	  ),
+	  bool3: _boolsForCategory(
+		data,
+		al7anList[2].name,
+		[Al7an.df, Al7an.treanto, Al7an.hzat],
+	  ),
+	  bool4: _boolsForCategory(
+		data,
+		al7anList[3].name,
+		[Al7an.df, Al7an.treanto, Al7an.hzat],
+	  ),
+	  totalController: _textControllerFrom(data['kidsTotal']),
+	  copticReadingController: _textControllerFrom(data['copticReading']),
+	  taksController: _textControllerFrom(data['taks']),
+	  slokController: _textControllerFrom(data['slok'] ?? 10),
+	);
   }
 }
 
@@ -841,6 +1035,83 @@ class Talta2FormModel extends BaseMarksFormModel {
 		.add(payload);
 	return true;
   }
+
+  static Talta2FormModel fromJson(
+	Map<String, dynamic> data, {
+	required bool isTalta,
+	required String levelInArabic,
+  }) {
+	final al7anList = isTalta ? Al7an.talta2 : Al7an.khamsa2;
+	return Talta2FormModel(
+	  churchName: data['churchName']?.toString(),
+	  levelInArabic: levelInArabic,
+	  isTalta: isTalta,
+	  al7anList: al7anList,
+	  controllers1: _controllersForCategory(
+		data,
+		al7anList[0].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+	  ),
+	  controllers2: _controllersForCategory(
+		data,
+		al7anList[1].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+	  ),
+	  controllers3: _controllersForCategory(
+		data,
+		al7anList[2].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+	  ),
+	  controllers4: _controllersForCategory(
+		data,
+		al7anList[3].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+	  ),
+	  controllers5: _controllersForCategory(
+		data,
+		al7anList[4].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+	  ),
+	  controllers6: _controllersForCategory(
+		data,
+		al7anList[5].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+	  ),
+	  bool1: _boolsForCategory(
+		data,
+		al7anList[0].name,
+		[Al7an.df, Al7an.treanto, Al7an.hzat],
+	  ),
+	  bool2: _boolsForCategory(
+		data,
+		al7anList[1].name,
+		[Al7an.df, Al7an.treanto, Al7an.hzat],
+	  ),
+	  bool3: _boolsForCategory(
+		data,
+		al7anList[2].name,
+		[Al7an.df, Al7an.treanto, Al7an.hzat],
+	  ),
+	  bool4: _boolsForCategory(
+		data,
+		al7anList[3].name,
+		[Al7an.df, Al7an.treanto, Al7an.hzat],
+	  ),
+	  bool5: _boolsForCategory(
+		data,
+		al7anList[4].name,
+		[Al7an.df, Al7an.treanto, Al7an.hzat],
+	  ),
+	  bool6: _boolsForCategory(
+		data,
+		al7anList[5].name,
+		[Al7an.df, Al7an.treanto, Al7an.hzat],
+	  ),
+	  totalController: _textControllerFrom(data['kidsTotal']),
+	  taksController: _textControllerFrom(data['taks']),
+	  slokController: _textControllerFrom(data['slok'] ?? 10),
+	);
+  }
 }
 
 class MohobenIndividualFormModel extends BaseMarksFormModel {
@@ -995,6 +1266,56 @@ class MohobenIndividualFormModel extends BaseMarksFormModel {
 					: "khamsaSadsaFResultsFinal")
 		.add(payload);
 	return true;
+  }
+
+  static MohobenIndividualFormModel fromJson(
+	Map<String, dynamic> data, {
+	required int level,
+	required String levelInArabic,
+  }) {
+	final al7anList = level == 0
+		? Al7an.kg3
+		: level == 1
+			? Al7an.ola3
+			: level == 2
+				? Al7an.talta3
+				: Al7an.khamsa3;
+	return MohobenIndividualFormModel(
+	  churchName: data['churchName']?.toString(),
+	  levelInArabic: levelInArabic,
+	  level: level,
+	  al7anList: al7anList,
+	  controllers1: _controllersForCategory(
+		data,
+		al7anList[0].name,
+		[Al7an.tslem, Al7an.copticReading, Al7an.ro7ania],
+	  ),
+	  controllers2: _controllersForCategory(
+		data,
+		al7anList[1].name,
+		[Al7an.tslem, Al7an.copticReading, Al7an.ro7ania],
+	  ),
+	  controllers3: _controllersForCategory(
+		data,
+		al7anList[2].name,
+		[Al7an.tslem, Al7an.copticReading, Al7an.ro7ania],
+	  ),
+	  bool1: _boolsForCategory(
+		data,
+		al7anList[0].name,
+		[Al7an.taks, Al7an.df],
+	  ),
+	  bool2: _boolsForCategory(
+		data,
+		al7anList[1].name,
+		[Al7an.taks, Al7an.df],
+	  ),
+	  bool3: _boolsForCategory(
+		data,
+		al7anList[2].name,
+		[Al7an.taks, Al7an.df],
+	  ),
+	);
   }
 }
 
@@ -1181,6 +1502,58 @@ class MohobenGroupFormModel extends BaseMarksFormModel {
 		.add(payload);
 	return true;
   }
+
+  static MohobenGroupFormModel fromJson(
+	Map<String, dynamic> data, {
+	required int level,
+	required String levelInArabic,
+  }) {
+	final al7anList = level == 0
+		? Al7an.kg3
+		: level == 1
+			? Al7an.ola3
+			: level == 2
+				? Al7an.talta3
+				: Al7an.khamsa3;
+	return MohobenGroupFormModel(
+	  churchName: data['churchName']?.toString(),
+	  levelInArabic: levelInArabic,
+	  level: level,
+	  al7anList: al7anList,
+	  controllers1: _controllersForCategory(
+		data,
+		al7anList[0].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.tnas2, Al7an.copticReading, Al7an.ro7ania],
+	  ),
+	  controllers2: _controllersForCategory(
+		data,
+		al7anList[1].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.tnas2, Al7an.copticReading, Al7an.ro7ania],
+	  ),
+	  controllers3: _controllersForCategory(
+		data,
+		al7anList[2].name,
+		[Al7an.tslem, Al7an.tempo, Al7an.tnas2, Al7an.copticReading, Al7an.ro7ania],
+	  ),
+	  bool1: _boolsForCategory(
+		data,
+		al7anList[0].name,
+		[Al7an.taks, Al7an.df, Al7an.treanto],
+	  ),
+	  bool2: _boolsForCategory(
+		data,
+		al7anList[1].name,
+		[Al7an.taks, Al7an.df, Al7an.treanto],
+	  ),
+	  bool3: _boolsForCategory(
+		data,
+		al7anList[2].name,
+		[Al7an.taks, Al7an.df, Al7an.treanto],
+	  ),
+	  totalController: _textControllerFrom(data['kidsTotal']),
+	  slokController: _textControllerFrom(data['slok'] ?? 10),
+	);
+  }
 }
 
 // class MarksFormFactory {
@@ -1208,4 +1581,3 @@ class MohobenGroupFormModel extends BaseMarksFormModel {
 // 	}
 //   }
 // }
-

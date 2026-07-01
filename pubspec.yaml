@@ -27,6 +27,7 @@ dependencies:
   printing: ^5.12.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  share_plus:
 
 
 dev_dependencies:
@@ -45,7 +46,7 @@ flutter:
   assets:
     - shorebird.yaml
     - assets/images/
-    - assets/t7kem-al7an-firebase-adminsdk-fbsvc-d28c9e62f0.json
+    - assets/t7kem-al7an-c4a5f-5b9f2aaa218d.json
 
 
 flutter_native_splash:
@@ -57,7 +58,7 @@ flutter_native_splash:
     image: "assets/images/splash.png"
     icon_background_color: "#ffffff"
     image_dark: "assets/images/splash.png"
-    icon_background_color_dark: "#121212"
+    icon_background_color_dark: "#ffffff"
 
 flutter_launcher_icons:
   android: "launcher_icon"

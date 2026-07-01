@@ -16,6 +16,8 @@ class CustomTextFormField extends StatefulWidget {
   final bool clearIcon;
   final void Function()? onClear;
   final Color? textColor;
+  final int maxLines;
+  final ValueChanged<String>? onChanged;
 
   const CustomTextFormField({
     super.key,
@@ -32,7 +34,10 @@ class CustomTextFormField extends StatefulWidget {
     this.clearIcon = false,
     this.initText,
     this.onClear,
-    this.floatingLabel = true,  this.textColor,
+    this.floatingLabel = true,
+    this.textColor,
+    this.maxLines = 1,
+    this.onChanged,
   });
 
   @override
@@ -61,10 +66,13 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
         obscureText: widget.isPassword ? _obscureText : false,
         validator: widget.validator,
         controller: widget.controller,
+        maxLines: widget.isPassword ? 1 : widget.maxLines,
+        minLines: widget.maxLines > 1 ? null : 1,
         onChanged: (val) {
           setState(() {
             _activeBorderColor = val.isNotEmpty ? const Color(0xff5AC268) : const Color(0xffEBEDEC);
           });
+          widget.onChanged?.call(val);
         },
         decoration: InputDecoration(
           filled: true,

@@ -4,9 +4,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:t7kem_al7an/features/splash_screen/splash_screen.dart';
 import 'core/notification/notification_service.dart';
-import 'core/services/storage_service.dart';
 import 'firebase_options.dart';
 
+@pragma('vm:entry-point')
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -19,9 +19,6 @@ Future<void> handleBackgroundMessage(RemoteMessage message) async {
 void main() async {
   try{
     WidgetsFlutterBinding.ensureInitialized();
-
-    await StorageService().init();
-
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
@@ -31,26 +28,6 @@ void main() async {
       cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
     );
 
-    final NotificationService notificationService = NotificationService();
-    await notificationService.initialize();
-
-    await FirebaseMessaging.instance.requestPermission();
-
-    FirebaseMessaging.instance.getToken();
-    FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
-
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.notification != null) {
-        final imageUrl =
-            message.data['imageUrl'] ?? message.notification!.android?.imageUrl;
-
-        notificationService.showNotification(
-          title: message.notification!.title,
-          body: message.notification!.body,
-          imageUrl: imageUrl,
-        );
-      }
-    });
     runApp(const MyApp());
   }catch(e) {
     print("========================================================");
@@ -70,7 +47,9 @@ class MyApp extends StatelessWidget {
             child: child ?? const SizedBox.shrink(),
           ),
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(),
+      home:
+      // FormScreen(form: Talta2FormModel(isTalta: false, churchName: "القديسة دميانة - الهرم",levelInArabic: "مرحلة خامسة وسادسة المستوى الثانى"), user: User(name: "محمد عبدالعزيز",))
+      const SplashScreen(),
     );
   }
 }
