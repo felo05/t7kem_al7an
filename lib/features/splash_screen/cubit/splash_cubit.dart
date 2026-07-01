@@ -2,7 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import '../../../core/notification/notification_service.dart';
-import '../../../core/services/storage_service.dart';
+import '../../../core/services/storage_service/storage_service.dart';
 import '../../../main.dart';
 import '../../authentication/user.dart';
 

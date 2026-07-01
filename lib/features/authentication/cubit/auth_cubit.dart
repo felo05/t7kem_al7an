@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 
-import '../../../core/services/storage_service.dart';
+import '../../../core/services/storage_service/storage_service.dart';
 import '../user.dart';
 import '/core/constants/firebase.dart';
 part 'auth_state.dart';

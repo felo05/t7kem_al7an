@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:t7kem_al7an/core/services/storage_service.dart';
+import 'package:t7kem_al7an/core/services/storage_service/storage_service.dart';
 
 class FormsImagesScreen extends StatelessWidget {
   final String? churchName;
@@ -28,9 +28,10 @@ class FormsImagesScreen extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.share),
                 onPressed: () async {
-                  await Share.shareXFiles(
-                    [XFile(path)],
-                    subject: fileName.split('_').first,
+                  await SharePlus.instance.share(
+                    ShareParams(
+                    files:[XFile(path)],
+                    subject: fileName.split('_').first),
                   );
                 },
                 tooltip: 'Share image',
@@ -97,7 +98,7 @@ class FormsImagesScreen extends StatelessWidget {
               );
             }
             if (snapshot.hasError) {
-              return Center(
+              return const Center(
                 child: Text(
                   'Failed to load images.',
                   style: TextStyle(color: Colors.white, fontSize: 16),
