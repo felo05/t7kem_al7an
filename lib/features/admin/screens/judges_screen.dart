@@ -14,6 +14,11 @@ class JudgesScreen extends StatefulWidget {
 }
 
 class _JudgesScreenState extends State<JudgesScreen> {
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _judgesStream =
+  FirebaseFirestore.instance
+      .collection(Firebase.users)
+      .where('isAdmin', isEqualTo: false)
+      .snapshots();
   Future<void> _deleteJudge(String docId) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
@@ -82,10 +87,7 @@ class _JudgesScreenState extends State<JudgesScreen> {
           ),
         ),
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection(Firebase.users)
-              .where('isAdmin', isEqualTo: false)
-              .snapshots(),
+          stream: _judgesStream,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
