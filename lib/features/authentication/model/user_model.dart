@@ -1,13 +1,13 @@
-class User {
+class UserModel {
   final String name;
   final bool isAdmin;
 
-  User({required this.name, this.isAdmin = false});
+  UserModel({required this.name, this.isAdmin = false});
 
-  factory User.fromJson(Map<String, dynamic> data) {
+  factory UserModel.fromJson(Map<String, dynamic> data) {
     final nameValue = data['name'];
 
-    return User(
+    return UserModel(
       name: nameValue is String ? nameValue : '',
       isAdmin: data['isAdmin'] == true,
     );

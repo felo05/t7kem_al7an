@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:t7kem_al7an/core/constants/firebase.dart';
+import 'package:t7kem_al7an/core/constants/firebase_constants.dart';
 import 'package:t7kem_al7an/features/admin/screens/add_judge_screen.dart';
 import 'package:t7kem_al7an/features/user/churches/churchs_screen.dart';
 
-import '../../authentication/user.dart';
+import '../../authentication/model/user_model.dart';
 
 class JudgesScreen extends StatefulWidget {
   const JudgesScreen({super.key});
@@ -16,7 +16,7 @@ class JudgesScreen extends StatefulWidget {
 class _JudgesScreenState extends State<JudgesScreen> {
   late final Stream<QuerySnapshot<Map<String, dynamic>>> _judgesStream =
   FirebaseFirestore.instance
-      .collection(Firebase.users)
+      .collection(FirebaseConstants.users)
       .where('isAdmin', isEqualTo: false)
       .snapshots();
   Future<void> _deleteJudge(String docId) async {
@@ -43,7 +43,7 @@ class _JudgesScreenState extends State<JudgesScreen> {
     }
 
     await FirebaseFirestore.instance
-        .collection(Firebase.users)
+        .collection(FirebaseConstants.users)
         .doc(docId)
         .delete();
   }
@@ -108,7 +108,7 @@ class _JudgesScreenState extends State<JudgesScreen> {
               itemBuilder: (context, index) {
                 final doc = docs[index];
                 final data = doc.data();
-                final User user = User.fromJson(data);
+                final UserModel user = UserModel.fromJson(data);
 
                 return InkWell(
                   onTap: () {

@@ -1,15 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:t7kem_al7an/core/constants/firebase.dart';
+import 'package:t7kem_al7an/core/constants/firebase_constants.dart';
 import 'package:t7kem_al7an/core/widgets/custom_form_field.dart';
 import 'package:t7kem_al7an/core/widgets/marks_form_fields.dart';
-import 'package:t7kem_al7an/features/authentication/user.dart';
+import 'package:t7kem_al7an/features/authentication/model/user_model.dart';
 
 class AddJudgeScreen extends StatefulWidget {
   const AddJudgeScreen({super.key, this.userId, this.initialUser,});
 
   final String? userId;
-  final User? initialUser;
+  final UserModel? initialUser;
 
   @override
   State<AddJudgeScreen> createState() => _AddJudgeScreenState();
@@ -18,7 +18,7 @@ class AddJudgeScreen extends StatefulWidget {
 class _AddJudgeScreenState extends State<AddJudgeScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
-  late User _user;
+  late UserModel _user;
   bool _isSubmitting = false;
 
   @override
@@ -27,7 +27,7 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
     if (widget.initialUser?.name != null) {
       _nameController.text = widget.initialUser!.name;
     }
-    _user = widget.initialUser ?? User(name: '', isAdmin: false);
+    _user = widget.initialUser ?? UserModel(name: '', isAdmin: false);
   }
 
   @override
@@ -48,23 +48,23 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
       return;
     }
 
-    final userToSave = User(name: name, isAdmin: _user.isAdmin);
+    final userToSave = UserModel(name: name, isAdmin: _user.isAdmin);
 
     setState(() {
       _isSubmitting = true;
     });
 
     try {
-      final usersRef = FirebaseFirestore.instance.collection(Firebase.users);
+      final usersRef = FirebaseFirestore.instance.collection(FirebaseConstants.users);
       if (widget.userId == null) {
         await usersRef.add({
-          Firebase.name: userToSave.name,
+          FirebaseConstants.name: userToSave.name,
           'pass': pass,
           'isAdmin': userToSave.isAdmin,
         });
       } else {
         await usersRef.doc(widget.userId).update({
-          Firebase.name: userToSave.name,
+          FirebaseConstants.name: userToSave.name,
           'pass': pass,
           'isAdmin': userToSave.isAdmin,
         });
@@ -78,7 +78,7 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
         _nameController.clear();
         _passController.clear();
         setState(() {
-          _user = User(name: '', isAdmin: false);
+          _user = UserModel(name: '', isAdmin: false);
         });
       } else {
         Navigator.of(context).pop();
@@ -170,7 +170,7 @@ class _AddJudgeScreenState extends State<AddJudgeScreen> {
                         activeThumbColor: Colors.amberAccent,
                         onChanged: (value) {
                           setState(() {
-                            _user = User(
+                            _user = UserModel(
                               name: _nameController.text.trim(),
                               isAdmin: value,
                             );

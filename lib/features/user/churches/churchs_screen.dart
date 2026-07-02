@@ -6,12 +6,12 @@ import 'package:t7kem_al7an/features/user/images/forms_images_screen.dart';
 import 'package:t7kem_al7an/features/user/marks_forms/base_marks_form.dart';
 import 'package:t7kem_al7an/features/user/marks_forms/form_screen.dart';
 
-import '../../authentication/auth_screen.dart';
-import '../../authentication/user.dart';
+import '../../authentication/view/screens/auth_screen.dart';
+import '../../authentication/model/user_model.dart';
 
 class ChurchesScreen extends StatelessWidget {
   const ChurchesScreen({super.key, required this.user});
-  final User user;
+  final UserModel user;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class ChurchesScreen extends StatelessWidget {
 
 class _ChurchesBody extends StatefulWidget {
   const _ChurchesBody({required this.user});
-  final User user;
+  final UserModel user;
 
   @override
   State<_ChurchesBody> createState() => _ChurchesBodyState();

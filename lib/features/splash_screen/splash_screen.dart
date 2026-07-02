@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:t7kem_al7an/features/admin/screens/admin_screen.dart';
-import 'package:t7kem_al7an/features/authentication/auth_screen.dart';
+import 'package:t7kem_al7an/features/authentication/view/screens/auth_screen.dart';
 import 'package:t7kem_al7an/features/splash_screen/cubit/splash_cubit.dart';
 import 'package:t7kem_al7an/features/user/churches/churchs_screen.dart';
 

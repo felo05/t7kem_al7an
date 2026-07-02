@@ -8,7 +8,7 @@ final class SplashInitial extends SplashState {}
 final class SplashLoading extends SplashState {}
 
 final class LoggedIn extends SplashState {
-  final User user;
+  final UserModel user;
   LoggedIn({required this.user});
 }
 

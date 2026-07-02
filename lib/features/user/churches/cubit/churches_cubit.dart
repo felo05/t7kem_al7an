@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 
-import '../../../authentication/user.dart';
+import '../../../authentication/model/user_model.dart';
 import '../../marks_forms/base_marks_form.dart';
 
 part 'churches_state.dart';
@@ -57,7 +57,7 @@ class ChurchesCubit extends Cubit<ChurchesState> {
     'khamsaSadsaG': MohobenGroupFormModel(level: 3, churchName: "",levelInArabic: "موهوبين الجماعى مرحلة خامسة وسادسة")
   };
 
-  Future<void> getChurches(User user) async {
+  Future<void> getChurches(UserModel user) async {
     emit(ChurchesLoading());
     try {
       final FirebaseFirestore fireStore = FirebaseFirestore.instance;
@@ -128,7 +128,7 @@ class ChurchesCubit extends Cubit<ChurchesState> {
     }
   }
 
-  Stream<List<BaseMarksFormModel>> watchChurches(User user) {
+  Stream<List<BaseMarksFormModel>> watchChurches(UserModel user) {
     final controller = StreamController<List<BaseMarksFormModel>>();
     final subscriptions = <StreamSubscription>[];
     final latestDocs = <String, DocumentSnapshot<Map<String, dynamic>>>{};

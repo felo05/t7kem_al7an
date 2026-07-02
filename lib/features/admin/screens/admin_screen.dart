@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:t7kem_al7an/features/admin/screens/judges_screen.dart';
-import 'package:t7kem_al7an/features/authentication/auth_screen.dart';
+import 'package:t7kem_al7an/features/authentication/view/screens/auth_screen.dart';
 import '../../../core/services/storage_service/storage_service.dart';
 import 'add_church_screen.dart';
 import 'assign_judge_screen.dart';

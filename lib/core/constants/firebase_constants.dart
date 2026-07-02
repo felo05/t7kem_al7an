@@ -1,6 +1,7 @@
-class Firebase {
+class FirebaseConstants {
   static const String users = 'users';
   static const String name= 'name';
+  static const String password= 'pass';
   static const String kg1 = 'kg1';
   static const String kg2 = 'kg2';
   static const String kgg = 'kgg';

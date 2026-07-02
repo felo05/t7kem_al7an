@@ -18,6 +18,8 @@ class CustomTextFormField extends StatefulWidget {
   final Color? textColor;
   final int maxLines;
   final ValueChanged<String>? onChanged;
+  final bool autofocus;
+  final Iterable<String>? autofillHints;
 
   const CustomTextFormField({
     super.key,
@@ -33,11 +35,13 @@ class CustomTextFormField extends StatefulWidget {
     this.prefixIcon,
     this.clearIcon = false,
     this.initText,
+    this.autofocus=false,
+    this.autofillHints,
     this.onClear,
     this.floatingLabel = true,
     this.textColor,
     this.maxLines = 1,
-    this.onChanged,
+    this.onChanged
   });
 
   @override
@@ -63,6 +67,8 @@ class CustomTextFormFieldState extends State<CustomTextFormField> {
         enabled: widget.isEnabled,
         onFieldSubmitted: widget.onSubmit,
         keyboardType: widget.inputType,
+        autofillHints: widget.autofillHints,
+        autofocus: widget.autofocus,
         obscureText: widget.isPassword ? _obscureText : false,
         validator: widget.validator,
         controller: widget.controller,

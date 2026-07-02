@@ -8,7 +8,7 @@ import 'package:saver_gallery/saver_gallery.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/rendering.dart';
 import 'package:t7kem_al7an/core/services/storage_service/storage_service.dart';
-import '../../authentication/user.dart';
+import '../../authentication/model/user_model.dart';
 import 'base_marks_form.dart';
 import 'cubit/submit_cubit.dart';
 
@@ -24,7 +24,7 @@ class FormScreen extends StatefulWidget {
   });
 
   final BaseMarksFormModel form;
-  final User? user;
+  final UserModel? user;
   final String? judgeName;
   final bool captureOnSubmit;
   final String? editCollectionName;

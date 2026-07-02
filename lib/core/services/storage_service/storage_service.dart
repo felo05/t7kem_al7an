@@ -1,12 +1,12 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:t7kem_al7an/features/authentication/user.dart';
+import 'package:t7kem_al7an/features/authentication/model/user_model.dart';
 
 class StorageService {
   static const String _boxName = 'user_cache';
   static const String _userKey = 'user';
   static const String _formImagePathsKey = 'form_image_paths';
   static const String _formImagePathsValueKey = 'paths';
-  User? user;
+  UserModel? user;
 
   StorageService._();
 
@@ -31,20 +31,20 @@ class StorageService {
     _box = await Hive.openBox<Map>(_boxName);
   }
 
-  Future<void> saveUser(User user) async {
+  Future<void> saveUser(UserModel user) async {
     final box = await _getBox();
     this.user = user;
     await box.put(_userKey, user.toJson());
   }
 
-  Future<User?> getUser() async {
+  Future<UserModel?> getUser() async {
     final box = await _getBox();
     final data = box.get(_userKey);
 
     if (data == null) {
       return null;
     }
-    user = User.fromJson(Map<String, dynamic>.from(data));
+    user = UserModel.fromJson(Map<String, dynamic>.from(data));
 
     return user;
   }
