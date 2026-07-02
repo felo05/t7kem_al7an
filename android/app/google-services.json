@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "364367652354",
-    "project_id": "t7kem-al7an",
-    "storage_bucket": "t7kem-al7an.firebasestorage.app"
+    "project_number": "71530923889",
+    "project_id": "t7kem-al7an-c4a5f",
+    "storage_bucket": "t7kem-al7an-c4a5f.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:364367652354:android:d997b2e38578fb4745a91b",
+        "mobilesdk_app_id": "1:71530923889:android:0e3915f5886ccb7de298d0",
         "android_client_info": {
           "package_name": "com.example.t7kem_al7an"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyC70pXzSZobYtIEu_wZSJQptKfTs3L7WzA"
+          "current_key": "AIzaSyCgauejgFyJdK-UtvK3mKc7M7lnjs6-cu4"
         }
       ],
       "services": {
