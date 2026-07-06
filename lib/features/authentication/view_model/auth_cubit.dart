@@ -1,14 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:t7kem_al7an/features/authentication/repository/authentication_repository.dart';
 import '../model/user_model.dart';
+import '../repository/i_authentication_repository.dart';
 
 part 'auth_state.dart';
 
 class LoginCubit extends Cubit<LoginState> {
-  LoginCubit() : super(LoginInitial());
-  final AuthenticationRepository _authenticationRepository =
-      AuthenticationRepository();
+  LoginCubit(this._authenticationRepository) : super(LoginInitial());
+  final IAuthenticationRepository _authenticationRepository;
 
   void login(String name, String password) async {
     emit(LoginLoadingState());

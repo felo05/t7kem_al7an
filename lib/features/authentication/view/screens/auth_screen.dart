@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:t7kem_al7an/features/admin/screens/admin_screen.dart';
 import 'package:t7kem_al7an/features/authentication/view_model/auth_cubit.dart';
-import 'package:t7kem_al7an/features/user/churches/churchs_screen.dart';
+import 'package:t7kem_al7an/features/user/churches/view/screens/churchs_screen.dart';
 
+import '../../../../core/di/service_locator.dart';
+import '../../repository/i_authentication_repository.dart';
 import '/core/widgets/custom_form_field.dart';
 import '/core/widgets/marks_form_fields.dart';
 
@@ -45,7 +47,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => LoginCubit(),
+      create: (_) => LoginCubit(sl<IAuthenticationRepository>()),
       child: Scaffold(
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(12),

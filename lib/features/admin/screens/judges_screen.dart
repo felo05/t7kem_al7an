@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:t7kem_al7an/core/constants/firebase_constants.dart';
 import 'package:t7kem_al7an/features/admin/screens/add_judge_screen.dart';
-import 'package:t7kem_al7an/features/user/churches/churchs_screen.dart';
+import 'package:t7kem_al7an/features/user/churches/view/screens/churchs_screen.dart';
 
 import '../../authentication/model/user_model.dart';
 

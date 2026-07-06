@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
 part 'submit_state.dart';
 
 class SubmitCubit extends Cubit<SubmitState> {
