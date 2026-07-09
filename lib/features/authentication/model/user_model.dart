@@ -1,22 +1,27 @@
+import 'package:t7kem_al7an/core/constants/firebase_constants.dart';
+
 class UserModel {
   final String name;
   final bool isAdmin;
+  final String? password;
+  final String? docId;
 
-  UserModel({required this.name, this.isAdmin = false});
+  UserModel({required this.name, this.isAdmin = false, this.password, this.docId});
 
-  factory UserModel.fromJson(Map<String, dynamic> data) {
-    final nameValue = data['name'];
-
+  factory UserModel.fromJson(Map<String, dynamic> data, {String? docId}) {
     return UserModel(
-      name: nameValue is String ? nameValue : '',
-      isAdmin: data['isAdmin'] == true,
+      name: data[FirebaseConstants.name],
+      isAdmin: data[FirebaseConstants.isAdmin] == true,
+      password: data[FirebaseConstants.password],
+      docId: docId,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
-      'isAdmin': isAdmin,
+      FirebaseConstants.name: name,
+      FirebaseConstants.isAdmin: isAdmin,
+      FirebaseConstants.password: password,
     };
   }
 }

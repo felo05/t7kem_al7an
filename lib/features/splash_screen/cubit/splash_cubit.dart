@@ -55,7 +55,7 @@ class SplashCubit extends Cubit<SplashState> {
 
     await FirebaseMessaging.instance.getToken();
 
-    await FirebaseMessaging.instance.subscribeToTopic('all');
+    await FirebaseMessaging.instance.subscribeToTopic('all_users');
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {

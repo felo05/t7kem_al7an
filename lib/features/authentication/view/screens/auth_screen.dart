@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:t7kem_al7an/features/admin/screens/admin_screen.dart';
+import 'package:t7kem_al7an/features/admin/home/view/screens/home_screen.dart';
 import 'package:t7kem_al7an/features/authentication/view_model/auth_cubit.dart';
 import 'package:t7kem_al7an/features/user/churches/view/screens/churchs_screen.dart';
 
@@ -106,7 +106,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => state.user.isAdmin
-                                  ? const AdminScreen()
+                                  ? const HomeScreen()
                                   : ChurchesScreen(user: state.user),
                             ),
                           );

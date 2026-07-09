@@ -1,18 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:t7kem_al7an/features/admin/screens/judges_screen.dart';
+import 'package:t7kem_al7an/features/admin/judges/view/screens/judges_screen.dart';
 import 'package:t7kem_al7an/features/authentication/view/screens/auth_screen.dart';
-import '../../../core/services/storage_service/storage_service.dart';
-import 'add_church_screen.dart';
-import 'assign_judge_screen.dart';
-import 'check_status_screen.dart';
-import 'push_notifications_screen.dart';
+import '../../../../../core/services/storage_service/storage_service.dart';
+import '../../../churches_adding/view/screens/add_church_screen.dart';
+import '../../../judges_assigning/view/screens/assign_judge_screen.dart';
+import '../../../results/view/screens/check_status_screen.dart';
+import '../../../push_notifications/view/screens/push_notifications_screen.dart';
 
-class AdminScreen extends StatelessWidget {
-  const AdminScreen({super.key});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -217,43 +213,4 @@ class AdminScreen extends StatelessWidget {
       ),
     );
   }
-}
-Future<void> sendFcmMessage(String title,String body) async {
-  // 1. Load service account credentials from assets
-  final jsonStr = await rootBundle.loadString('assets/t7kem-al7an-firebase-adminsdk-fbsvc-d28c9e62f0.json');
-  final credentials = ServiceAccountCredentials.fromJson(json.decode(jsonStr));
-
-  // 2. Define scopes for FCM
-  const scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
-
-  // 3. Get authenticated client
-  final client = await clientViaServiceAccount(credentials, scopes);
-
-  // 4. Construct the message
-  final message = {
-    "message": {
-      "topic": "all",
-      "notification": {
-        "title": title,
-        "body": body
-      },
-      "android": {
-        "priority": "high"
-      }
-    }
-  };
-
-  const String projectId = "t7kem-al7an";
-  final url = Uri.parse("https://fcm.googleapis.com/v1/projects/$projectId/messages:send");
-
-  // 5. Send the message
-  final response = await client.post(
-    url,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode(message),
-  );
-
-  print('FCM response: ${response.statusCode} => ${response.body}');
 }

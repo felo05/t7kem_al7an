@@ -13,11 +13,9 @@ Future<void> handleBackgroundMessage(RemoteMessage message) async {
   );
   NotificationService().showNotification(
       title: message.data["title"], body: message.data["body"]);
-  print('📥 Background message received: ${message.notification?.title}');
 }
 
 void main() async {
-  try{
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -29,10 +27,7 @@ void main() async {
     );
 
     runApp(const MyApp());
-  }catch(e) {
-    print("========================================================");
-    print("Error initializing Firebase: $e");
-  }
+
 }
 
 class MyApp extends StatelessWidget {
@@ -47,9 +42,7 @@ class MyApp extends StatelessWidget {
             child: child ?? const SizedBox.shrink(),
           ),
       debugShowCheckedModeBanner: false,
-      home:
-      // FormScreen(form: Talta2FormModel(isTalta: false, churchName: "القديسة دميانة - الهرم",levelInArabic: "مرحلة خامسة وسادسة المستوى الثانى"), user: User(name: "محمد عبدالعزيز",))
-      const SplashScreen(),
+      home: const SplashScreen(),
     );
   }
 }

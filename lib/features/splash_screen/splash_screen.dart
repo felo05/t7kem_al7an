@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:t7kem_al7an/features/admin/screens/admin_screen.dart';
+import 'package:t7kem_al7an/features/admin/home/view/screens/home_screen.dart';
 import 'package:t7kem_al7an/features/authentication/view/screens/auth_screen.dart';
 import 'package:t7kem_al7an/features/splash_screen/cubit/splash_cubit.dart';
 import 'package:t7kem_al7an/features/user/churches/view/screens/churchs_screen.dart';
@@ -26,7 +26,7 @@ class SplashScreen extends StatelessWidget {
           if (state is LoggedIn) {
             if (state.user.isAdmin) {
               Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const AdminScreen()),
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
               );
             } else {
               Navigator.of(context).pushReplacement(

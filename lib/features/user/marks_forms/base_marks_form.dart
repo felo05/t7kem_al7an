@@ -82,7 +82,6 @@ abstract class BaseMarksFormModel {
 		  .doc(documentId)
 		  .update(payload);
 	} catch (e) {
-	  print("Error submitting form: $e");
 	  return false;
 	}
 	return true;
@@ -254,7 +253,6 @@ class Kg1FormModel extends BaseMarksFormModel {
           .collection(isKg ? "kg1ResultsFinal" : "oulaTanya1ResultsFinal")
           .add(payload);
     } catch (e) {
-			print("Error submitting form: $e");
 			return false;
 		}
     return true;

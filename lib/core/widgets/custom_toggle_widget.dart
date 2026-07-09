@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 
 class CustomToggleWidget extends StatelessWidget {
   final String text;
-  final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueNotifier<bool> valueListenable;
+
   const CustomToggleWidget({
     super.key,
     required this.text,
-    required this.value,
-    required this.onChanged,
+    required this.valueListenable,
   });
 
   @override
   Widget build(BuildContext context) {
     final Color defaultActiveColor = Colors.green.shade700;
-    final Color defaultInactiveColor =Colors.grey.shade400;
+    final Color defaultInactiveColor = Colors.grey.shade400;
 
     return Container(
       decoration: BoxDecoration(
@@ -42,13 +41,18 @@ class CustomToggleWidget extends StatelessWidget {
                 ),
               ),
             ),
-            Switch(
-              value: value,
-              onChanged: onChanged,
-              activeThumbColor: defaultActiveColor,
-              activeTrackColor: defaultActiveColor.withValues(alpha: 0.3),
-              inactiveThumbColor: defaultInactiveColor,
-              inactiveTrackColor: defaultInactiveColor.withValues(alpha: 0.3),
+            ValueListenableBuilder<bool>(
+              valueListenable: valueListenable,
+              builder: (context, value, _) {
+                return Switch(
+                  value: value,
+                  onChanged: (v) => valueListenable.value = v,
+                  activeThumbColor: defaultActiveColor,
+                  activeTrackColor: defaultActiveColor.withValues(alpha: 0.3),
+                  inactiveThumbColor: defaultInactiveColor,
+                  inactiveTrackColor: defaultInactiveColor.withValues(alpha: 0.3),
+                );
+              },
             ),
           ],
         ),
