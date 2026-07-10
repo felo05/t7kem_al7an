@@ -10,9 +10,8 @@ import '../../../core/services/storage_service/storage_service.dart';
 import 'i_user_repository.dart';
 
 class UserRepository implements IUserRepository {
-
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final StorageService _storageService= StorageService.instance;
+  final StorageService _storageService = StorageService.instance;
 
   @override
   Stream<DocumentSnapshot<Map<String, dynamic>>> watchLevelDay({
@@ -70,6 +69,4 @@ class UserRepository implements IUserRepository {
       await Permission.storage.request();
     }
   }
-
-
 }

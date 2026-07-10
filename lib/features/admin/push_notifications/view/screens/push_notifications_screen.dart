@@ -143,7 +143,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                     child: BlocConsumer<PushNotificationsCubit,
                         PushNotificationsState>(
                       listener: (context, state) {
-                        if(state is PushNotificationsError){
+                        if (state is PushNotificationsError) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('حدث خطأ ما'),
@@ -151,8 +151,7 @@ class _PushNotificationsScreenState extends State<PushNotificationsScreen> {
                               duration: Duration(seconds: 3),
                             ),
                           );
-                        }
-                        else if (state is PushNotificationsSuccess){
+                        } else if (state is PushNotificationsSuccess) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('تم إرسال الإشعار بنجاح'),

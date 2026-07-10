@@ -21,5 +21,6 @@ class ChurchDays {
     'السبت (النهائي)': 'final',
   };
 
-  static String toEnglish(String arabicDay) => _arabicToEnglish[arabicDay] ?? 'saturday';
+  static String toEnglish(String arabicDay) =>
+      _arabicToEnglish[arabicDay] ?? 'saturday';
 }

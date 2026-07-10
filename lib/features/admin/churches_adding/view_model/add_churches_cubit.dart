@@ -19,5 +19,4 @@ class AddChurchesCubit extends Cubit<AddChurchesState> {
       emit(AddChurchesError(e.toString()));
     }
   }
-
 }

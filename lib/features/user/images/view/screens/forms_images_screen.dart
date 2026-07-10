@@ -64,7 +64,8 @@ class FormsImagesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => FormsImagesCubit(sl<IUserRepository>())..load(churchName: churchName, userName: userName),
+      create: (_) => FormsImagesCubit(sl<IUserRepository>())
+        ..load(churchName: churchName, userName: userName),
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
@@ -144,7 +145,8 @@ class FormsImagesScreen extends StatelessWidget {
                   final image = images[index];
                   return Card(
                     elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -165,7 +167,8 @@ class FormsImagesScreen extends StatelessWidget {
                                 errorBuilder: (_, __, ___) => Container(
                                   height: 200,
                                   color: Colors.grey.shade200,
-                                  child: const Center(child: Text('Image not found.')),
+                                  child: const Center(
+                                      child: Text('Image not found.')),
                                 ),
                               ),
                             ),
@@ -201,7 +204,8 @@ class FormsImagesScreen extends StatelessWidget {
                               const SizedBox(height: 4),
                               Text(
                                 image.fileName,
-                                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey.shade600),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,

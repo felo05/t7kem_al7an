@@ -55,13 +55,13 @@ class StorageService {
     await box.delete(_userKey);
   }
 
-
   Future<void> addFormImagePath(String path) async {
     final box = await _getBox();
     final data = box.get(_formImagePathsKey);
     final List<String> paths = data == null
         ? <String>[]
-        : List<String>.from((data)[_formImagePathsValueKey] as List? ?? const []);
+        : List<String>.from(
+            (data)[_formImagePathsValueKey] as List? ?? const []);
     paths.add(path);
     await box.put(_formImagePathsKey, {_formImagePathsValueKey: paths});
   }
@@ -72,7 +72,8 @@ class StorageService {
     if (data == null) {
       return const [];
     }
-    return List<String>.from((data)[_formImagePathsValueKey] as List? ?? const []);
+    return List<String>.from(
+        (data)[_formImagePathsValueKey] as List? ?? const []);
   }
 
   Future<Box<Map>> _getBox() async {

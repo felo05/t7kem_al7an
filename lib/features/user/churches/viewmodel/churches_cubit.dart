@@ -22,7 +22,7 @@ class ChurchesCubit extends Cubit<ChurchesState> {
     for (final level in ChurchLevelsModel.levels) {
       final stream = _repository.watchLevelDay(level: level, dayName: dayName);
       subscriptions.add(stream.listen(
-            (doc) {
+        (doc) {
           latestDocs[level] = doc;
           _emitFromLatest(user);
         },
@@ -45,7 +45,8 @@ class ChurchesCubit extends Cubit<ChurchesState> {
 
       if (judges.contains(user.name.trim())) {
         for (final church in churches) {
-          result.add(ChurchLevelsModel.levelToForm[level]!.setChurchName(church));
+          result
+              .add(ChurchLevelsModel.levelToForm[level]!.setChurchName(church));
         }
       }
     }

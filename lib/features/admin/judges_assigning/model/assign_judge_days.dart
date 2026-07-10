@@ -1,6 +1,11 @@
 class AssignJudgeDays {
   static const List<String> availableDays = [
-    'السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الخميس', 'النهائي'
+    'السبت',
+    'الأحد',
+    'الإثنين',
+    'الثلاثاء',
+    'الخميس',
+    'النهائي'
   ];
 
   // preserved exactly from original — includes unreachable entries, default 'final'
@@ -15,5 +20,6 @@ class AssignJudgeDays {
     'النهائي': 'final',
   };
 
-  static String toEnglish(String arabicDay) => _arabicToEnglish[arabicDay] ?? 'final';
+  static String toEnglish(String arabicDay) =>
+      _arabicToEnglish[arabicDay] ?? 'final';
 }

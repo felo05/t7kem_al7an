@@ -16,7 +16,8 @@ class FormsImagesCubit extends Cubit<FormsImagesState> {
       final rawPaths = await _repository.getFormImagePaths();
       final images = rawPaths
           .map(FormImageModel.fromPath)
-          .where((img) => img.matches(churchName: churchName, userName: userName))
+          .where(
+              (img) => img.matches(churchName: churchName, userName: userName))
           .toList()
           .reversed
           .toList();

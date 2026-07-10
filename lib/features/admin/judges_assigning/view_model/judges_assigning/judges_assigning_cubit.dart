@@ -23,5 +23,4 @@ class JudgesAssigningCubit extends Cubit<JudgesAssigningState> {
       emit(JudgesAssigningError(e.toString()));
     }
   }
-
 }

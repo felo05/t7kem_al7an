@@ -7,7 +7,6 @@ import '../../../../../core/di/service_locator.dart';
 import '../../view_model/delete_judge/delete_judge_cubit.dart';
 import '../../view_model/get_judges/get_judges_cubit.dart';
 
-
 class JudgesScreen extends StatelessWidget {
   const JudgesScreen({super.key});
 
@@ -15,7 +14,8 @@ class JudgesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => GetJudgesCubit(sl<IAdminRepository>())..start()),
+        BlocProvider(
+            create: (_) => GetJudgesCubit(sl<IAdminRepository>())..start()),
         BlocProvider(create: (_) => DeleteJudgeCubit(sl<IAdminRepository>())),
       ],
       child: const _JudgesBody(),
@@ -82,7 +82,8 @@ class _JudgesBodyState extends State<_JudgesBody> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AddJudgeScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const AddJudgeScreen()),
                 );
               },
               icon: const Icon(Icons.add, color: Colors.white),
@@ -122,7 +123,8 @@ class _JudgesBodyState extends State<_JudgesBody> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => ChurchesScreen(user: user)),
+                        MaterialPageRoute(
+                            builder: (context) => ChurchesScreen(user: user)),
                       );
                     },
                     child: Container(
@@ -146,11 +148,13 @@ class _JudgesBodyState extends State<_JudgesBody> {
                             color: Colors.blue.shade100,
                             borderRadius: BorderRadius.circular(22),
                           ),
-                          child: Icon(Icons.person, color: Colors.blue.shade700),
+                          child:
+                              Icon(Icons.person, color: Colors.blue.shade700),
                         ),
                         title: Text(
                           user.name.toString(),
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                         trailing: PopupMenuButton<String>(
                           onSelected: (value) {

@@ -5,14 +5,15 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 class NotificationService {
-  final FlutterLocalNotificationsPlugin _localNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/launcher_icon');
+        AndroidInitializationSettings('@mipmap/launcher_icon');
 
     const InitializationSettings initializationSettings =
-    InitializationSettings(android: initializationSettingsAndroid);
+        InitializationSettings(android: initializationSettingsAndroid);
 
     await _localNotificationsPlugin.initialize(initializationSettings);
   }
@@ -25,8 +26,10 @@ class NotificationService {
     BigPictureStyleInformation? bigPictureStyleInformation;
 
     if (imageUrl != null) {
-      final ByteArrayAndroidBitmap largeIcon = await _downloadAndSaveImage(imageUrl, 'largeIcon');
-      final ByteArrayAndroidBitmap bigPicture = await _downloadAndSaveImage(imageUrl, 'bigPicture');
+      final ByteArrayAndroidBitmap largeIcon =
+          await _downloadAndSaveImage(imageUrl, 'largeIcon');
+      final ByteArrayAndroidBitmap bigPicture =
+          await _downloadAndSaveImage(imageUrl, 'bigPicture');
 
       bigPictureStyleInformation = BigPictureStyleInformation(
         bigPicture,
@@ -36,7 +39,8 @@ class NotificationService {
       );
     }
 
-    final AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
       importance: Importance.max,
@@ -56,7 +60,8 @@ class NotificationService {
     );
   }
 
-  Future<ByteArrayAndroidBitmap> _downloadAndSaveImage(String url, String fileName) async {
+  Future<ByteArrayAndroidBitmap> _downloadAndSaveImage(
+      String url, String fileName) async {
     final Directory directory = await getApplicationDocumentsDirectory();
     final String filePath = '${directory.path}/$fileName';
 
@@ -70,5 +75,4 @@ class NotificationService {
       throw Exception('Error downloading image: ${response.statusCode}');
     }
   }
-
 }

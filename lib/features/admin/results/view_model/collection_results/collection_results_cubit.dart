@@ -15,9 +15,11 @@ class CollectionResultsCubit extends Cubit<CollectionResultsState> {
 
   void watch(String collectionName) {
     _sub = _repository.watchCollection(collectionName).listen(
-          (docs) => emit(CollectionResultsSuccess(ChurchAverageCalculator.computeForRanking(docs))),
-      onError: (_) => emit(CollectionResultsSuccess(const [])), // matches original silent catch -> []
-    );
+          (docs) => emit(CollectionResultsSuccess(
+              ChurchAverageCalculator.computeForRanking(docs))),
+          onError: (_) => emit(CollectionResultsSuccess(
+              const [])), // matches original silent catch -> []
+        );
   }
 
   @override

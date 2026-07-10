@@ -57,10 +57,18 @@ class _AddChurchBodyState extends State<_AddChurchBody> {
   void dispose() {
     _churchNameController.dispose();
     for (final n in [
-      _isKG1, _isKg2, _isKgG,
-      _isOulaTanya1, _isOulaTanya2, _isOulaTanyaG,
-      _isTaltaRaba1, _isTaltaRaba2, _isTaltaRabaG,
-      _isKhamsaSadsa1, _isKhamsaSadsa2, _isKhamsaSadsaG,
+      _isKG1,
+      _isKg2,
+      _isKgG,
+      _isOulaTanya1,
+      _isOulaTanya2,
+      _isOulaTanyaG,
+      _isTaltaRaba1,
+      _isTaltaRaba2,
+      _isTaltaRabaG,
+      _isKhamsaSadsa1,
+      _isKhamsaSadsa2,
+      _isKhamsaSadsaG,
     ]) {
       n.dispose();
     }
@@ -199,7 +207,8 @@ class _AddChurchBodyState extends State<_AddChurchBody> {
                       ),
                       child: Column(
                         children: [
-                          Icon(Icons.church, size: 64, color: Colors.green.shade700),
+                          Icon(Icons.church,
+                              size: 64, color: Colors.green.shade700),
                           const SizedBox(height: 16),
                           const Text(
                             'تسجيل لجان الكنيسة',
@@ -248,23 +257,27 @@ class _AddChurchBodyState extends State<_AddChurchBody> {
                                 initialValue: _selectedDay,
                                 decoration: InputDecoration(
                                   hintText: 'اختر اليوم...',
-                                  prefixIcon: Icon(Icons.calendar_month, color: Colors.green.shade700),
+                                  prefixIcon: Icon(Icons.calendar_month,
+                                      color: Colors.green.shade700),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                     borderSide: BorderSide.none,
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: Colors.green.shade700, width: 2),
+                                    borderSide: BorderSide(
+                                        color: Colors.green.shade700, width: 2),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 12),
                                   fillColor: Colors.grey.shade50,
                                   filled: true,
                                 ),
                                 items: _availableDays.map((String day) {
                                   return DropdownMenuItem<String>(
                                     value: day,
-                                    child: Text(day, style: const TextStyle(fontSize: 14)),
+                                    child: Text(day,
+                                        style: const TextStyle(fontSize: 14)),
                                   );
                                 }).toList(),
                                 onChanged: (String? newValue) {
@@ -274,7 +287,8 @@ class _AddChurchBodyState extends State<_AddChurchBody> {
                                 },
                                 isExpanded: true,
                                 dropdownColor: Colors.white,
-                                style: const TextStyle(color: Colors.black87, fontSize: 14),
+                                style: const TextStyle(
+                                    color: Colors.black87, fontSize: 14),
                               ),
                             ),
                           ],
@@ -334,7 +348,8 @@ class _AddChurchBodyState extends State<_AddChurchBody> {
                     DynamicInputWidget(
                       title: 'أولى وثانية موهوبين فردي ',
                       initialItems: _oulaTanya,
-                      onItemsChanged: (items) => setState(() => _oulaTanya = items),
+                      onItemsChanged: (items) =>
+                          setState(() => _oulaTanya = items),
                     ),
                     const SizedBox(height: 8),
                     CustomToggleWidget(
@@ -355,7 +370,8 @@ class _AddChurchBodyState extends State<_AddChurchBody> {
                     DynamicInputWidget(
                       title: 'ثالثة ورابعة موهوبين فردي ',
                       initialItems: _taltaRaba,
-                      onItemsChanged: (items) => setState(() => _taltaRaba = items),
+                      onItemsChanged: (items) =>
+                          setState(() => _taltaRaba = items),
                     ),
                     const SizedBox(height: 8),
                     CustomToggleWidget(
@@ -376,7 +392,8 @@ class _AddChurchBodyState extends State<_AddChurchBody> {
                     DynamicInputWidget(
                       title: 'خامسة وسادسة موهوبين فردي ',
                       initialItems: _khamsaSadsa,
-                      onItemsChanged: (items) => setState(() => _khamsaSadsa = items),
+                      onItemsChanged: (items) =>
+                          setState(() => _khamsaSadsa = items),
                     ),
                     const SizedBox(height: 16),
                     BlocBuilder<AddChurchesCubit, AddChurchesState>(
@@ -388,19 +405,23 @@ class _AddChurchBodyState extends State<_AddChurchBody> {
                             backgroundColor: Colors.green.shade700,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                             elevation: 4,
                           ),
                           child: isLoading
                               ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                      color: Colors.white, strokeWidth: 2),
+                                )
                               : const Text(
-                            'أضف الكنيسة',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                                  'أضف الكنيسة',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
                         );
                       },
                     ),

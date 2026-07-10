@@ -1,10 +1,13 @@
-import 'dart:typed_data';
+import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:saver_gallery/saver_gallery.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/rendering.dart';
-import 'package:t7kem_al7an/features/user/repository/i_user_repository.dart';
-import '../../../core/di/service_locator.dart';
+import 'package:t7kem_al7an/core/services/storage_service/storage_service.dart';
 import '../../authentication/model/user_model.dart';
 import 'base_marks_form.dart';
 import 'cubit/submit_cubit.dart';
@@ -32,11 +35,13 @@ class FormScreen extends StatefulWidget {
 }
 
 class _FormScreenState extends State<FormScreen> {
-
-  Future<Uint8List?> _renderFormToBytes() async {
-    if (!mounted) return null;
+  Future<String?> _captureAndSaveFormImage() async {
+    if (!mounted) {
+      return null;
+    }
 
     final overlay = Overlay.of(context);
+
     final captureKey = GlobalKey();
     final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
     OverlayEntry? entry;
@@ -64,10 +69,10 @@ class _FormScreenState extends State<FormScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             AppBar(
-                              title: Text(
-                                widget.form.levelInArabic,
-                                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
-                              ),
+                              title: Text(widget.form.levelInArabic,
+                                  style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w500)),
                               centerTitle: true,
                             ),
                             Padding(
@@ -91,8 +96,11 @@ class _FormScreenState extends State<FormScreen> {
       await Future.delayed(const Duration(milliseconds: 100));
       await WidgetsBinding.instance.endOfFrame;
 
-      final boundary = captureKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary == null) return null;
+      final boundary = captureKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null) {
+        return null;
+      }
 
       final image = await boundary.toImage(pixelRatio: 3.0);
 
@@ -104,10 +112,38 @@ class _FormScreenState extends State<FormScreen> {
         paint,
       );
       canvas.drawImage(image, Offset.zero, Paint());
-      final composed = await recorder.endRecording().toImage(image.width, image.height);
+      final composed =
+          await recorder.endRecording().toImage(image.width, image.height);
 
-      final byteData = await composed.toByteData(format: ui.ImageByteFormat.png);
-      return byteData?.buffer.asUint8List();
+      final byteData =
+          await composed.toByteData(format: ui.ImageByteFormat.png);
+
+      if (byteData == null) {
+        return null;
+      }
+
+      final pngBytes = byteData.buffer.asUint8List();
+      final dir = await getApplicationDocumentsDirectory();
+      final formsDir = Directory('${dir.path}${Platform.pathSeparator}forms');
+      if (!await formsDir.exists()) {
+        await formsDir.create(recursive: true);
+      }
+
+      final fileName =
+          '${widget.form.churchName}_${widget.user?.name}_${DateTime.now().millisecondsSinceEpoch}.png';
+      final filePath = '${formsDir.path}${Platform.pathSeparator}$fileName';
+      final file = File(filePath);
+      await file.writeAsBytes(pngBytes, flush: true);
+
+      await _ensureGalleryPermission();
+      await SaverGallery.saveImage(
+        pngBytes,
+        fileName: fileName,
+        skipIfExists: true,
+      );
+
+      await StorageService.instance.addFormImagePath(filePath);
+      return filePath;
     } catch (e) {
       return null;
     } finally {
@@ -115,17 +151,16 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
+  Future<void> _ensureGalleryPermission() async {
+    if (Platform.isIOS) {
+      await Permission.photos.request();
+      return;
+    }
 
-
-  Future<void> _captureAndSaveFormImage() async {
-    final bytes = await _renderFormToBytes();
-    if (bytes == null) return;
-
-    await sl<IUserRepository>().saveCapturedForm(
-      pngBytes: bytes,
-      churchName: widget.form.churchName ?? '',
-      userName: widget.user?.name ?? '',
-    );
+    if (Platform.isAndroid) {
+      await Permission.photos.request();
+      await Permission.storage.request();
+    }
   }
 
   @override
@@ -189,7 +224,7 @@ class _FormScreenState extends State<FormScreen> {
                   child: BlocConsumer<SubmitCubit, SubmitState>(
                     listener: (context, state) {
                       if (state is SubmitSuccess) {
-                        Navigator.pop(context);
+                        Navigator.pop(context, state.payload);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text("تم تسليم الاستمارة بنجاح!"),
@@ -272,11 +307,16 @@ class _FormScreenState extends State<FormScreen> {
                               }
                               if (widget.editCollectionName != null &&
                                   widget.editDocumentId != null) {
-                                await context.read<SubmitCubit>().submitForm(() =>
-                                    widget.form.editSubmit(
-                                        collectionName: widget.editCollectionName!,
-                                        documentId: widget.editDocumentId!,
-                                        judgeName: judgeName));
+                                final payload =
+                                    widget.form.buildPayload(judgeName);
+                                await context.read<SubmitCubit>().submitForm(
+                                      () => widget.form.editSubmit(
+                                          collectionName:
+                                              widget.editCollectionName!,
+                                          documentId: widget.editDocumentId!,
+                                          judgeName: judgeName),
+                                      payload: payload,
+                                    );
                                 return;
                               }
                               await context.read<SubmitCubit>().submitForm(

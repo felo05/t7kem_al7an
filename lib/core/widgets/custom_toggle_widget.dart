@@ -50,7 +50,8 @@ class CustomToggleWidget extends StatelessWidget {
                   activeThumbColor: defaultActiveColor,
                   activeTrackColor: defaultActiveColor.withValues(alpha: 0.3),
                   inactiveThumbColor: defaultInactiveColor,
-                  inactiveTrackColor: defaultInactiveColor.withValues(alpha: 0.3),
+                  inactiveTrackColor:
+                      defaultInactiveColor.withValues(alpha: 0.3),
                 );
               },
             ),

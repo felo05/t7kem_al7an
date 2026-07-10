@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 class FinalCollectionsInitializer {
   static const String _initializationKey = 'final_collections_initialized';
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   /// Collection names for all 16 final result collections
   static const List<String> _finalCollections = [
     // حضانة (Kindergarten)
@@ -14,19 +14,19 @@ class FinalCollectionsInitializer {
     'kg2ResultsFinal',
     'kgGResultsFinal',
     'kgFResultsFinal',
-    
+
     // أولى وثانية (1st and 2nd grade)
     'oulaTanya1ResultsFinal',
     'oulaTanya2ResultsFinal',
     'oulaTanyaGResultsFinal',
     'oulaTanyaFResultsFinal',
-    
+
     // ثالثة ورابعة (3rd and 4th grade)
     'taltaRaba1ResultsFinal',
     'taltaRaba2ResultsFinal',
     'taltaRabaGResultsFinal',
     'taltaRabaFResultsFinal',
-    
+
     // خامسة وسادسة (5th and 6th grade)
     'khamsaSadsa1ResultsFinal',
     'khamsaSadsa2ResultsFinal',
@@ -46,13 +46,18 @@ class FinalCollectionsInitializer {
       'oulaTanyaGResultsFinal': 'أولى وثانية موهوبين جماعي - النتائج النهائية',
       'oulaTanyaFResultsFinal': 'أولى وثانية موهوبين فردي - النتائج النهائية',
       'taltaRaba1ResultsFinal': 'ثالثة ورابعة المستوى الأول - النتائج النهائية',
-      'taltaRaba2ResultsFinal': 'ثالثة ورابعة المستوى الثاني - النتائج النهائية',
+      'taltaRaba2ResultsFinal':
+          'ثالثة ورابعة المستوى الثاني - النتائج النهائية',
       'taltaRabaGResultsFinal': 'ثالثة ورابعة موهوبين جماعي - النتائج النهائية',
       'taltaRabaFResultsFinal': 'ثالثة ورابعة موهوبين فردي - النتائج النهائية',
-      'khamsaSadsa1ResultsFinal': 'خامسة وسادسة المستوى الأول - النتائج النهائية',
-      'khamsaSadsa2ResultsFinal': 'خامسة وسادسة المستوى الثاني - النتائج النهائية',
-      'khamsaSadsaGResultsFinal': 'خامسة وسادسة موهوبين جماعي - النتائج النهائية',
-      'khamsaSadsaFResultsFinal': 'خامسة وسادسة موهوبين فردي - النتائج النهائية',
+      'khamsaSadsa1ResultsFinal':
+          'خامسة وسادسة المستوى الأول - النتائج النهائية',
+      'khamsaSadsa2ResultsFinal':
+          'خامسة وسادسة المستوى الثاني - النتائج النهائية',
+      'khamsaSadsaGResultsFinal':
+          'خامسة وسادسة موهوبين جماعي - النتائج النهائية',
+      'khamsaSadsaFResultsFinal':
+          'خامسة وسادسة موهوبين فردي - النتائج النهائية',
     };
     return descriptions[collectionName] ?? 'النتائج النهائية - $collectionName';
   }
@@ -60,11 +65,9 @@ class FinalCollectionsInitializer {
   /// Check if final collections have already been initialized
   static Future<bool> _isAlreadyInitialized() async {
     try {
-      final doc = await _firestore
-          .collection('_system')
-          .doc(_initializationKey)
-          .get();
-      
+      final doc =
+          await _firestore.collection('_system').doc(_initializationKey).get();
+
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
         return data['initialized'] == true;
@@ -79,10 +82,7 @@ class FinalCollectionsInitializer {
   /// Mark final collections as initialized
   static Future<void> _markAsInitialized() async {
     try {
-      await _firestore
-          .collection('_system')
-          .doc(_initializationKey)
-          .set({
+      await _firestore.collection('_system').doc(_initializationKey).set({
         'initialized': true,
         'initializedAt': FieldValue.serverTimestamp(),
         'version': '1.0',
@@ -99,7 +99,7 @@ class FinalCollectionsInitializer {
       // Check if the collection already has a 'final' document
       final docRef = _firestore.collection(collectionName).doc('final');
       final existingDoc = await docRef.get();
-      
+
       if (existingDoc.exists) {
         debugPrint('✅ Collection $collectionName already exists');
         return true;
@@ -130,24 +130,25 @@ class FinalCollectionsInitializer {
   static Future<bool> _verifyCollections() async {
     try {
       int verifiedCount = 0;
-      
+
       for (final collectionName in _finalCollections) {
         final docRef = _firestore.collection(collectionName).doc('final');
         final doc = await docRef.get();
-        
+
         if (doc.exists) {
           final data = doc.data();
-          if (data != null && 
-              data['day'] == 'final' && 
+          if (data != null &&
+              data['day'] == 'final' &&
               data.containsKey('churches') &&
               data.containsKey('description')) {
             verifiedCount++;
           }
         }
       }
-      
+
       final isValid = verifiedCount == _finalCollections.length;
-      debugPrint('📊 Verified $verifiedCount/${_finalCollections.length} collections');
+      debugPrint(
+          '📊 Verified $verifiedCount/${_finalCollections.length} collections');
       return isValid;
     } catch (e) {
       debugPrint('❌ Error verifying collections: $e');
@@ -160,15 +161,16 @@ class FinalCollectionsInitializer {
   static Future<bool> initializeFinalCollections() async {
     try {
       debugPrint('🔥 Starting final collections initialization...');
-      
+
       // Check if already initialized to avoid unnecessary work
       if (await _isAlreadyInitialized()) {
         debugPrint('✅ Final collections already initialized');
         return await _verifyCollections();
       }
 
-      debugPrint('🚀 Creating ${_finalCollections.length} final collections...');
-      
+      debugPrint(
+          '🚀 Creating ${_finalCollections.length} final collections...');
+
       int successCount = 0;
       int errorCount = 0;
 
@@ -211,13 +213,10 @@ class FinalCollectionsInitializer {
   static Future<bool> forceReinitialize() async {
     try {
       debugPrint('🔄 Force re-initializing final collections...');
-      
+
       // Remove initialization marker
-      await _firestore
-          .collection('_system')
-          .doc(_initializationKey)
-          .delete();
-      
+      await _firestore.collection('_system').doc(_initializationKey).delete();
+
       // Re-run initialization
       return await initializeFinalCollections();
     } catch (e) {
@@ -231,7 +230,7 @@ class FinalCollectionsInitializer {
     try {
       final isInitialized = await _isAlreadyInitialized();
       final verified = await _verifyCollections();
-      
+
       return {
         'isInitialized': isInitialized,
         'isVerified': verified,
@@ -255,12 +254,10 @@ class FinalCollectionsInitializer {
       if (!_finalCollections.contains(collectionName)) {
         return false;
       }
-      
-      final doc = await _firestore
-          .collection(collectionName)
-          .doc('final')
-          .get();
-      
+
+      final doc =
+          await _firestore.collection(collectionName).doc('final').get();
+
       return doc.exists;
     } catch (e) {
       debugPrint('❌ Error checking collection $collectionName: $e');

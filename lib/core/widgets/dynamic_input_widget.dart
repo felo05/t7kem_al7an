@@ -50,6 +50,7 @@ class _DynamicInputWidgetState extends State<DynamicInputWidget> {
     });
     widget.onItemsChanged(_items);
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -122,10 +123,9 @@ class _DynamicInputWidgetState extends State<DynamicInputWidget> {
                 ),
               ],
             ),
-            
+
             // Display Added Items in the same container
             if (_items.isNotEmpty) ...[
-
               const SizedBox(height: 8),
               ListView.separated(
                 shrinkWrap: true,
@@ -141,7 +141,8 @@ class _DynamicInputWidgetState extends State<DynamicInputWidget> {
                     decoration: BoxDecoration(
                       color: _primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: _primaryColor.withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color: _primaryColor.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [

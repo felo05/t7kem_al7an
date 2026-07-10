@@ -6,7 +6,8 @@ class UserModel {
   final String? password;
   final String? docId;
 
-  UserModel({required this.name, this.isAdmin = false, this.password, this.docId});
+  UserModel(
+      {required this.name, this.isAdmin = false, this.password, this.docId});
 
   factory UserModel.fromJson(Map<String, dynamic> data, {String? docId}) {
     return UserModel(

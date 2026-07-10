@@ -6,12 +6,13 @@ part 'submit_state.dart';
 class SubmitCubit extends Cubit<SubmitState> {
   SubmitCubit() : super(SubmitInitial());
 
-  Future<void> submitForm(Future<bool> Function() submit) async {
+  Future<void> submitForm(Future<bool> Function() submit,
+      {Map<String, dynamic>? payload}) async {
     emit(SubmitLoading());
     try {
       final success = await submit();
       if (success) {
-        emit(SubmitSuccess());
+        emit(SubmitSuccess(payload: payload));
       } else {
         emit(SubmitFailure("فشل في تسليم الاستمارة. يرجى المحاولة مرة أخرى."));
       }

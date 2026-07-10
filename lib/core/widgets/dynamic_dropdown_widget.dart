@@ -114,7 +114,8 @@ class _DynamicDropdownWidgetState extends State<DynamicDropdownWidget> {
                       decoration: InputDecoration(
                         hintText: widget.hintText ?? 'اختر من القائمة...',
                         prefixIcon: Icon(
-                          widget.dropdownIcon ?? Icons.arrow_drop_down_circle_outlined,
+                          widget.dropdownIcon ??
+                              Icons.arrow_drop_down_circle_outlined,
                           color: _primaryColor,
                         ),
                         border: OutlineInputBorder(
@@ -123,7 +124,8 @@ class _DynamicDropdownWidgetState extends State<DynamicDropdownWidget> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: _primaryColor, width: 2),
+                          borderSide:
+                              BorderSide(color: _primaryColor, width: 2),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -157,8 +159,8 @@ class _DynamicDropdownWidgetState extends State<DynamicDropdownWidget> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: _currentSelection != null 
-                      ? () => _addItem(_currentSelection) 
+                  onPressed: _currentSelection != null
+                      ? () => _addItem(_currentSelection)
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _primaryColor,
@@ -176,7 +178,7 @@ class _DynamicDropdownWidgetState extends State<DynamicDropdownWidget> {
                 ),
               ],
             ),
-            
+
             // Display Selected Items in the same container
             if (_selectedItems.isNotEmpty) ...[
               const SizedBox(height: 16),
@@ -194,7 +196,8 @@ class _DynamicDropdownWidgetState extends State<DynamicDropdownWidget> {
                     decoration: BoxDecoration(
                       color: _primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: _primaryColor.withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color: _primaryColor.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [

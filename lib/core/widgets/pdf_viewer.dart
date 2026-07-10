@@ -15,9 +15,9 @@ class PdfCacheService {
   final Dio _dio = Dio();
 
   Future<File> getOrDownload(
-      String url, {
-        void Function(double progress)? onProgress,
-      }) async {
+    String url, {
+    void Function(double progress)? onProgress,
+  }) async {
     final cacheFile = await _cacheFileForUrl(url);
     if (await cacheFile.exists()) return cacheFile;
 
@@ -112,8 +112,8 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
       ),
       body: switch (_state) {
         _Loading(:final progress) => _buildLoading(progress),
-        _Ready(:final file)      => _buildViewer(file),
-        _Failed(:final error)    => _buildError(error),
+        _Ready(:final file) => _buildViewer(file),
+        _Failed(:final error) => _buildError(error),
       },
     );
   }
@@ -180,7 +180,10 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
             const SizedBox(height: 16),
             const Text(
               'Failed to load PDF',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
@@ -209,7 +212,9 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
 // State (sealed)
 // =============================================================================
 
-sealed class _ViewState { const _ViewState(); }
+sealed class _ViewState {
+  const _ViewState();
+}
 
 class _Loading extends _ViewState {
   const _Loading({required this.progress});

@@ -33,7 +33,6 @@ class _ChurchesBody extends StatefulWidget {
 }
 
 class _ChurchesBodyState extends State<_ChurchesBody> {
-
   @override
   void initState() {
     super.initState();
@@ -56,7 +55,8 @@ class _ChurchesBodyState extends State<_ChurchesBody> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const FormsImagesScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const FormsImagesScreen()),
               );
             },
             icon: const Icon(Icons.image),
@@ -131,20 +131,23 @@ class _ChurchesBodyState extends State<_ChurchesBody> {
                 itemBuilder: (context, i) {
                   BaseMarksFormModel form = churches.elementAt(i);
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     child: InkWell(
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => FormScreen(form: form, user: widget.user),
+                            builder: (context) =>
+                                FormScreen(form: form, user: widget.user),
                           ),
                         );
                       },
                       borderRadius: BorderRadius.circular(16),
                       child: Card(
                         elevation: 4,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
@@ -178,7 +181,8 @@ class _ChurchesBodyState extends State<_ChurchesBody> {
                                     const SizedBox(width: 16),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             form.churchName!,

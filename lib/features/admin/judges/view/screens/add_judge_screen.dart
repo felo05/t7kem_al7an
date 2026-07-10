@@ -8,7 +8,6 @@ import 'package:t7kem_al7an/features/authentication/model/user_model.dart';
 import '../../../../../core/di/service_locator.dart';
 import '../../view_model/add_judge/add_judge_cubit.dart';
 
-
 class AddJudgeScreen extends StatelessWidget {
   const AddJudgeScreen({super.key, this.initialUser});
 
@@ -18,7 +17,7 @@ class AddJudgeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => AddJudgeCubit(sl<IAdminRepository>()),
-      child: _AddJudgeBody( initialUser: initialUser),
+      child: _AddJudgeBody(initialUser: initialUser),
     );
   }
 }
@@ -64,9 +63,11 @@ class _AddJudgeBodyState extends State<_AddJudgeBody> {
       return;
     }
 
-    context.read<AddJudgeCubit>().submit(
-      UserModel(name: name, isAdmin: _user.isAdmin, password: pass, docId: widget.initialUser?.docId)
-    );
+    context.read<AddJudgeCubit>().submit(UserModel(
+        name: name,
+        isAdmin: _user.isAdmin,
+        password: pass,
+        docId: widget.initialUser?.docId));
   }
 
   @override
@@ -86,7 +87,10 @@ class _AddJudgeBodyState extends State<_AddJudgeBody> {
             });
           }
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.isEditing ? 'تم تعديل المستخدم' : 'تم اضافه المستخدم')),
+            SnackBar(
+                content: Text(state.isEditing
+                    ? 'تم تعديل المستخدم'
+                    : 'تم اضافه المستخدم')),
           );
         } else if (state is AddJudgeError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -98,7 +102,8 @@ class _AddJudgeBodyState extends State<_AddJudgeBody> {
         appBar: AppBar(
           title: Text(
             isEditing ? 'تعديل محكم' : 'اضافة محكم',
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.white),
           ),
           centerTitle: true,
           backgroundColor: Colors.blue.shade700,
@@ -163,7 +168,8 @@ class _AddJudgeBodyState extends State<_AddJudgeBody> {
                     BlocBuilder<AddJudgeCubit, AddJudgeState>(
                       builder: (context, state) {
                         if (state is AddJudgeLoading) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                              child: CircularProgressIndicator());
                         }
                         return MarksFormFields.submitButton(
                           onPressed: _submit,

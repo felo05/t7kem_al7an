@@ -123,29 +123,29 @@ class MarksFormFields {
           inputType: TextInputType.number,
           text: "${Al7an.copticSpelling} 10 درجات",
         ),
-        if(l7n.hasTools)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              Al7an.df,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            Checkbox(
-              value: isChecked[0],
-              onChanged: (val) => onChanged(0, val),
-            ),
-            const SizedBox(width: 30),
-            const Text(
-              Al7an.treanto,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            Checkbox(
-              value: isChecked[1],
-              onChanged: (val) => onChanged(1, val),
-            ),
-          ],
-        ),
+        if (l7n.hasTools)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                Al7an.df,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              Checkbox(
+                value: isChecked[0],
+                onChanged: (val) => onChanged(0, val),
+              ),
+              const SizedBox(width: 30),
+              const Text(
+                Al7an.treanto,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              Checkbox(
+                value: isChecked[1],
+                onChanged: (val) => onChanged(1, val),
+              ),
+            ],
+          ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -202,16 +202,17 @@ class MarksFormFields {
             ),
             Checkbox(
                 value: isChecked[0], onChanged: (val) => onChanged(0, val)),
-            if(l7n.hasTools)
-            ...[const SizedBox(width: 30),
-            const Text(
-                    Al7an.df,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-            Checkbox(
-                    value: isChecked[1],
-                    onChanged: (val) => onChanged(1, val),
-                  ),]
+            if (l7n.hasTools) ...[
+              const SizedBox(width: 30),
+              const Text(
+                Al7an.df,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              Checkbox(
+                value: isChecked[1],
+                onChanged: (val) => onChanged(1, val),
+              ),
+            ]
           ],
         ),
       ],
@@ -259,31 +260,31 @@ class MarksFormFields {
           inputType: TextInputType.number,
           text: "${Al7an.ro7ania} 10 درجات",
         ),
-        if(l7n.hasTools)
-        ...[
+        if (l7n.hasTools) ...[
           const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-                    Al7an.df,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-            Checkbox(
-                    value: isChecked[1],
-                    onChanged: (val) => onChanged(1, val),
-                  ),
-            const SizedBox(width: 20),
-            const Text(
-                    Al7an.treanto,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-            Checkbox(
-                    value: isChecked[2],
-                    onChanged: (val) => onChanged(2, val),
-                  ),
-          ],
-        )],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                Al7an.df,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              Checkbox(
+                value: isChecked[1],
+                onChanged: (val) => onChanged(1, val),
+              ),
+              const SizedBox(width: 20),
+              const Text(
+                Al7an.treanto,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              Checkbox(
+                value: isChecked[2],
+                onChanged: (val) => onChanged(2, val),
+              ),
+            ],
+          )
+        ],
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -325,7 +326,7 @@ class MarksFormFields {
     );
   }
 
-  static Widget nameRow(L7n l7n){
+  static Widget nameRow(L7n l7n) {
     return SizedBox(
       width: double.infinity,
       child: Row(

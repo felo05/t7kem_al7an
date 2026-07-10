@@ -9,7 +9,8 @@ class CheckStatusScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('النتائج', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: const Text('النتائج',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         backgroundColor: Colors.orange.shade700,
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -39,7 +40,8 @@ class CheckStatusScreen extends StatelessWidget {
                 mainAxisSpacing: 30,
                 childAspectRatio: 0.95,
                 children: ResultCollections.all
-                    .map((collection) => _CollectionStatCard(collectionName: collection))
+                    .map((collection) =>
+                        _CollectionStatCard(collectionName: collection))
                     .toList(),
               ),
             ],
@@ -65,7 +67,8 @@ class _CollectionStatCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CollectionDetailsScreen(collectionName: collectionName, displayName: title),
+            builder: (context) => CollectionDetailsScreen(
+                collectionName: collectionName, displayName: title),
           ),
         );
       },
@@ -74,7 +77,12 @@ class _CollectionStatCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 5, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 5,
+                offset: const Offset(0, 2))
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -83,7 +91,8 @@ class _CollectionStatCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               title,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+              style: TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: color),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

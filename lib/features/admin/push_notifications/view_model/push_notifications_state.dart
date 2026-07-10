@@ -10,7 +10,6 @@ final class PushNotificationsSuccess extends PushNotificationsState {}
 final class PushNotificationsLoading extends PushNotificationsState {}
 
 final class PushNotificationsError extends PushNotificationsState {
-
   final String message;
 
   PushNotificationsError({required this.message});

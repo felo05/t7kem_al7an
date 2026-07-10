@@ -4,7 +4,6 @@ import '../churches_adding/model/add_church_form_data.dart';
 import '../results/model/church_result_doc.dart';
 
 abstract interface class IAdminRepository {
-
   Future<String?> sendPushNotification({
     required String title,
     required String body,
@@ -28,6 +27,5 @@ abstract interface class IAdminRepository {
   Stream<QuerySnapshot<UserModel>> watchJudges();
 
   Stream<List<ChurchResultDoc>> watchCollection(String collectionName);
-  Stream<List<ChurchResultDoc>> watchChurchResults(String collectionName, String churchName);
   Future<void> deleteResult(String collectionName, String documentId);
 }

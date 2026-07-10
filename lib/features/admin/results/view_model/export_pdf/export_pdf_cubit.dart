@@ -19,8 +19,12 @@ class ExportPdfCubit extends Cubit<ExportPdfState> {
   }) async {
     emit(ExportPdfLoading());
     try {
-      final logo1 = await rootBundle.load('assets/images/logo.png').then((d) => d.buffer.asUint8List());
-      final logo2 = await rootBundle.load('assets/images/logo2.jpg').then((d) => d.buffer.asUint8List());
+      final logo1 = await rootBundle
+          .load('assets/images/logo.png')
+          .then((d) => d.buffer.asUint8List());
+      final logo2 = await rootBundle
+          .load('assets/images/logo2.jpg')
+          .then((d) => d.buffer.asUint8List());
       final arabicFont = await PdfGoogleFonts.notoSansArabicRegular();
       final arabicBoldFont = await PdfGoogleFonts.notoSansArabicBold();
 
@@ -47,30 +51,39 @@ class ExportPdfCubit extends Cubit<ExportPdfState> {
                     pw.Row(
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       children: [
-                        pw.Image(pw.MemoryImage(logo1), width: 100, height: 100),
+                        pw.Image(pw.MemoryImage(logo1),
+                            width: 100, height: 100),
                         pw.Expanded(
                           child: pw.Column(
                             children: [
                               pw.Text(
                                 "نتائج مسابقة الألحان والتسبحة",
-                                style: pw.TextStyle(font: arabicBoldFont, fontSize: 24, fontWeight: pw.FontWeight.bold),
+                                style: pw.TextStyle(
+                                    font: arabicBoldFont,
+                                    fontSize: 24,
+                                    fontWeight: pw.FontWeight.bold),
                                 textAlign: pw.TextAlign.center,
                               ),
                               pw.SizedBox(height: 10),
                               pw.Text(
                                 'المصعدين',
-                                style: pw.TextStyle(font: arabicFont, fontSize: 18, fontWeight: pw.FontWeight.normal),
+                                style: pw.TextStyle(
+                                    font: arabicFont,
+                                    fontSize: 18,
+                                    fontWeight: pw.FontWeight.normal),
                                 textAlign: pw.TextAlign.center,
                               ),
                             ],
                           ),
                         ),
-                        pw.Image(pw.MemoryImage(logo2), width: 100, height: 100),
+                        pw.Image(pw.MemoryImage(logo2),
+                            width: 100, height: 100),
                       ],
                     ),
                     pw.SizedBox(height: 40),
                     pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const pw.EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
                       decoration: pw.BoxDecoration(
                         color: PdfColors.green100,
                         borderRadius: pw.BorderRadius.circular(10),
@@ -78,7 +91,11 @@ class ExportPdfCubit extends Cubit<ExportPdfState> {
                       ),
                       child: pw.Text(
                         displayName,
-                        style: pw.TextStyle(font: arabicBoldFont, fontSize: 20, fontWeight: pw.FontWeight.bold, color: PdfColors.green800),
+                        style: pw.TextStyle(
+                            font: arabicBoldFont,
+                            fontSize: 20,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.green800),
                         textAlign: pw.TextAlign.center,
                       ),
                     ),
@@ -91,9 +108,15 @@ class ExportPdfCubit extends Cubit<ExportPdfState> {
                           margin: const pw.EdgeInsets.only(bottom: 15),
                           padding: const pw.EdgeInsets.all(15),
                           decoration: pw.BoxDecoration(
-                            color: index == 0 ? PdfColors.amber100 : PdfColors.grey100,
+                            color: index == 0
+                                ? PdfColors.amber100
+                                : PdfColors.grey100,
                             borderRadius: pw.BorderRadius.circular(10),
-                            border: pw.Border.all(color: index == 0 ? PdfColors.amber300 : PdfColors.grey300, width: 2),
+                            border: pw.Border.all(
+                                color: index == 0
+                                    ? PdfColors.amber300
+                                    : PdfColors.grey300,
+                                width: 2),
                           ),
                           child: pw.Row(
                             children: [
@@ -101,11 +124,17 @@ class ExportPdfCubit extends Cubit<ExportPdfState> {
                                 width: 40,
                                 height: 40,
                                 decoration: pw.BoxDecoration(
-                                  color: index == 0 ? PdfColors.amber : PdfColors.grey400,
+                                  color: index == 0
+                                      ? PdfColors.amber
+                                      : PdfColors.grey400,
                                   borderRadius: pw.BorderRadius.circular(20),
                                 ),
                                 child: pw.Center(
-                                  child: pw.Text('${index + 1}', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                                  child: pw.Text('${index + 1}',
+                                      style: pw.TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: pw.FontWeight.bold,
+                                          color: PdfColors.white)),
                                 ),
                               ),
                               pw.SizedBox(width: 20),
@@ -113,9 +142,13 @@ class ExportPdfCubit extends Cubit<ExportPdfState> {
                                 child: pw.Text(
                                   churchName,
                                   style: pw.TextStyle(
-                                    font: index == 0 ? arabicBoldFont : arabicFont,
+                                    font: index == 0
+                                        ? arabicBoldFont
+                                        : arabicFont,
                                     fontSize: 16,
-                                    fontWeight: index == 0 ? pw.FontWeight.bold : pw.FontWeight.normal,
+                                    fontWeight: index == 0
+                                        ? pw.FontWeight.bold
+                                        : pw.FontWeight.normal,
                                   ),
                                 ),
                               ),
@@ -133,7 +166,10 @@ class ExportPdfCubit extends Cubit<ExportPdfState> {
                         ),
                         child: pw.Text(
                           'لا توجد بيانات متاحة لهذا المستوى',
-                          style: pw.TextStyle(font: arabicFont, fontSize: 16, color: PdfColors.red800),
+                          style: pw.TextStyle(
+                              font: arabicFont,
+                              fontSize: 16,
+                              color: PdfColors.red800),
                           textAlign: pw.TextAlign.center,
                         ),
                       ),
@@ -149,7 +185,8 @@ class ExportPdfCubit extends Cubit<ExportPdfState> {
 
       await Printing.layoutPdf(
         onLayout: (PdfPageFormat format) async => pdf.save(),
-        name: 'Church_Competition_Results_${DateTime.now().millisecondsSinceEpoch}.pdf',
+        name:
+            'Church_Competition_Results_${DateTime.now().millisecondsSinceEpoch}.pdf',
       );
 
       emit(ExportPdfSuccess());

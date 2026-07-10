@@ -10,7 +10,7 @@ import '../churches_adding/model/church_days.dart';
 import '../judges_assigning/model/assign_judge_days.dart';
 import '../results/model/church_result_doc.dart';
 
-class AdminRepository implements IAdminRepository{
+class AdminRepository implements IAdminRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
@@ -20,8 +20,10 @@ class AdminRepository implements IAdminRepository{
   }) async {
     try {
       // Load service account credentials bundled in the app
-      final jsonString = await rootBundle.loadString('assets/t7kem-al7an-c4a5f-5b9f2aaa218d.json');
-      final credentials = ServiceAccountCredentials.fromJson(jsonDecode(jsonString));
+      final jsonString = await rootBundle
+          .loadString('assets/t7kem-al7an-c4a5f-5b9f2aaa218d.json');
+      final credentials =
+          ServiceAccountCredentials.fromJson(jsonDecode(jsonString));
 
       const scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
 
@@ -75,7 +77,8 @@ class AdminRepository implements IAdminRepository{
       }
     }
 
-    await _handleDynamicInputs(dayId, data.churchName, data.giftedIndividualLists);
+    await _handleDynamicInputs(
+        dayId, data.churchName, data.giftedIndividualLists);
 
     final churchData = {
       ...data.toChurchesDocument(),
@@ -112,10 +115,10 @@ class AdminRepository implements IAdminRepository{
   }
 
   Future<void> _handleDynamicInputs(
-      String dayId,
-      String churchName,
-      Map<String, List<String>> giftedIndividualLists,
-      ) async {
+    String dayId,
+    String churchName,
+    Map<String, List<String>> giftedIndividualLists,
+  ) async {
     for (final stage in _giftedStageToCollection.keys) {
       final names = giftedIndividualLists[stage] ?? [];
       for (final childName in names) {
@@ -133,10 +136,10 @@ class AdminRepository implements IAdminRepository{
     return _firestore
         .collection(FirebaseConstants.users)
         .withConverter<UserModel>(
-      fromFirestore: (snapshot, _) =>
-          UserModel.fromJson(snapshot.data()!, docId: snapshot.id),
-      toFirestore: (user, _) => user.toJson(),
-    )
+          fromFirestore: (snapshot, _) =>
+              UserModel.fromJson(snapshot.data()!, docId: snapshot.id),
+          toFirestore: (user, _) => user.toJson(),
+        )
         .where(FirebaseConstants.isAdmin, isEqualTo: false)
         .snapshots();
   }
@@ -154,7 +157,10 @@ class AdminRepository implements IAdminRepository{
   @override
   Future<String?> editJudge(UserModel user) async {
     try {
-      await _firestore.collection(FirebaseConstants.users).doc(user.docId).update(user.toJson());
+      await _firestore
+          .collection(FirebaseConstants.users)
+          .doc(user.docId)
+          .update(user.toJson());
       return null;
     } catch (e) {
       return e.toString();
@@ -173,8 +179,10 @@ class AdminRepository implements IAdminRepository{
 
   @override
   Future<List<String>> fetchJudgeNames() async {
-    final snapshot =
-    await _firestore.collection('users').where('isAdmin', isEqualTo: false).get();
+    final snapshot = await _firestore
+        .collection('users')
+        .where('isAdmin', isEqualTo: false)
+        .get();
 
     final names = <String>[];
     for (final doc in snapshot.docs) {
@@ -237,22 +245,13 @@ class AdminRepository implements IAdminRepository{
   @override
   Stream<List<ChurchResultDoc>> watchCollection(String collectionName) {
     return _firestore.collection(collectionName).snapshots().map(
-          (snapshot) => snapshot.docs.map(ChurchResultDoc.fromSnapshot).toList(),
-    );
-  }
-
-  @override
-  Stream<List<ChurchResultDoc>> watchChurchResults(String collectionName, String churchName) {
-    return _firestore
-        .collection(collectionName)
-        .where('churchName', isEqualTo: churchName)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map(ChurchResultDoc.fromSnapshot).toList());
+          (snapshot) =>
+              snapshot.docs.map(ChurchResultDoc.fromSnapshot).toList(),
+        );
   }
 
   @override
   Future<void> deleteResult(String collectionName, String documentId) {
     return _firestore.collection(collectionName).doc(documentId).delete();
   }
-
 }

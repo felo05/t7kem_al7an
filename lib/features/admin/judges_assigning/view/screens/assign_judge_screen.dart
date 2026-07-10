@@ -7,7 +7,6 @@ import '../../../../../core/di/service_locator.dart';
 import '../../model/assign_judge_days.dart';
 import '/core/widgets/dynamic_dropdown_widget.dart';
 
-
 class AssignJudgeScreen extends StatelessWidget {
   const AssignJudgeScreen({super.key});
 
@@ -15,8 +14,10 @@ class AssignJudgeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => GetJudgesCubit(sl<IAdminRepository>())..fetch()),
-        BlocProvider(create: (_) => JudgesAssigningCubit(sl<IAdminRepository>())),
+        BlocProvider(
+            create: (_) => GetJudgesCubit(sl<IAdminRepository>())..fetch()),
+        BlocProvider(
+            create: (_) => JudgesAssigningCubit(sl<IAdminRepository>())),
       ],
       child: const _AssignJudgeBody(),
     );
@@ -53,11 +54,23 @@ class _AssignJudgeBodyState extends State<_AssignJudgeBody> {
   final _selectedKhamsaSadsaF = ValueNotifier<List<String>>([]);
 
   List<ValueNotifier<List<String>>> get _allNotifiers => [
-    _selectedKg1, _selectedKg2, _selectedKgG, _selectedKgF,
-    _selectedOulaTanya1, _selectedOulaTanya2, _selectedOulaTanyaG, _selectedOulaTanyaF,
-    _selectedTaltaRaba1, _selectedTaltaRaba2, _selectedTaltaRabaG, _selectedTaltaRabaF,
-    _selectedKhamsaSadsa1, _selectedKhamsaSadsa2, _selectedKhamsaSadsaG, _selectedKhamsaSadsaF,
-  ];
+        _selectedKg1,
+        _selectedKg2,
+        _selectedKgG,
+        _selectedKgF,
+        _selectedOulaTanya1,
+        _selectedOulaTanya2,
+        _selectedOulaTanyaG,
+        _selectedOulaTanyaF,
+        _selectedTaltaRaba1,
+        _selectedTaltaRaba2,
+        _selectedTaltaRabaG,
+        _selectedTaltaRabaF,
+        _selectedKhamsaSadsa1,
+        _selectedKhamsaSadsa2,
+        _selectedKhamsaSadsaG,
+        _selectedKhamsaSadsaF,
+      ];
 
   @override
   void dispose() {
@@ -93,9 +106,9 @@ class _AssignJudgeBodyState extends State<_AssignJudgeBody> {
     };
 
     context.read<JudgesAssigningCubit>().submit(
-      selectedDayArabic: _selectedDay!,
-      judgeMappings: judgeMappings,
-    );
+          selectedDayArabic: _selectedDay!,
+          judgeMappings: judgeMappings,
+        );
   }
 
   void _clearForm() {
@@ -109,7 +122,10 @@ class _AssignJudgeBodyState extends State<_AssignJudgeBody> {
 
   void _showErrorMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red, duration: const Duration(seconds: 2)),
+      SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2)),
     );
   }
 
@@ -144,7 +160,8 @@ class _AssignJudgeBodyState extends State<_AssignJudgeBody> {
             if (state is GetJudgesError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('خطأ في تحميل أسماء المحكمين: ${state.message}'),
+                  content:
+                      Text('خطأ في تحميل أسماء المحكمين: ${state.message}'),
                   backgroundColor: Colors.red,
                   duration: const Duration(seconds: 3),
                 ),
@@ -166,7 +183,8 @@ class _AssignJudgeBodyState extends State<_AssignJudgeBody> {
             } else if (state is JudgesAssigningError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('حدث خطأ أثناء تسجيل المحكمين: ${state.message}'),
+                  content:
+                      Text('حدث خطأ أثناء تسجيل المحكمين: ${state.message}'),
                   backgroundColor: Colors.red,
                   duration: const Duration(seconds: 3),
                 ),
@@ -213,7 +231,9 @@ class _AssignJudgeBodyState extends State<_AssignJudgeBody> {
                   );
                 }
 
-                final userNames = namesState is GetJudgesSuccess ? namesState.judges : <String>[];
+                final userNames = namesState is GetJudgesSuccess
+                    ? namesState.judges
+                    : <String>[];
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(20.0),
@@ -238,11 +258,15 @@ class _AssignJudgeBodyState extends State<_AssignJudgeBody> {
                           ),
                           child: Column(
                             children: [
-                              Icon(Icons.person, size: 64, color: Colors.purple.shade700),
+                              Icon(Icons.person,
+                                  size: 64, color: Colors.purple.shade700),
                               const SizedBox(height: 16),
                               const Text(
                                 'تسكين المحكمين',
-                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                                style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87),
                               ),
                             ],
                           ),
@@ -267,35 +291,46 @@ class _AssignJudgeBodyState extends State<_AssignJudgeBody> {
                               children: [
                                 const Text(
                                   'اختر اليوم',
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87),
                                 ),
                                 const SizedBox(height: 12),
                                 Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.grey.shade300),
+                                    border:
+                                        Border.all(color: Colors.grey.shade300),
                                   ),
                                   child: DropdownButtonFormField<String>(
                                     initialValue: _selectedDay,
                                     decoration: InputDecoration(
                                       hintText: 'اختر اليوم...',
-                                      prefixIcon: Icon(Icons.person, color: Colors.purple.shade700),
+                                      prefixIcon: Icon(Icons.person,
+                                          color: Colors.purple.shade700),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
                                         borderSide: BorderSide.none,
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(color: Colors.purple.shade700, width: 2),
+                                        borderSide: BorderSide(
+                                            color: Colors.purple.shade700,
+                                            width: 2),
                                       ),
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 12),
                                       fillColor: Colors.grey.shade50,
                                       filled: true,
                                     ),
                                     items: _availableDays.map((String day) {
                                       return DropdownMenuItem<String>(
                                         value: day,
-                                        child: Text(day, style: const TextStyle(fontSize: 14)),
+                                        child: Text(day,
+                                            style:
+                                                const TextStyle(fontSize: 14)),
                                       );
                                     }).toList(),
                                     onChanged: (String? newValue) {
@@ -305,7 +340,8 @@ class _AssignJudgeBodyState extends State<_AssignJudgeBody> {
                                     },
                                     isExpanded: true,
                                     dropdownColor: Colors.white,
-                                    style: const TextStyle(color: Colors.black87, fontSize: 14),
+                                    style: const TextStyle(
+                                        color: Colors.black87, fontSize: 14),
                                   ),
                                 ),
                               ],
@@ -313,60 +349,114 @@ class _AssignJudgeBodyState extends State<_AssignJudgeBody> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        _buildJudgeDropdown(title: 'حضانة المستوى الأول', userNames: userNames, notifier: _selectedKg1),
+                        _buildJudgeDropdown(
+                            title: 'حضانة المستوى الأول',
+                            userNames: userNames,
+                            notifier: _selectedKg1),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'حضانة المستوى الثاني', userNames: userNames, notifier: _selectedKg2),
+                        _buildJudgeDropdown(
+                            title: 'حضانة المستوى الثاني',
+                            userNames: userNames,
+                            notifier: _selectedKg2),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'حضانة موهوبين جماعي ', userNames: userNames, notifier: _selectedKgG),
+                        _buildJudgeDropdown(
+                            title: 'حضانة موهوبين جماعي ',
+                            userNames: userNames,
+                            notifier: _selectedKgG),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'حضانة موهوبين فردي ', userNames: userNames, notifier: _selectedKgF),
+                        _buildJudgeDropdown(
+                            title: 'حضانة موهوبين فردي ',
+                            userNames: userNames,
+                            notifier: _selectedKgF),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'أولى وثانية المستوى الأول', userNames: userNames, notifier: _selectedOulaTanya1),
+                        _buildJudgeDropdown(
+                            title: 'أولى وثانية المستوى الأول',
+                            userNames: userNames,
+                            notifier: _selectedOulaTanya1),
                         const SizedBox(height: 30),
-                        _buildJudgeDropdown(title: 'أولى وثانية المستوى الثاني', userNames: userNames, notifier: _selectedOulaTanya2),
+                        _buildJudgeDropdown(
+                            title: 'أولى وثانية المستوى الثاني',
+                            userNames: userNames,
+                            notifier: _selectedOulaTanya2),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'أولى وثانية موهوبين جماعي ', userNames: userNames, notifier: _selectedOulaTanyaG),
+                        _buildJudgeDropdown(
+                            title: 'أولى وثانية موهوبين جماعي ',
+                            userNames: userNames,
+                            notifier: _selectedOulaTanyaG),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'أولى وثانية موهوبين فردي ', userNames: userNames, notifier: _selectedOulaTanyaF),
+                        _buildJudgeDropdown(
+                            title: 'أولى وثانية موهوبين فردي ',
+                            userNames: userNames,
+                            notifier: _selectedOulaTanyaF),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'ثالثة ورابعة المستوى الأول', userNames: userNames, notifier: _selectedTaltaRaba1),
+                        _buildJudgeDropdown(
+                            title: 'ثالثة ورابعة المستوى الأول',
+                            userNames: userNames,
+                            notifier: _selectedTaltaRaba1),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'ثالثة ورابعة المستوى الثاني', userNames: userNames, notifier: _selectedTaltaRaba2),
+                        _buildJudgeDropdown(
+                            title: 'ثالثة ورابعة المستوى الثاني',
+                            userNames: userNames,
+                            notifier: _selectedTaltaRaba2),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'ثالثة ورابعة موهوبين جماعي ', userNames: userNames, notifier: _selectedTaltaRabaG),
+                        _buildJudgeDropdown(
+                            title: 'ثالثة ورابعة موهوبين جماعي ',
+                            userNames: userNames,
+                            notifier: _selectedTaltaRabaG),
                         const SizedBox(height: 30),
-                        _buildJudgeDropdown(title: 'ثالثة ورابعة موهوبين فردي ', userNames: userNames, notifier: _selectedTaltaRabaF),
+                        _buildJudgeDropdown(
+                            title: 'ثالثة ورابعة موهوبين فردي ',
+                            userNames: userNames,
+                            notifier: _selectedTaltaRabaF),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'خامسة وسادسة المستوى الأول', userNames: userNames, notifier: _selectedKhamsaSadsa1),
+                        _buildJudgeDropdown(
+                            title: 'خامسة وسادسة المستوى الأول',
+                            userNames: userNames,
+                            notifier: _selectedKhamsaSadsa1),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'خامسة وسادسة المستوى الثاني', userNames: userNames, notifier: _selectedKhamsaSadsa2),
+                        _buildJudgeDropdown(
+                            title: 'خامسة وسادسة المستوى الثاني',
+                            userNames: userNames,
+                            notifier: _selectedKhamsaSadsa2),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'خامسة وسادسة موهوبين جماعي ', userNames: userNames, notifier: _selectedKhamsaSadsaG),
+                        _buildJudgeDropdown(
+                            title: 'خامسة وسادسة موهوبين جماعي ',
+                            userNames: userNames,
+                            notifier: _selectedKhamsaSadsaG),
                         const SizedBox(height: 16),
-                        _buildJudgeDropdown(title: 'خامسة وسادسة موهوبين فردي ', userNames: userNames, notifier: _selectedKhamsaSadsaF),
+                        _buildJudgeDropdown(
+                            title: 'خامسة وسادسة موهوبين فردي ',
+                            userNames: userNames,
+                            notifier: _selectedKhamsaSadsaF),
                         const SizedBox(height: 30),
                         BlocBuilder<JudgesAssigningCubit, JudgesAssigningState>(
                           builder: (context, submitState) {
-                            final isLoading = submitState is JudgesAssigningLoading;
+                            final isLoading =
+                                submitState is JudgesAssigningLoading;
                             return ElevatedButton(
                               onPressed: isLoading ? null : _submitForm,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.purple.shade700,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
                                 elevation: 4,
                               ),
                               child: isLoading
                                   ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                              )
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                          color: Colors.white, strokeWidth: 2),
+                                    )
                                   : const Text(
-                                'تسجيل المحكمين',
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
+                                      'تسجيل المحكمين',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                             );
                           },
                         ),

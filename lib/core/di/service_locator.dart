@@ -9,7 +9,8 @@ import '../../features/user/repository/user_repository.dart';
 final GetIt sl = GetIt.instance;
 
 Future<void> setupServiceLocator() async {
-  sl.registerLazySingleton<IAuthenticationRepository>(()=>AuthenticationRepository());
-  sl.registerLazySingleton<IUserRepository>(()=>UserRepository());
-  sl.registerLazySingleton<IAdminRepository>(()=>AdminRepository());
+  sl.registerLazySingleton<IAuthenticationRepository>(
+      () => AuthenticationRepository());
+  sl.registerLazySingleton<IUserRepository>(() => UserRepository());
+  sl.registerLazySingleton<IAdminRepository>(() => AdminRepository());
 }

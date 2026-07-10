@@ -30,7 +30,9 @@ class SplashCubit extends Cubit<SplashState> {
             : await Permission.storage.request().isGranted;
       } else {
         // No read permission required for Android SDK 29 and above
-        return sdkInt >= 29 ? true : await Permission.storage.request().isGranted;
+        return sdkInt >= 29
+            ? true
+            : await Permission.storage.request().isGranted;
       }
     } else if (Platform.isIOS) {
       // iOS permission for saving images to the gallery
@@ -41,7 +43,6 @@ class SplashCubit extends Cubit<SplashState> {
 
     return false; // Unsupported platforms
   }
-
 
   void checkAuth() async {
     emit(SplashLoading());
@@ -77,8 +78,7 @@ class SplashCubit extends Cubit<SplashState> {
       } else {
         emit(NotLoggedIn());
       }
-    }
-    catch (e) {
+    } catch (e) {
       emit(NotLoggedIn());
     }
   }

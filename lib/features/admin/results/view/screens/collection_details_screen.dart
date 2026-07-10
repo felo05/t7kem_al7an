@@ -15,22 +15,27 @@ class CollectionDetailsScreen extends StatelessWidget {
   final String collectionName;
   final String displayName;
 
-  const CollectionDetailsScreen({super.key, required this.collectionName, required this.displayName});
+  const CollectionDetailsScreen(
+      {super.key, required this.collectionName, required this.displayName});
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => CollectionResultsCubit(sl<IAdminRepository>())..watch(collectionName)),
+        BlocProvider(
+            create: (_) => CollectionResultsCubit(sl<IAdminRepository>())
+              ..watch(collectionName)),
         BlocProvider(create: (_) => ExportPdfCubit()),
       ],
-      child: _CollectionDetailsBody(collectionName: collectionName, displayName: displayName),
+      child: _CollectionDetailsBody(
+          collectionName: collectionName, displayName: displayName),
     );
   }
 }
 
 class _CollectionDetailsBody extends StatefulWidget {
-  const _CollectionDetailsBody({required this.collectionName, required this.displayName});
+  const _CollectionDetailsBody(
+      {required this.collectionName, required this.displayName});
   final String collectionName;
   final String displayName;
 
@@ -60,10 +65,10 @@ class _CollectionDetailsBodyState extends State<_CollectionDetailsBody> {
     // reuse already-streamed docs — no extra Firestore read for export
     final allDocs = _lastRankings.expand((avg) => avg.allDocuments).toList();
     context.read<ExportPdfCubit>().exportCollection(
-      collectionName: widget.collectionName,
-      displayName: widget.displayName,
-      allDocs: allDocs,
-    );
+          collectionName: widget.collectionName,
+          displayName: widget.displayName,
+          allDocs: allDocs,
+        );
   }
 
   @override
@@ -72,15 +77,21 @@ class _CollectionDetailsBodyState extends State<_CollectionDetailsBody> {
       listener: (context, state) {
         if (state is ExportPdfError) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('خطأ في تصدير PDF: ${state.message}'), backgroundColor: Colors.red, duration: const Duration(seconds: 4)),
+            SnackBar(
+                content: Text('خطأ في تصدير PDF: ${state.message}'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4)),
           );
         }
       },
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            _isSelectionMode ? '${_selectedChurches.length} كنيسة محددة' : widget.displayName,
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            _isSelectionMode
+                ? '${_selectedChurches.length} كنيسة محددة'
+                : widget.displayName,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.white),
           ),
           backgroundColor: Colors.orange.shade700,
           foregroundColor: Colors.white,
@@ -88,47 +99,64 @@ class _CollectionDetailsBodyState extends State<_CollectionDetailsBody> {
           elevation: 0,
           actions: _isSelectionMode
               ? [
-            IconButton(icon: const Icon(Icons.done), onPressed: _selectedChurches.isNotEmpty ? _saveSelectedChurches : null),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => setState(() {
-                _isSelectionMode = false;
-                _selectedChurches.clear();
-              }),
-            ),
-          ]
+                  IconButton(
+                      icon: const Icon(Icons.done),
+                      onPressed: _selectedChurches.isNotEmpty
+                          ? _saveSelectedChurches
+                          : null),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => setState(() {
+                      _isSelectionMode = false;
+                      _selectedChurches.clear();
+                    }),
+                  ),
+                ]
               : [
-            BlocBuilder<ExportPdfCubit, ExportPdfState>(
-              builder: (context, state) {
-                final isExporting = state is ExportPdfLoading;
-                return IconButton(
-                  icon: isExporting
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Icon(Icons.picture_as_pdf),
-                  tooltip: 'تصدير النتائج كـ PDF',
-                  onPressed: isExporting ? null : () => _exportPdf(context),
-                );
-              },
-            ),
-            IconButton(icon: const Icon(Icons.check_box), onPressed: () => setState(() => _isSelectionMode = true)),
-          ],
+                  BlocBuilder<ExportPdfCubit, ExportPdfState>(
+                    builder: (context, state) {
+                      final isExporting = state is ExportPdfLoading;
+                      return IconButton(
+                        icon: isExporting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2))
+                            : const Icon(Icons.picture_as_pdf),
+                        tooltip: 'تصدير النتائج كـ PDF',
+                        onPressed:
+                            isExporting ? null : () => _exportPdf(context),
+                      );
+                    },
+                  ),
+                  IconButton(
+                      icon: const Icon(Icons.check_box),
+                      onPressed: () => setState(() => _isSelectionMode = true)),
+                ],
         ),
         body: Container(
           width: double.infinity,
           height: double.infinity,
           decoration: BoxDecoration(
-            gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.orange.shade700, Colors.orange.shade50]),
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.orange.shade700, Colors.orange.shade50]),
           ),
           child: BlocBuilder<CollectionResultsCubit, CollectionResultsState>(
             builder: (context, state) {
               if (state is CollectionResultsLoading) {
-                return const Center(child: CircularProgressIndicator(color: Colors.white));
+                return const Center(
+                    child: CircularProgressIndicator(color: Colors.white));
               }
               final rankings = (state as CollectionResultsSuccess).rankings;
               _lastRankings = rankings;
 
               if (rankings.isEmpty) {
-                return const Center(child: Text('لا توجد بيانات متاحة', style: TextStyle(color: Colors.white, fontSize: 18)));
+                return const Center(
+                    child: Text('لا توجد بيانات متاحة',
+                        style: TextStyle(color: Colors.white, fontSize: 18)));
               }
 
               return ListView.builder(
@@ -137,7 +165,8 @@ class _CollectionDetailsBodyState extends State<_CollectionDetailsBody> {
                 itemBuilder: (context, index) {
                   final avg = rankings[index];
                   final churchName = avg.churchName;
-                  final total = "%${(100 * avg.averagePercent).toStringAsFixed(2)}";
+                  final total =
+                      "%${(100 * avg.averagePercent).toStringAsFixed(2)}";
                   final isWinner = index == 0;
                   final isSelected = _selectedChurches.contains(churchName);
 
@@ -145,20 +174,30 @@ class _CollectionDetailsBodyState extends State<_CollectionDetailsBody> {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isSelected && _isSelectionMode ? Colors.orange.shade100 : Colors.white,
+                      color: isSelected && _isSelectionMode
+                          ? Colors.orange.shade100
+                          : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: isWinner
                           ? Border.all(color: Colors.amber, width: 2)
                           : isSelected && _isSelectionMode
-                          ? Border.all(color: Colors.orange.shade300, width: 2)
-                          : null,
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 5, offset: const Offset(0, 2))],
+                              ? Border.all(
+                                  color: Colors.orange.shade300, width: 2)
+                              : null,
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 5,
+                            offset: const Offset(0, 2))
+                      ],
                     ),
                     child: InkWell(
                       onTap: _isSelectionMode
                           ? () => setState(() {
-                        isSelected ? _selectedChurches.remove(churchName) : _selectedChurches.add(churchName);
-                      })
+                                isSelected
+                                    ? _selectedChurches.remove(churchName)
+                                    : _selectedChurches.add(churchName);
+                              })
                           : null,
                       child: Row(
                         children: [
@@ -183,16 +222,23 @@ class _CollectionDetailsBodyState extends State<_CollectionDetailsBody> {
                               color: isWinner
                                   ? Colors.amber
                                   : index == 1
-                                  ? Colors.grey.shade400
-                                  : index == 2
-                                  ? Colors.orange.shade300
-                                  : Colors.grey.shade200,
+                                      ? Colors.grey.shade400
+                                      : index == 2
+                                          ? Colors.orange.shade300
+                                          : Colors.grey.shade200,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Center(
                               child: isWinner
-                                  ? const Icon(Icons.emoji_events, color: Colors.white, size: 20)
-                                  : Text('${index + 1}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: index <= 2 ? Colors.white : Colors.grey.shade600)),
+                                  ? const Icon(Icons.emoji_events,
+                                      color: Colors.white, size: 20)
+                                  : Text('${index + 1}',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: index <= 2
+                                              ? Colors.white
+                                              : Colors.grey.shade600)),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -201,15 +247,22 @@ class _CollectionDetailsBodyState extends State<_CollectionDetailsBody> {
                               onTap: _isSelectionMode
                                   ? null
                                   : () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ChurchDetailsScreen(churchName: churchName, collectionName: widget.collectionName),
-                                  ),
-                                );
-                              },
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ChurchDetailsScreen(
+                                            churchName: churchName,
+                                            collectionName:
+                                                widget.collectionName,
+                                            initialDocuments: avg.allDocuments,
+                                          ),
+                                        ),
+                                      );
+                                    },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 4),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -220,23 +273,44 @@ class _CollectionDetailsBodyState extends State<_CollectionDetailsBody> {
                                             churchName,
                                             style: TextStyle(
                                               fontSize: 16,
-                                              fontWeight: isWinner ? FontWeight.bold : FontWeight.w600,
-                                              color: isWinner ? Colors.amber.shade700 : Colors.blue.shade700,
-                                              decoration: _isSelectionMode ? TextDecoration.none : TextDecoration.underline,
-                                              decorationColor: isWinner ? Colors.amber.shade700 : Colors.blue.shade700,
+                                              fontWeight: isWinner
+                                                  ? FontWeight.bold
+                                                  : FontWeight.w600,
+                                              color: isWinner
+                                                  ? Colors.amber.shade700
+                                                  : Colors.blue.shade700,
+                                              decoration: _isSelectionMode
+                                                  ? TextDecoration.none
+                                                  : TextDecoration.underline,
+                                              decorationColor: isWinner
+                                                  ? Colors.amber.shade700
+                                                  : Colors.blue.shade700,
                                             ),
                                           ),
                                         ),
-                                        if (!_isSelectionMode) Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey.shade400),
+                                        if (!_isSelectionMode)
+                                          Icon(Icons.arrow_forward_ios,
+                                              size: 12,
+                                              color: Colors.grey.shade400),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
                                     if (isWinner)
-                                      Text('🏆 الفائز الأول (متوسط من ${avg.documentCount} استمارة)', style: TextStyle(fontSize: 12, color: Colors.amber.shade600, fontWeight: FontWeight.w500))
+                                      Text(
+                                          '🏆 الفائز الأول (متوسط من ${avg.documentCount} استمارة)',
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.amber.shade600,
+                                              fontWeight: FontWeight.w500))
                                     else
                                       Text(
-                                        _isSelectionMode ? 'متوسط من ${avg.documentCount} استمارة' : 'متوسط من ${avg.documentCount} استمارة - انقر للتفاصيل',
-                                        style: TextStyle(fontSize: 10, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+                                        _isSelectionMode
+                                            ? 'متوسط من ${avg.documentCount} استمارة'
+                                            : 'متوسط من ${avg.documentCount} استمارة - انقر للتفاصيل',
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.grey.shade500,
+                                            fontStyle: FontStyle.italic),
                                       ),
                                   ],
                                 ),
@@ -244,12 +318,29 @@ class _CollectionDetailsBodyState extends State<_CollectionDetailsBody> {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(color: isWinner ? Colors.amber.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(16)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                                color: isWinner
+                                    ? Colors.amber.withValues(alpha: 0.1)
+                                    : Colors.grey.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(16)),
                             child: Column(
                               children: [
-                                Text(total, style: TextStyle(color: isWinner ? Colors.amber.shade700 : Colors.grey.shade700, fontWeight: FontWeight.bold, fontSize: 16)),
-                                Text('متوسط', style: TextStyle(color: isWinner ? Colors.amber.shade600 : Colors.grey.shade600, fontWeight: FontWeight.w400, fontSize: 10)),
+                                Text(total,
+                                    style: TextStyle(
+                                        color: isWinner
+                                            ? Colors.amber.shade700
+                                            : Colors.grey.shade700,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16)),
+                                Text('متوسط',
+                                    style: TextStyle(
+                                        color: isWinner
+                                            ? Colors.amber.shade600
+                                            : Colors.grey.shade600,
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 10)),
                               ],
                             ),
                           ),
@@ -267,7 +358,6 @@ class _CollectionDetailsBodyState extends State<_CollectionDetailsBody> {
   }
 }
 
-
 class SelectedChurchesDisplayScreen extends StatefulWidget {
   final List<String> selectedChurches;
   final String collectionName;
@@ -279,10 +369,12 @@ class SelectedChurchesDisplayScreen extends StatefulWidget {
   });
 
   @override
-  State<SelectedChurchesDisplayScreen> createState() => _SelectedChurchesDisplayScreenState();
+  State<SelectedChurchesDisplayScreen> createState() =>
+      _SelectedChurchesDisplayScreenState();
 }
 
-class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayScreen> {
+class _SelectedChurchesDisplayScreenState
+    extends State<SelectedChurchesDisplayScreen> {
   bool _isLoading = false;
   final GlobalKey _globalKey = GlobalKey();
 
@@ -322,9 +414,7 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
               child: Column(
                 children: [
                   RepaintBoundary(
-                      key: _globalKey,
-                      child: _buildCertificateDesign()
-                  ),
+                      key: _globalKey, child: _buildCertificateDesign()),
                   const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
@@ -341,16 +431,18 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
                       ),
                       icon: _isLoading
                           ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : const Icon(Icons.save),
                       label: Text(
-                        _isLoading ? 'جاري الحفظ...' : 'حفظ في المعرض وإضافة للمجموعات',
+                        _isLoading
+                            ? 'جاري الحفظ...'
+                            : 'حفظ في المعرض وإضافة للمجموعات',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -405,7 +497,8 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
                     ),
                     const SizedBox(height: 5),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.green.shade100,
                         borderRadius: BorderRadius.circular(12),
@@ -454,7 +547,8 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  height: widget.selectedChurches.length * 42.0, // Approximate height per item
+                  height: widget.selectedChurches.length *
+                      42.0, // Approximate height per item
                   child: ListView.builder(
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: widget.selectedChurches.length,
@@ -500,23 +594,40 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
   String _formatCollectionName(String collection) {
     String name = collection.replaceAll('ResultsFinal', '');
     switch (name) {
-      case 'kg1': return 'حضانة المستوى الأول';
-      case 'kg2': return 'حضانة المستوى الثاني';
-      case 'kgG': return 'حضانة موهوبين جماعي';
-      case 'kgF': return 'حضانة موهوبين فردي';
-      case 'oulaTanya1': return 'أولى وثانية المستوى الأول';
-      case 'oulaTanya2': return 'أولى وثانية المستوى الثاني';
-      case 'oulaTanyaG': return 'أولى وثانية موهوبين جماعي';
-      case 'oulaTanyaF': return 'أولى وثانية موهوبين فردي';
-      case 'taltaRaba1': return 'ثالثة ورابعة المستوى الأول';
-      case 'taltaRaba2': return 'ثالثة ورابعة المستوى الثاني';
-      case 'taltaRabaG': return 'ثالثة ورابعة موهوبين جماعي';
-      case 'taltaRabaF': return 'ثالثة ورابعة موهوبين فردي';
-      case 'khamsaSadsa1': return 'خامسة وسادسة المستوى الأول';
-      case 'khamsaSadsa2': return 'خامسة وسادسة المستوى الثاني';
-      case 'khamsaSadsaG': return 'خامسة وسادسة موهوبين جماعي';
-      case 'khamsaSadsaF': return 'خامسة وسادسة موهوبين فردي';
-      default: return name;
+      case 'kg1':
+        return 'حضانة المستوى الأول';
+      case 'kg2':
+        return 'حضانة المستوى الثاني';
+      case 'kgG':
+        return 'حضانة موهوبين جماعي';
+      case 'kgF':
+        return 'حضانة موهوبين فردي';
+      case 'oulaTanya1':
+        return 'أولى وثانية المستوى الأول';
+      case 'oulaTanya2':
+        return 'أولى وثانية المستوى الثاني';
+      case 'oulaTanyaG':
+        return 'أولى وثانية موهوبين جماعي';
+      case 'oulaTanyaF':
+        return 'أولى وثانية موهوبين فردي';
+      case 'taltaRaba1':
+        return 'ثالثة ورابعة المستوى الأول';
+      case 'taltaRaba2':
+        return 'ثالثة ورابعة المستوى الثاني';
+      case 'taltaRabaG':
+        return 'ثالثة ورابعة موهوبين جماعي';
+      case 'taltaRabaF':
+        return 'ثالثة ورابعة موهوبين فردي';
+      case 'khamsaSadsa1':
+        return 'خامسة وسادسة المستوى الأول';
+      case 'khamsaSadsa2':
+        return 'خامسة وسادسة المستوى الثاني';
+      case 'khamsaSadsaG':
+        return 'خامسة وسادسة موهوبين جماعي';
+      case 'khamsaSadsaF':
+        return 'خامسة وسادسة موهوبين فردي';
+      default:
+        return name;
     }
   }
 
@@ -554,8 +665,10 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
 
   Future<void> _captureAndSave() async {
     try {
-      await Future.delayed(const Duration(milliseconds: 100)); // Ensure build is complete
-      final boundary = _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      await Future.delayed(
+          const Duration(milliseconds: 100)); // Ensure build is complete
+      final boundary = _globalKey.currentContext!.findRenderObject()
+          as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
@@ -571,5 +684,4 @@ class _SelectedChurchesDisplayScreenState extends State<SelectedChurchesDisplayS
       rethrow;
     }
   }
-
 }
