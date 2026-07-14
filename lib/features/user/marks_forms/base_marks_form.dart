@@ -1,17 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Form;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '/core/constants/al7an.dart';
 import '/core/widgets/marks_form_fields.dart';
-
-enum MarksFormKind {
-  kg1,
-  kg2,
-  talta1,
-  talta2,
-  mohobenIndividual,
-  mohobenGroup,
-}
 
 TextEditingController _textControllerFrom(dynamic value) {
   return TextEditingController(text: value?.toString() ?? '');
@@ -32,19 +23,19 @@ bool _parseBoolValue(dynamic value) {
 }
 
 List<TextEditingController> _controllersForCategory(
-  Map<String, dynamic> data,
-  String hymnKey,
-  List<String> scoreKeys,
-) {
+    Map<String, dynamic> data,
+    String hymnKey,
+    List<String> scoreKeys,
+    ) {
   final category = _mapValue(data[hymnKey]);
   return scoreKeys.map((key) => _textControllerFrom(category[key])).toList();
 }
 
 List<bool> _boolsForCategory(
-  Map<String, dynamic> data,
-  String hymnKey,
-  List<String> boolKeys,
-) {
+    Map<String, dynamic> data,
+    String hymnKey,
+    List<String> boolKeys,
+    ) {
   final category = _mapValue(data[hymnKey]);
   return boolKeys.map((key) => _parseBoolValue(category[key])).toList();
 }
@@ -112,6 +103,81 @@ abstract class BaseMarksFormModel {
     final parsed = _parseDouble(value);
     return parsed.isFinite && parsed >= 0 && parsed <= max;
   }
+
+  /// Sums controller values + gated boolean bonuses across all groups in
+  /// [al7anList], and computes the theoretical max achievable in parallel.
+  /// - toolGatedBoolBonus: bonus only counted (and only achievable) when
+  ///   that group's L7n.hasTools is true (matches the UI, which only shows
+  ///   these checkboxes conditionally).
+  /// - alwaysBoolBonus: bonus counted regardless of hasTools.
+  /// - invertedBoolBonus: bonus awarded when the checkbox is FALSE (e.g. hzat).
+  ({double sum, double maxSum}) _scoreGroups({
+    required Form al7anList,
+    required List<List<TextEditingController>> controllerGroups,
+    required List<List<bool>> boolGroups,
+    required List<double> fieldLimits,
+    Map<int, double> toolGatedBoolBonus = const {},
+    Map<int, double> alwaysBoolBonus = const {},
+    Map<int, double> invertedBoolBonus = const {},
+  }) {
+    double sum = 0;
+    double maxSum = 0;
+
+    for (var i = 0; i < al7anList.length; i++) {
+      final controllers = controllerGroups[i];
+      for (var j = 0; j < controllers.length; j++) {
+        sum += _parseDouble(controllers[j].text);
+        maxSum += fieldLimits[j];
+      }
+
+      final bools = boolGroups[i];
+      if (al7anList[i].hasTools) {
+        toolGatedBoolBonus.forEach((idx, bonus) {
+          sum += bools[idx] ? bonus : 0;
+          maxSum += bonus;
+        });
+      }
+      alwaysBoolBonus.forEach((idx, bonus) {
+        sum += bools[idx] ? bonus : 0;
+        maxSum += bonus;
+      });
+      invertedBoolBonus.forEach((idx, bonus) {
+        sum += !bools[idx] ? bonus : 0;
+        maxSum += bonus;
+      });
+    }
+
+    return (sum: sum, maxSum: maxSum);
+  }
+
+  /// Band-based multiplier used by the Mohoben* classes.
+  double _bandFactor(double s) {
+    if (s >= 50 && s <= 53) return 1.01;
+    if (s >= 54 && s <= 56) return 1.02;
+    if (s >= 57 && s <= 59) return 1.05;
+    if (s >= 60 && s <= 61) return 1.07;
+    return 1.0;
+  }
+
+  /// Finds max((lastGroupScore + otherGroupsMaxScore) * factor(lastGroupScore))
+  /// by checking the finite set of points where the maximum can occur:
+  /// each band's right edge (since factor is constant within a band and the
+  /// product is increasing in lastGroupScore there) plus the absolute max.
+  double _maxFactoredSum({
+    required double maxLastGroupScore,
+    required double otherGroupsMaxScore,
+  }) {
+    final candidates = <double>[
+      maxLastGroupScore,
+      ...[53.0, 56.0, 59.0, 61.0].where((edge) => edge <= maxLastGroupScore),
+    ];
+    double best = 0;
+    for (final s in candidates) {
+      final total = (s + otherGroupsMaxScore) * _bandFactor(s);
+      if (total > best) best = total;
+    }
+    return best;
+  }
 }
 
 class Kg1FormModel extends BaseMarksFormModel {
@@ -119,81 +185,73 @@ class Kg1FormModel extends BaseMarksFormModel {
     required super.churchName,
     required super.levelInArabic,
     bool isKg = true,
-    List<L7n>? al7anList,
-    List<TextEditingController>? controllers1,
-    List<TextEditingController>? controllers2,
-    List<TextEditingController>? controllers3,
-    List<TextEditingController>? controllers4,
+    Form? al7anList,
+    List<List<TextEditingController>>? controllerGroups,
+    List<List<bool>>? boolGroups,
     TextEditingController? totalController,
     TextEditingController? slokController,
   })  : isKg = isKg,
         al7anList = al7anList ?? (isKg ? Al7an.kg1 : Al7an.ola1),
-        controllers1 =
-            controllers1 ?? List.generate(3, (_) => TextEditingController()),
-        controllers2 =
-            controllers2 ?? List.generate(3, (_) => TextEditingController()),
-        controllers3 =
-            controllers3 ?? List.generate(3, (_) => TextEditingController()),
-        controllers4 =
-            controllers4 ?? List.generate(3, (_) => TextEditingController()),
+        controllerGroups = controllerGroups ??
+            List.generate(
+              (al7anList ?? (isKg ? Al7an.kg1 : Al7an.ola1)).length,
+                  (_) => List.generate(3, (_) => TextEditingController()),
+            ),
+        boolGroups = boolGroups ??
+            List.generate(
+              (al7anList ?? (isKg ? Al7an.kg1 : Al7an.ola1)).length,
+                  (_) => List.generate(2, (_) => false),
+            ),
         totalController = totalController ?? TextEditingController(),
         slokController = slokController ?? TextEditingController(text: '10');
 
   final bool isKg;
-  final List<L7n> al7anList;
-  final List<TextEditingController> controllers1;
-  final List<TextEditingController> controllers2;
-  final List<TextEditingController> controllers3;
-  final List<TextEditingController> controllers4;
+  final Form al7anList;
+  final List<List<TextEditingController>> controllerGroups;
+  final List<List<bool>> boolGroups;
   final TextEditingController totalController;
   final TextEditingController slokController;
 
+  static const List<double> _fieldLimits = [20.0, 10.0, 10.0];
+  static const Map<int, double> _toolGatedBonus = {0: .5, 1: .5}; // df, treanto
+
   @override
   Widget view() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _churchHeader(),
-        _sectionGap(),
-        MarksFormFields.kgForm(al7anList[0], controllers1),
-        _sectionGap(),
-        MarksFormFields.kgForm(al7anList[1], controllers2),
-        _sectionGap(),
-        MarksFormFields.kgForm(al7anList[2], controllers3),
-        _sectionGap(),
-        MarksFormFields.kgForm(al7anList[3], controllers4),
-        _sectionGap(),
-        MarksFormFields.total(totalController),
-        _sectionGap(),
-        MarksFormFields.slok(slokController),
-      ],
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _churchHeader(),
+            _sectionGap(),
+            for (var i = 0; i < al7anList.length; i++) ...[
+              MarksFormFields.kgForm(
+                al7anList[i],
+                controllerGroups[i],
+                boolGroups[i],
+                    (index, value) => setState(() => boolGroups[i][index] = value ?? false),
+              ),
+              _sectionGap(),
+            ],
+            MarksFormFields.total(totalController),
+            _sectionGap(),
+            MarksFormFields.slok(slokController),
+          ],
+        );
+      },
     );
   }
 
   @override
   bool validate() {
-    if (totalController.text.trim().isEmpty ||
-        slokController.text.trim().isEmpty) {
+    if (totalController.text.trim().isEmpty || slokController.text.trim().isEmpty) {
       return false;
     }
     if (!_withinRange(slokController.text, 10)) return false;
-    final validations = [
-      [20.0, 10.0, 10.0],
-      [20.0, 10.0, 10.0],
-      [20.0, 10.0, 10.0],
-      [20.0, 10.0, 10.0],
-    ];
-    final controllerGroups = [
-      controllers1,
-      controllers2,
-      controllers3,
-      controllers4
-    ];
-    for (var i = 0; i < controllerGroups.length; i++) {
-      if (_isEmptyControllers(controllerGroups[i])) return false;
-      for (var j = 0; j < controllerGroups[i].length; j++) {
-        if (!_withinRange(controllerGroups[i][j].text, validations[i][j]))
-          return false;
+    for (final group in controllerGroups) {
+      if (_isEmptyControllers(group)) return false;
+      for (var j = 0; j < group.length; j++) {
+        if (!_withinRange(group[j].text, _fieldLimits[j])) return false;
       }
     }
     return true;
@@ -202,66 +260,58 @@ class Kg1FormModel extends BaseMarksFormModel {
   @override
   Map<String, dynamic> buildPayload(String judgeName) {
     final slok = _parseDouble(slokController.text);
-    double sum = slok;
-    for (final controller in [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3,
-      ...controllers4,
-    ]) {
-      sum += _parseDouble(controller.text);
+    final scored = _scoreGroups(
+      al7anList: al7anList,
+      controllerGroups: controllerGroups,
+      boolGroups: boolGroups,
+      fieldLimits: _fieldLimits,
+      toolGatedBoolBonus: _toolGatedBonus,
+    );
+
+    final sum = scored.sum + slok;
+
+    final payload = <String, dynamic>{};
+    for (var i = 0; i < al7anList.length; i++) {
+      final group = controllerGroups[i];
+      final categoryPayload = <String, dynamic>{
+        Al7an.tslem: group[0].text,
+        Al7an.tempo: group[1].text,
+        Al7an.ro7ania: group[2].text,
+      };
+      if (al7anList[i].hasTools) {
+        categoryPayload[Al7an.df] = boolGroups[i][0];
+        categoryPayload[Al7an.treanto] = boolGroups[i][1];
+      }
+      payload[al7anList[i].name] = categoryPayload;
     }
 
-    return {
+    payload.addAll({
       'churchName': churchName,
       'kidsTotal': totalController.text,
       'judge': judgeName,
       'slok': slok,
-      al7anList[0].name: {
-        Al7an.tslem: controllers1[0].text,
-        Al7an.tempo: controllers1[1].text,
-        Al7an.ro7ania: controllers1[2].text,
-      },
-      al7anList[1].name: {
-        Al7an.tslem: controllers2[0].text,
-        Al7an.tempo: controllers2[1].text,
-        Al7an.ro7ania: controllers2[2].text,
-      },
-      al7anList[2].name: {
-        Al7an.tslem: controllers3[0].text,
-        Al7an.tempo: controllers3[1].text,
-        Al7an.ro7ania: controllers3[2].text,
-      },
-      al7anList[3].name: {
-        Al7an.tslem: controllers4[0].text,
-        Al7an.tempo: controllers4[1].text,
-        Al7an.ro7ania: controllers4[2].text,
-      },
       'total': sum,
-      'percent': sum / 174,
-    };
+      'percent': sum / (scored.maxSum + 10),
+    });
+    return payload;
   }
 
   @override
   void dispose() {
-    for (final controller in [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3,
-      ...controllers4,
-      totalController,
-      slokController,
-    ]) {
-      controller.dispose();
+    for (final group in controllerGroups) {
+      for (final c in group) {
+        c.dispose();
+      }
     }
+    totalController.dispose();
+    slokController.dispose();
   }
 
   @override
   Future<bool> submit(String judgeName) async {
     try {
       final payload = buildPayload(judgeName);
-      final FirebaseFirestore fireStore = FirebaseFirestore.instance;
-      await fireStore
+      await FirebaseFirestore.instance
           .collection(isKg ? "kg1ResultsFinal" : "oulaTanya1ResultsFinal")
           .add(payload);
     } catch (e) {
@@ -271,35 +321,24 @@ class Kg1FormModel extends BaseMarksFormModel {
   }
 
   static Kg1FormModel fromJson(
-    Map<String, dynamic> data, {
-    required bool isKg,
-    required String levelInArabic,
-  }) {
+      Map<String, dynamic> data, {
+        required bool isKg,
+        required String levelInArabic,
+      }) {
     final al7anList = isKg ? Al7an.kg1 : Al7an.ola1;
     return Kg1FormModel(
       churchName: data['churchName']?.toString(),
       levelInArabic: levelInArabic,
       isKg: isKg,
       al7anList: al7anList,
-      controllers1: _controllersForCategory(
-        data,
-        al7anList[0].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+      controllerGroups: List.generate(
+        al7anList.length,
+            (i) => _controllersForCategory(
+            data, al7anList[i].name, [Al7an.tslem, Al7an.tempo, Al7an.ro7ania]),
       ),
-      controllers2: _controllersForCategory(
-        data,
-        al7anList[1].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
-      ),
-      controllers3: _controllersForCategory(
-        data,
-        al7anList[2].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
-      ),
-      controllers4: _controllersForCategory(
-        data,
-        al7anList[3].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+      boolGroups: List.generate(
+        al7anList.length,
+            (i) => _boolsForCategory(data, al7anList[i].name, [Al7an.df, Al7an.treanto]),
       ),
       totalController: _textControllerFrom(data['kidsTotal']),
       slokController: _textControllerFrom(data['slok'] ?? 10),
@@ -312,89 +351,73 @@ class Kg2FormModel extends BaseMarksFormModel {
     required super.churchName,
     required super.levelInArabic,
     bool isKg = true,
-    List<L7n>? al7anList,
-    List<TextEditingController>? controllers1,
-    List<TextEditingController>? controllers2,
-    List<TextEditingController>? controllers3,
-    List<TextEditingController>? controllers4,
-    List<TextEditingController>? controllers5,
-    List<TextEditingController>? controllers6,
+    Form? al7anList,
+    List<List<TextEditingController>>? controllerGroups,
+    List<List<bool>>? boolGroups,
     TextEditingController? totalController,
     TextEditingController? slokController,
   })  : isKg = isKg,
         al7anList = al7anList ?? (isKg ? Al7an.kg2 : Al7an.ola2),
-        controllers1 =
-            controllers1 ?? List.generate(3, (_) => TextEditingController()),
-        controllers2 =
-            controllers2 ?? List.generate(3, (_) => TextEditingController()),
-        controllers3 =
-            controllers3 ?? List.generate(3, (_) => TextEditingController()),
-        controllers4 =
-            controllers4 ?? List.generate(3, (_) => TextEditingController()),
-        controllers5 =
-            controllers5 ?? List.generate(3, (_) => TextEditingController()),
-        controllers6 =
-            controllers6 ?? List.generate(3, (_) => TextEditingController()),
+        controllerGroups = controllerGroups ??
+            List.generate(
+              (al7anList ?? (isKg ? Al7an.kg2 : Al7an.ola2)).length,
+                  (_) => List.generate(3, (_) => TextEditingController()),
+            ),
+        boolGroups = boolGroups ??
+            List.generate(
+              (al7anList ?? (isKg ? Al7an.kg2 : Al7an.ola2)).length,
+                  (_) => List.generate(2, (_) => false),
+            ),
         totalController = totalController ?? TextEditingController(),
         slokController = slokController ?? TextEditingController(text: '10');
 
   final bool isKg;
-  final List<L7n> al7anList;
-  final List<TextEditingController> controllers1;
-  final List<TextEditingController> controllers2;
-  final List<TextEditingController> controllers3;
-  final List<TextEditingController> controllers4;
-  final List<TextEditingController> controllers5;
-  final List<TextEditingController> controllers6;
+  final Form al7anList;
+  final List<List<TextEditingController>> controllerGroups;
+  final List<List<bool>> boolGroups;
   final TextEditingController totalController;
   final TextEditingController slokController;
 
+  static const List<double> _fieldLimits = [20.0, 10.0, 10.0];
+  static const Map<int, double> _toolGatedBonus = {0: .5, 1: .5};
+
   @override
   Widget view() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _churchHeader(),
-        _sectionGap(),
-        MarksFormFields.kgForm(al7anList[0], controllers1),
-        _sectionGap(),
-        MarksFormFields.kgForm(al7anList[1], controllers2),
-        _sectionGap(),
-        MarksFormFields.kgForm(al7anList[2], controllers3),
-        _sectionGap(),
-        MarksFormFields.kgForm(al7anList[3], controllers4),
-        _sectionGap(),
-        MarksFormFields.kgForm(al7anList[4], controllers5),
-        _sectionGap(),
-        MarksFormFields.kgForm(al7anList[5], controllers6),
-        _sectionGap(),
-        MarksFormFields.total(totalController),
-        _sectionGap(),
-        MarksFormFields.slok(slokController),
-      ],
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _churchHeader(),
+            _sectionGap(),
+            for (var i = 0; i < al7anList.length; i++) ...[
+              MarksFormFields.kgForm(
+                al7anList[i],
+                controllerGroups[i],
+                boolGroups[i],
+                    (index, value) => setState(() => boolGroups[i][index] = value ?? false),
+              ),
+              _sectionGap(),
+            ],
+            MarksFormFields.total(totalController),
+            _sectionGap(),
+            MarksFormFields.slok(slokController),
+          ],
+        );
+      },
     );
   }
 
   @override
   bool validate() {
-    if (totalController.text.trim().isEmpty ||
-        slokController.text.trim().isEmpty) {
+    if (totalController.text.trim().isEmpty || slokController.text.trim().isEmpty) {
       return false;
     }
     if (!_withinRange(slokController.text, 10)) return false;
-    final controllerGroups = [
-      controllers1,
-      controllers2,
-      controllers3,
-      controllers4,
-      controllers5,
-      controllers6
-    ];
     for (final group in controllerGroups) {
       if (_isEmptyControllers(group)) return false;
-      final limits = [20.0, 10.0, 10.0];
-      for (var i = 0; i < group.length; i++) {
-        if (!_withinRange(group[i].text, limits[i])) return false;
+      for (var j = 0; j < group.length; j++) {
+        if (!_withinRange(group[j].text, _fieldLimits[j])) return false;
       }
     }
     return true;
@@ -403,124 +426,81 @@ class Kg2FormModel extends BaseMarksFormModel {
   @override
   Map<String, dynamic> buildPayload(String judgeName) {
     final slok = _parseDouble(slokController.text);
-    double sum = slok;
-    for (final controller in [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3,
-      ...controllers4,
-      ...controllers5,
-      ...controllers6,
-    ]) {
-      sum += _parseDouble(controller.text);
+    final scored = _scoreGroups(
+      al7anList: al7anList,
+      controllerGroups: controllerGroups,
+      boolGroups: boolGroups,
+      fieldLimits: _fieldLimits,
+      toolGatedBoolBonus: _toolGatedBonus,
+    );
+
+    final sum = scored.sum + slok;
+
+    final payload = <String, dynamic>{};
+    for (var i = 0; i < al7anList.length; i++) {
+      final group = controllerGroups[i];
+      final categoryPayload = <String, dynamic>{
+        Al7an.tslem: group[0].text,
+        Al7an.tempo: group[1].text,
+        Al7an.ro7ania: group[2].text,
+      };
+      if (al7anList[i].hasTools) {
+        categoryPayload[Al7an.df] = boolGroups[i][0];
+        categoryPayload[Al7an.treanto] = boolGroups[i][1];
+      }
+      payload[al7anList[i].name] = categoryPayload;
     }
 
-    return {
+    payload.addAll({
       'churchName': churchName,
       'kidsTotal': totalController.text,
       'judge': judgeName,
       'slok': slok,
-      al7anList[0].name: {
-        Al7an.tslem: controllers1[0].text,
-        Al7an.tempo: controllers1[1].text,
-        Al7an.ro7ania: controllers1[2].text,
-      },
-      al7anList[1].name: {
-        Al7an.tslem: controllers2[0].text,
-        Al7an.tempo: controllers2[1].text,
-        Al7an.ro7ania: controllers2[2].text,
-      },
-      al7anList[2].name: {
-        Al7an.tslem: controllers3[0].text,
-        Al7an.tempo: controllers3[1].text,
-        Al7an.ro7ania: controllers3[2].text,
-      },
-      al7anList[3].name: {
-        Al7an.tslem: controllers4[0].text,
-        Al7an.tempo: controllers4[1].text,
-        Al7an.ro7ania: controllers4[2].text,
-      },
-      al7anList[4].name: {
-        Al7an.tslem: controllers5[0].text,
-        Al7an.tempo: controllers5[1].text,
-        Al7an.ro7ania: controllers5[2].text,
-      },
-      al7anList[5].name: {
-        Al7an.tslem: controllers6[0].text,
-        Al7an.tempo: controllers6[1].text,
-        Al7an.ro7ania: controllers6[2].text,
-      },
       'total': sum,
-      'percent': sum / 256,
-    };
+      'percent': sum / (scored.maxSum + 10),
+    });
+    return payload;
   }
 
   @override
   void dispose() {
-    for (final controller in [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3,
-      ...controllers4,
-      ...controllers5,
-      ...controllers6,
-      totalController,
-      slokController,
-    ]) {
-      controller.dispose();
+    for (final group in controllerGroups) {
+      for (final c in group) {
+        c.dispose();
+      }
     }
+    totalController.dispose();
+    slokController.dispose();
   }
 
   @override
   Future<bool> submit(String judgeName) async {
     final payload = buildPayload(judgeName);
-    final FirebaseFirestore fireStore = FirebaseFirestore.instance;
-    await fireStore
+    await FirebaseFirestore.instance
         .collection(isKg ? "kg2ResultsFinal" : "oulaTanya2ResultsFinal")
         .add(payload);
     return true;
   }
 
   static Kg2FormModel fromJson(
-    Map<String, dynamic> data, {
-    required bool isKg,
-    required String levelInArabic,
-  }) {
+      Map<String, dynamic> data, {
+        required bool isKg,
+        required String levelInArabic,
+      }) {
     final al7anList = isKg ? Al7an.kg2 : Al7an.ola2;
     return Kg2FormModel(
       churchName: data['churchName']?.toString(),
       levelInArabic: levelInArabic,
       isKg: isKg,
       al7anList: al7anList,
-      controllers1: _controllersForCategory(
-        data,
-        al7anList[0].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+      controllerGroups: List.generate(
+        al7anList.length,
+            (i) => _controllersForCategory(
+            data, al7anList[i].name, [Al7an.tslem, Al7an.tempo, Al7an.ro7ania]),
       ),
-      controllers2: _controllersForCategory(
-        data,
-        al7anList[1].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
-      ),
-      controllers3: _controllersForCategory(
-        data,
-        al7anList[2].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
-      ),
-      controllers4: _controllersForCategory(
-        data,
-        al7anList[3].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
-      ),
-      controllers5: _controllersForCategory(
-        data,
-        al7anList[4].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
-      ),
-      controllers6: _controllersForCategory(
-        data,
-        al7anList[5].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania],
+      boolGroups: List.generate(
+        al7anList.length,
+            (i) => _boolsForCategory(data, al7anList[i].name, [Al7an.df, Al7an.treanto]),
       ),
       totalController: _textControllerFrom(data['kidsTotal']),
       slokController: _textControllerFrom(data['slok'] ?? 10),
@@ -533,53 +513,43 @@ class Talta1FormModel extends BaseMarksFormModel {
     required super.churchName,
     required super.levelInArabic,
     bool isTalta = true,
-    List<L7n>? al7anList,
-    List<TextEditingController>? controllers1,
-    List<TextEditingController>? controllers2,
-    List<TextEditingController>? controllers3,
-    List<TextEditingController>? controllers4,
+    Form? al7anList,
+    List<List<TextEditingController>>? controllerGroups,
+    List<List<bool>>? boolGroups,
     TextEditingController? totalController,
     TextEditingController? copticReadingController,
     TextEditingController? taksController,
     TextEditingController? slokController,
-    List<bool>? bool1,
-    List<bool>? bool2,
-    List<bool>? bool3,
-    List<bool>? bool4,
   })  : isTalta = isTalta,
         al7anList = al7anList ?? (isTalta ? Al7an.talta1 : Al7an.khamsa1),
-        controllers1 =
-            controllers1 ?? List.generate(4, (_) => TextEditingController()),
-        controllers2 =
-            controllers2 ?? List.generate(4, (_) => TextEditingController()),
-        controllers3 =
-            controllers3 ?? List.generate(4, (_) => TextEditingController()),
-        controllers4 =
-            controllers4 ?? List.generate(4, (_) => TextEditingController()),
+        controllerGroups = controllerGroups ??
+            List.generate(
+              (al7anList ?? (isTalta ? Al7an.talta1 : Al7an.khamsa1)).length,
+                  (_) => List.generate(4, (_) => TextEditingController()),
+            ),
+        boolGroups = boolGroups ??
+            List.generate(
+              (al7anList ?? (isTalta ? Al7an.talta1 : Al7an.khamsa1)).length,
+                  (_) => List.generate(3, (_) => false),
+            ),
         totalController = totalController ?? TextEditingController(),
-        copticReadingController =
-            copticReadingController ?? TextEditingController(),
+        copticReadingController = copticReadingController ?? TextEditingController(),
         taksController = taksController ?? TextEditingController(),
-        slokController = slokController ?? TextEditingController(text: '10'),
-        bool1 = bool1 ?? List.generate(3, (_) => false),
-        bool2 = bool2 ?? List.generate(3, (_) => false),
-        bool3 = bool3 ?? List.generate(3, (_) => false),
-        bool4 = bool4 ?? List.generate(3, (_) => false);
+        slokController = slokController ?? TextEditingController(text: '10');
 
   final bool isTalta;
-  final List<L7n> al7anList;
-  final List<TextEditingController> controllers1;
-  final List<TextEditingController> controllers2;
-  final List<TextEditingController> controllers3;
-  final List<TextEditingController> controllers4;
+  final Form al7anList;
+  final List<List<TextEditingController>> controllerGroups;
+  final List<List<bool>> boolGroups;
   final TextEditingController totalController;
   final TextEditingController copticReadingController;
   final TextEditingController taksController;
   final TextEditingController slokController;
-  final List<bool> bool1;
-  final List<bool> bool2;
-  final List<bool> bool3;
-  final List<bool> bool4;
+  double get _taksMax => al7anList.length.toDouble();
+
+  static const List<double> _fieldLimits = [20.0, 10.0, 10.0, 10.0];
+  static const Map<int, double> _toolGatedBonus = {0: .5, 1: .5}; // df, treanto
+  static const Map<int, double> _invertedBonus = {2: 1.0}; // hzat, always applies
 
   @override
   Widget view() {
@@ -590,27 +560,16 @@ class Talta1FormModel extends BaseMarksFormModel {
           children: [
             _churchHeader(),
             _sectionGap(),
-            MarksFormFields.taltaForm(al7anList[0], controllers1, bool1,
-                (index, value) {
-              setState(() => bool1[index] = value ?? false);
-            }),
-            _sectionGap(),
-            MarksFormFields.taltaForm(al7anList[1], controllers2, bool2,
-                (index, value) {
-              setState(() => bool2[index] = value ?? false);
-            }),
-            _sectionGap(),
-            MarksFormFields.taltaForm(al7anList[2], controllers3, bool3,
-                (index, value) {
-              setState(() => bool3[index] = value ?? false);
-            }),
-            _sectionGap(),
-            MarksFormFields.taltaForm(al7anList[3], controllers4, bool4,
-                (index, value) {
-              setState(() => bool4[index] = value ?? false);
-            }),
-            _sectionGap(),
-            MarksFormFields.taks(taksController, 4),
+            for (var i = 0; i < al7anList.length; i++) ...[
+              MarksFormFields.taltaForm(
+                al7anList[i],
+                controllerGroups[i],
+                boolGroups[i],
+                    (index, value) => setState(() => boolGroups[i][index] = value ?? false),
+              ),
+              _sectionGap(),
+            ],
+            MarksFormFields.taks(context, taksController, al7anList.length, pdfUrl: al7anList.taksUrl),
             _sectionGap(),
             MarksFormFields.copticReading(copticReadingController),
             _sectionGap(),
@@ -626,10 +585,7 @@ class Talta1FormModel extends BaseMarksFormModel {
   @override
   bool validate() {
     final requiredControllers = [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3,
-      ...controllers4,
+      for (final group in controllerGroups) ...group,
       taksController,
       copticReadingController,
       totalController,
@@ -637,18 +593,12 @@ class Talta1FormModel extends BaseMarksFormModel {
     ];
     if (requiredControllers.any((c) => c.text.trim().isEmpty)) return false;
     if (!_withinRange(copticReadingController.text, 5)) return false;
-    if (!_withinRange(taksController.text, 4)) return false;
+    if (!_withinRange(taksController.text, _taksMax)) return false;
     if (!_withinRange(slokController.text, 10)) return false;
 
-    final limits = [20.0, 10.0, 10.0, 10.0];
-    for (final group in [
-      controllers1,
-      controllers2,
-      controllers3,
-      controllers4
-    ]) {
+    for (final group in controllerGroups) {
       for (var i = 0; i < group.length; i++) {
-        if (!_withinRange(group[i].text, limits[i])) return false;
+        if (!_withinRange(group[i].text, _fieldLimits[i])) return false;
       }
     }
     return true;
@@ -659,157 +609,86 @@ class Talta1FormModel extends BaseMarksFormModel {
     final slok = _parseDouble(slokController.text);
     final taks = _parseDouble(taksController.text);
     final copticReading = _parseDouble(copticReadingController.text);
-    double sum = slok;
 
-    for (final controller in [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3,
-      ...controllers4,
-    ]) {
-      sum += _parseDouble(controller.text);
+    final scored = _scoreGroups(
+      al7anList: al7anList,
+      controllerGroups: controllerGroups,
+      boolGroups: boolGroups,
+      fieldLimits: _fieldLimits,
+      toolGatedBoolBonus: _toolGatedBonus,
+      invertedBoolBonus: _invertedBonus,
+    );
+
+    final sum = scored.sum + slok + taks + copticReading;
+
+    final payload = <String, dynamic>{};
+    for (var i = 0; i < al7anList.length; i++) {
+      final group = controllerGroups[i];
+      payload[al7anList[i].name] = {
+        Al7an.tslem: group[0].text,
+        Al7an.tempo: group[1].text,
+        Al7an.ro7ania: group[2].text,
+        Al7an.copticSpelling: group[3].text,
+        if (al7anList[i].hasTools) Al7an.df: boolGroups[i][0],
+        if (al7anList[i].hasTools) Al7an.treanto: boolGroups[i][1],
+        Al7an.hzat: boolGroups[i][2],
+      };
     }
 
-    sum += bool1[0] ? .5 : 0;
-    sum += bool1[1] ? .5 : 0;
-    sum += !bool1[2] ? 1 : 0;
-    sum += bool2[0] ? .5 : 0;
-    sum += bool2[1] ? .5 : 0;
-    sum += !bool2[2] ? 1 : 0;
-    sum += bool3[0] ? .5 : 0;
-    sum += bool3[1] ? .5 : 0;
-    sum += !bool3[2] ? 1 : 0;
-    sum += bool4[0] ? .5 : 0;
-    sum += bool4[1] ? .5 : 0;
-    sum += !bool4[2] ? 1 : 0;
-    sum += taks;
-    sum += copticReading;
-
-    return {
+    payload.addAll({
       'churchName': churchName,
       'kidsTotal': totalController.text,
       'judge': judgeName,
       'slok': slok,
       'taks': taks,
       'copticReading': copticReading,
-      al7anList[0].name: {
-        Al7an.tslem: controllers1[0].text,
-        Al7an.tempo: controllers1[1].text,
-        Al7an.ro7ania: controllers1[2].text,
-        Al7an.copticSpelling: controllers1[3].text,
-        Al7an.df: bool1[0],
-        Al7an.treanto: bool1[1],
-        Al7an.hzat: bool1[2],
-      },
-      al7anList[1].name: {
-        Al7an.tslem: controllers2[0].text,
-        Al7an.tempo: controllers2[1].text,
-        Al7an.ro7ania: controllers2[2].text,
-        Al7an.copticSpelling: controllers2[3].text,
-        Al7an.df: bool2[0],
-        Al7an.treanto: bool2[1],
-        Al7an.hzat: bool2[2],
-      },
-      al7anList[2].name: {
-        Al7an.tslem: controllers3[0].text,
-        Al7an.tempo: controllers3[1].text,
-        Al7an.ro7ania: controllers3[2].text,
-        Al7an.copticSpelling: controllers3[3].text,
-        Al7an.df: bool3[0],
-        Al7an.treanto: bool3[1],
-        Al7an.hzat: bool3[2],
-      },
-      al7anList[3].name: {
-        Al7an.tslem: controllers4[0].text,
-        Al7an.tempo: controllers4[1].text,
-        Al7an.ro7ania: controllers4[2].text,
-        Al7an.copticSpelling: controllers4[3].text,
-        Al7an.df: bool4[0],
-        Al7an.treanto: bool4[1],
-        Al7an.hzat: bool4[2],
-      },
       'total': sum,
-      'percent': sum / 227,
-    };
+      'percent': sum / (scored.maxSum + 10 + 4 + 5),
+    });
+    return payload;
   }
 
   @override
   void dispose() {
-    for (final controller in [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3,
-      ...controllers4,
-      totalController,
-      copticReadingController,
-      taksController,
-      slokController,
-    ]) {
-      controller.dispose();
+    for (final group in controllerGroups) {
+      for (final c in group) {
+        c.dispose();
+      }
     }
+    totalController.dispose();
+    copticReadingController.dispose();
+    taksController.dispose();
+    slokController.dispose();
   }
 
   @override
   Future<bool> submit(String judgeName) async {
     final payload = buildPayload(judgeName);
-    final FirebaseFirestore fireStore = FirebaseFirestore.instance;
-    await fireStore
-        .collection(
-            isTalta ? "taltaRaba1ResultsFinal" : "khamsaSadsa1ResultsFinal")
+    await FirebaseFirestore.instance
+        .collection(isTalta ? "taltaRaba1ResultsFinal" : "khamsaSadsa1ResultsFinal")
         .add(payload);
     return true;
   }
 
   static Talta1FormModel fromJson(
-    Map<String, dynamic> data, {
-    required bool isTalta,
-    required String levelInArabic,
-  }) {
+      Map<String, dynamic> data, {
+        required bool isTalta,
+        required String levelInArabic,
+      }) {
     final al7anList = isTalta ? Al7an.talta1 : Al7an.khamsa1;
     return Talta1FormModel(
       churchName: data['churchName']?.toString(),
       levelInArabic: levelInArabic,
       isTalta: isTalta,
       al7anList: al7anList,
-      controllers1: _controllersForCategory(
-        data,
-        al7anList[0].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+      controllerGroups: List.generate(
+        al7anList.length,
+            (i) => _controllersForCategory(data, al7anList[i].name,
+            [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling]),
       ),
-      controllers2: _controllersForCategory(
-        data,
-        al7anList[1].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
-      ),
-      controllers3: _controllersForCategory(
-        data,
-        al7anList[2].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
-      ),
-      controllers4: _controllersForCategory(
-        data,
-        al7anList[3].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
-      ),
-      bool1: _boolsForCategory(
-        data,
-        al7anList[0].name,
-        [Al7an.df, Al7an.treanto, Al7an.hzat],
-      ),
-      bool2: _boolsForCategory(
-        data,
-        al7anList[1].name,
-        [Al7an.df, Al7an.treanto, Al7an.hzat],
-      ),
-      bool3: _boolsForCategory(
-        data,
-        al7anList[2].name,
-        [Al7an.df, Al7an.treanto, Al7an.hzat],
-      ),
-      bool4: _boolsForCategory(
-        data,
-        al7anList[3].name,
-        [Al7an.df, Al7an.treanto, Al7an.hzat],
+      boolGroups: List.generate(
+        al7anList.length,
+            (i) => _boolsForCategory(data, al7anList[i].name, [Al7an.df, Al7an.treanto, Al7an.hzat]),
       ),
       totalController: _textControllerFrom(data['kidsTotal']),
       copticReadingController: _textControllerFrom(data['copticReading']),
@@ -824,63 +703,45 @@ class Talta2FormModel extends BaseMarksFormModel {
     required super.churchName,
     required super.levelInArabic,
     bool isTalta = true,
-    List<L7n>? al7anList,
-    List<TextEditingController>? controllers1,
-    List<TextEditingController>? controllers2,
-    List<TextEditingController>? controllers3,
-    List<TextEditingController>? controllers4,
-    List<TextEditingController>? controllers5,
-    List<TextEditingController>? controllers6,
+    Form? al7anList,
+    List<List<TextEditingController>>? controllerGroups,
+    List<List<bool>>? boolGroups,
     TextEditingController? totalController,
+    TextEditingController? copticReadingController,
     TextEditingController? taksController,
     TextEditingController? slokController,
-    List<bool>? bool1,
-    List<bool>? bool2,
-    List<bool>? bool3,
-    List<bool>? bool4,
-    List<bool>? bool5,
-    List<bool>? bool6,
   })  : isTalta = isTalta,
         al7anList = al7anList ?? (isTalta ? Al7an.talta2 : Al7an.khamsa2),
-        controllers1 =
-            controllers1 ?? List.generate(4, (_) => TextEditingController()),
-        controllers2 =
-            controllers2 ?? List.generate(4, (_) => TextEditingController()),
-        controllers3 =
-            controllers3 ?? List.generate(4, (_) => TextEditingController()),
-        controllers4 =
-            controllers4 ?? List.generate(4, (_) => TextEditingController()),
-        controllers5 =
-            controllers5 ?? List.generate(4, (_) => TextEditingController()),
-        controllers6 =
-            controllers6 ?? List.generate(4, (_) => TextEditingController()),
+        controllerGroups = controllerGroups ??
+            List.generate(
+              (al7anList ?? (isTalta ? Al7an.talta2 : Al7an.khamsa2)).length,
+                  (_) => List.generate(4, (_) => TextEditingController()),
+            ),
+        boolGroups = boolGroups ??
+            List.generate(
+              (al7anList ?? (isTalta ? Al7an.talta2 : Al7an.khamsa2)).length,
+                  (_) => List.generate(3, (_) => false),
+            ),
         totalController = totalController ?? TextEditingController(),
+        copticReadingController = copticReadingController ?? TextEditingController(),
         taksController = taksController ?? TextEditingController(),
-        slokController = slokController ?? TextEditingController(text: '10'),
-        bool1 = bool1 ?? List.generate(3, (_) => false),
-        bool2 = bool2 ?? List.generate(3, (_) => false),
-        bool3 = bool3 ?? List.generate(3, (_) => false),
-        bool4 = bool4 ?? List.generate(3, (_) => false),
-        bool5 = bool5 ?? List.generate(3, (_) => false),
-        bool6 = bool6 ?? List.generate(3, (_) => false);
+        slokController = slokController ?? TextEditingController(text: '10');
 
   final bool isTalta;
-  final List<L7n> al7anList;
-  final List<TextEditingController> controllers1;
-  final List<TextEditingController> controllers2;
-  final List<TextEditingController> controllers3;
-  final List<TextEditingController> controllers4;
-  final List<TextEditingController> controllers5;
-  final List<TextEditingController> controllers6;
+  final Form al7anList;
+  final List<List<TextEditingController>> controllerGroups;
+  final List<List<bool>> boolGroups;
   final TextEditingController totalController;
+  final TextEditingController copticReadingController;
   final TextEditingController taksController;
   final TextEditingController slokController;
-  final List<bool> bool1;
-  final List<bool> bool2;
-  final List<bool> bool3;
-  final List<bool> bool4;
-  final List<bool> bool5;
-  final List<bool> bool6;
+
+  static const List<double> _fieldLimits = [20.0, 10.0, 10.0, 10.0];
+  static const Map<int, double> _toolGatedBonus = {0: .5, 1: .5};
+  static const Map<int, double> _invertedBonus = {2: 1.0};
+  static const double _copticReadingMax = 10.0;
+
+  double get _taksMax => al7anList.length.toDouble();
 
   @override
   Widget view() {
@@ -891,37 +752,18 @@ class Talta2FormModel extends BaseMarksFormModel {
           children: [
             _churchHeader(),
             _sectionGap(),
-            MarksFormFields.taltaForm(al7anList[0], controllers1, bool1,
-                (index, value) {
-              setState(() => bool1[index] = value ?? false);
-            }),
+            for (var i = 0; i < al7anList.length; i++) ...[
+              MarksFormFields.taltaForm(
+                al7anList[i],
+                controllerGroups[i],
+                boolGroups[i],
+                    (index, value) => setState(() => boolGroups[i][index] = value ?? false),
+              ),
+              _sectionGap(),
+            ],
+            MarksFormFields.taks(context, taksController, al7anList.length, pdfUrl: al7anList.taksUrl),
             _sectionGap(),
-            MarksFormFields.taltaForm(al7anList[1], controllers2, bool2,
-                (index, value) {
-              setState(() => bool2[index] = value ?? false);
-            }),
-            _sectionGap(),
-            MarksFormFields.taltaForm(al7anList[2], controllers3, bool3,
-                (index, value) {
-              setState(() => bool3[index] = value ?? false);
-            }),
-            _sectionGap(),
-            MarksFormFields.taltaForm(al7anList[3], controllers4, bool4,
-                (index, value) {
-              setState(() => bool4[index] = value ?? false);
-            }),
-            _sectionGap(),
-            MarksFormFields.taltaForm(al7anList[4], controllers5, bool5,
-                (index, value) {
-              setState(() => bool5[index] = value ?? false);
-            }),
-            _sectionGap(),
-            MarksFormFields.taltaForm(al7anList[5], controllers6, bool6,
-                (index, value) {
-              setState(() => bool6[index] = value ?? false);
-            }),
-            _sectionGap(),
-            MarksFormFields.taks(taksController, 6),
+            MarksFormFields.copticReading(copticReadingController),
             _sectionGap(),
             MarksFormFields.total(totalController),
             _sectionGap(),
@@ -935,31 +777,20 @@ class Talta2FormModel extends BaseMarksFormModel {
   @override
   bool validate() {
     final requiredControllers = [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3,
-      ...controllers4,
-      ...controllers5,
-      ...controllers6,
+      for (final group in controllerGroups) ...group,
       taksController,
+      copticReadingController,
       totalController,
       slokController,
     ];
     if (requiredControllers.any((c) => c.text.trim().isEmpty)) return false;
-    if (!_withinRange(taksController.text, 6)) return false;
+    if (!_withinRange(copticReadingController.text, _copticReadingMax)) return false;
+    if (!_withinRange(taksController.text, _taksMax)) return false;
     if (!_withinRange(slokController.text, 10)) return false;
 
-    final limits = [20.0, 10.0, 10.0, 10.0];
-    for (final group in [
-      controllers1,
-      controllers2,
-      controllers3,
-      controllers4,
-      controllers5,
-      controllers6
-    ]) {
+    for (final group in controllerGroups) {
       for (var i = 0; i < group.length; i++) {
-        if (!_withinRange(group[i].text, limits[i])) return false;
+        if (!_withinRange(group[i].text, _fieldLimits[i])) return false;
       }
     }
     return true;
@@ -969,204 +800,90 @@ class Talta2FormModel extends BaseMarksFormModel {
   Map<String, dynamic> buildPayload(String judgeName) {
     final slok = _parseDouble(slokController.text);
     final taks = _parseDouble(taksController.text);
-    double sum = slok;
+    final copticReading = _parseDouble(copticReadingController.text);
 
-    for (final controller in [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3,
-      ...controllers4,
-      ...controllers5,
-      ...controllers6,
-    ]) {
-      sum += _parseDouble(controller.text);
+    final scored = _scoreGroups(
+      al7anList: al7anList,
+      controllerGroups: controllerGroups,
+      boolGroups: boolGroups,
+      fieldLimits: _fieldLimits,
+      toolGatedBoolBonus: _toolGatedBonus,
+      invertedBoolBonus: _invertedBonus,
+    );
+
+    final sum = scored.sum + slok + taks + copticReading;
+
+    final payload = <String, dynamic>{};
+    for (var i = 0; i < al7anList.length; i++) {
+      final group = controllerGroups[i];
+      payload[al7anList[i].name] = {
+        Al7an.tslem: group[0].text,
+        Al7an.tempo: group[1].text,
+        Al7an.ro7ania: group[2].text,
+        Al7an.copticSpelling: group[3].text,
+        if (al7anList[i].hasTools) Al7an.df: boolGroups[i][0],
+        if (al7anList[i].hasTools) Al7an.treanto: boolGroups[i][1],
+        Al7an.hzat: boolGroups[i][2],
+      };
     }
 
-    sum += bool1[0] ? .5 : 0;
-    sum += bool1[1] ? .5 : 0;
-    sum += !bool1[2] ? 1 : 0;
-    sum += bool2[0] ? .5 : 0;
-    sum += bool2[1] ? .5 : 0;
-    sum += !bool2[2] ? 1 : 0;
-    sum += bool3[0] ? .5 : 0;
-    sum += bool3[1] ? .5 : 0;
-    sum += !bool3[2] ? 1 : 0;
-    sum += bool4[0] ? .5 : 0;
-    sum += bool4[1] ? .5 : 0;
-    sum += !bool4[2] ? 1 : 0;
-    sum += bool5[0] ? .5 : 0;
-    sum += bool5[1] ? .5 : 0;
-    sum += !bool5[2] ? 1 : 0;
-    sum += bool6[0] ? .5 : 0;
-    sum += bool6[1] ? .5 : 0;
-    sum += !bool6[2] ? 1 : 0;
-    sum += taks;
-
-    return {
+    payload.addAll({
       'churchName': churchName,
       'kidsTotal': totalController.text,
       'judge': judgeName,
       'slok': slok,
       'taks': taks,
-      al7anList[0].name: {
-        Al7an.tslem: controllers1[0].text,
-        Al7an.tempo: controllers1[1].text,
-        Al7an.ro7ania: controllers1[2].text,
-        Al7an.copticSpelling: controllers1[3].text,
-        Al7an.df: bool1[0],
-        Al7an.treanto: bool1[1],
-        Al7an.hzat: bool1[2],
-      },
-      al7anList[1].name: {
-        Al7an.tslem: controllers2[0].text,
-        Al7an.tempo: controllers2[1].text,
-        Al7an.ro7ania: controllers2[2].text,
-        Al7an.copticSpelling: controllers2[3].text,
-        Al7an.df: bool2[0],
-        Al7an.treanto: bool2[1],
-        Al7an.hzat: bool2[2],
-      },
-      al7anList[2].name: {
-        Al7an.tslem: controllers3[0].text,
-        Al7an.tempo: controllers3[1].text,
-        Al7an.ro7ania: controllers3[2].text,
-        Al7an.copticSpelling: controllers3[3].text,
-        Al7an.df: bool3[0],
-        Al7an.treanto: bool3[1],
-        Al7an.hzat: bool3[2],
-      },
-      al7anList[3].name: {
-        Al7an.tslem: controllers4[0].text,
-        Al7an.tempo: controllers4[1].text,
-        Al7an.ro7ania: controllers4[2].text,
-        Al7an.copticSpelling: controllers4[3].text,
-        Al7an.df: bool4[0],
-        Al7an.treanto: bool4[1],
-        Al7an.hzat: bool4[2],
-      },
-      al7anList[4].name: {
-        Al7an.tslem: controllers5[0].text,
-        Al7an.tempo: controllers5[1].text,
-        Al7an.ro7ania: controllers5[2].text,
-        Al7an.copticSpelling: controllers5[3].text,
-        Al7an.df: bool5[0],
-        Al7an.treanto: bool5[1],
-        Al7an.hzat: bool5[2],
-      },
-      al7anList[5].name: {
-        Al7an.tslem: controllers6[0].text,
-        Al7an.tempo: controllers6[1].text,
-        Al7an.ro7ania: controllers6[2].text,
-        Al7an.copticSpelling: controllers6[3].text,
-        Al7an.df: bool6[0],
-        Al7an.treanto: bool6[1],
-        Al7an.hzat: bool6[2],
-      },
+      'copticReading': copticReading,
       'total': sum,
-      'percent': sum / 328,
-    };
+      'percent': sum / (scored.maxSum + 10 + _taksMax + _copticReadingMax),
+    });
+    return payload;
   }
 
   @override
   void dispose() {
-    for (final controller in [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3,
-      ...controllers4,
-      ...controllers5,
-      ...controllers6,
-      totalController,
-      taksController,
-      slokController,
-    ]) {
-      controller.dispose();
+    for (final group in controllerGroups) {
+      for (final c in group) {
+        c.dispose();
+      }
     }
+    totalController.dispose();
+    copticReadingController.dispose();
+    taksController.dispose();
+    slokController.dispose();
   }
 
   @override
   Future<bool> submit(String judgeName) async {
     final payload = buildPayload(judgeName);
-    final FirebaseFirestore fireStore = FirebaseFirestore.instance;
-    await fireStore
-        .collection(
-            isTalta ? "taltaRaba2ResultsFinal" : "khamsaSadsa2ResultsFinal")
+    await FirebaseFirestore.instance
+        .collection(isTalta ? "taltaRaba2ResultsFinal" : "khamsaSadsa2ResultsFinal")
         .add(payload);
     return true;
   }
 
   static Talta2FormModel fromJson(
-    Map<String, dynamic> data, {
-    required bool isTalta,
-    required String levelInArabic,
-  }) {
+      Map<String, dynamic> data, {
+        required bool isTalta,
+        required String levelInArabic,
+      }) {
     final al7anList = isTalta ? Al7an.talta2 : Al7an.khamsa2;
     return Talta2FormModel(
       churchName: data['churchName']?.toString(),
       levelInArabic: levelInArabic,
       isTalta: isTalta,
       al7anList: al7anList,
-      controllers1: _controllersForCategory(
-        data,
-        al7anList[0].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
+      controllerGroups: List.generate(
+        al7anList.length,
+            (i) => _controllersForCategory(data, al7anList[i].name,
+            [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling]),
       ),
-      controllers2: _controllersForCategory(
-        data,
-        al7anList[1].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
-      ),
-      controllers3: _controllersForCategory(
-        data,
-        al7anList[2].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
-      ),
-      controllers4: _controllersForCategory(
-        data,
-        al7anList[3].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
-      ),
-      controllers5: _controllersForCategory(
-        data,
-        al7anList[4].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
-      ),
-      controllers6: _controllersForCategory(
-        data,
-        al7anList[5].name,
-        [Al7an.tslem, Al7an.tempo, Al7an.ro7ania, Al7an.copticSpelling],
-      ),
-      bool1: _boolsForCategory(
-        data,
-        al7anList[0].name,
-        [Al7an.df, Al7an.treanto, Al7an.hzat],
-      ),
-      bool2: _boolsForCategory(
-        data,
-        al7anList[1].name,
-        [Al7an.df, Al7an.treanto, Al7an.hzat],
-      ),
-      bool3: _boolsForCategory(
-        data,
-        al7anList[2].name,
-        [Al7an.df, Al7an.treanto, Al7an.hzat],
-      ),
-      bool4: _boolsForCategory(
-        data,
-        al7anList[3].name,
-        [Al7an.df, Al7an.treanto, Al7an.hzat],
-      ),
-      bool5: _boolsForCategory(
-        data,
-        al7anList[4].name,
-        [Al7an.df, Al7an.treanto, Al7an.hzat],
-      ),
-      bool6: _boolsForCategory(
-        data,
-        al7anList[5].name,
-        [Al7an.df, Al7an.treanto, Al7an.hzat],
+      boolGroups: List.generate(
+        al7anList.length,
+            (i) => _boolsForCategory(data, al7anList[i].name, [Al7an.df, Al7an.treanto, Al7an.hzat]),
       ),
       totalController: _textControllerFrom(data['kidsTotal']),
+      copticReadingController: _textControllerFrom(data['copticReading']),
       taksController: _textControllerFrom(data['taks']),
       slokController: _textControllerFrom(data['slok'] ?? 10),
     );
@@ -1178,39 +895,41 @@ class MohobenIndividualFormModel extends BaseMarksFormModel {
     required super.churchName,
     required super.levelInArabic,
     required this.level,
-    List<L7n>? al7anList,
-    List<TextEditingController>? controllers1,
-    List<TextEditingController>? controllers2,
-    List<TextEditingController>? controllers3,
-    List<bool>? bool1,
-    List<bool>? bool2,
-    List<bool>? bool3,
-  })  : al7anList = al7anList ??
-            (level == 0
-                ? Al7an.kg3
-                : level == 1
-                    ? Al7an.ola3
-                    : level == 2
-                        ? Al7an.talta3
-                        : Al7an.khamsa3),
-        controllers1 =
-            controllers1 ?? List.generate(3, (_) => TextEditingController()),
-        controllers2 =
-            controllers2 ?? List.generate(3, (_) => TextEditingController()),
-        controllers3 =
-            controllers3 ?? List.generate(3, (_) => TextEditingController()),
-        bool1 = bool1 ?? List.generate(2, (_) => false),
-        bool2 = bool2 ?? List.generate(2, (_) => false),
-        bool3 = bool3 ?? List.generate(2, (_) => false);
+    Form? al7anList,
+    List<List<TextEditingController>>? controllerGroups,
+    List<List<bool>>? boolGroups,
+    TextEditingController? taksController,
+  })  : al7anList = al7anList ?? _formForLevel(level),
+        controllerGroups = controllerGroups ??
+            List.generate(
+              (al7anList ?? _formForLevel(level)).length,
+                  (_) => List.generate(3, (_) => TextEditingController()),
+            ),
+        boolGroups = boolGroups ??
+            List.generate(
+              (al7anList ?? _formForLevel(level)).length,
+                  (_) => List.generate(1, (_) => false),
+            ),
+        taksController = taksController ?? TextEditingController();
 
   final int level;
-  final List<L7n> al7anList;
-  final List<TextEditingController> controllers1;
-  final List<TextEditingController> controllers2;
-  final List<TextEditingController> controllers3;
-  final List<bool> bool1;
-  final List<bool> bool2;
-  final List<bool> bool3;
+  final Form al7anList;
+  final List<List<TextEditingController>> controllerGroups;
+  final List<List<bool>> boolGroups;
+  final TextEditingController taksController;
+
+  static const List<double> _fieldLimits = [15.0, 10.0, 10.0];
+  static const int _dfIdx = 0;
+
+  double get _taksMax => al7anList.length.toDouble();
+
+  static Form _formForLevel(int level) => level == 0
+      ? Al7an.kg3
+      : level == 1
+      ? Al7an.ola3
+      : level == 2
+      ? Al7an.talta3
+      : Al7an.khamsa3;
 
   @override
   Widget view() {
@@ -1221,20 +940,17 @@ class MohobenIndividualFormModel extends BaseMarksFormModel {
           children: [
             _churchHeader(),
             _sectionGap(),
-            MarksFormFields.mohobenIndividualForm(
-                al7anList[0], controllers1, bool1, (index, value) {
-              setState(() => bool1[index] = value ?? false);
-            }, level),
-            _sectionGap(),
-            MarksFormFields.mohobenIndividualForm(
-                al7anList[1], controllers2, bool2, (index, value) {
-              setState(() => bool2[index] = value ?? false);
-            }, level),
-            _sectionGap(),
-            MarksFormFields.mohobenIndividualForm(
-                al7anList[2], controllers3, bool3, (index, value) {
-              setState(() => bool3[index] = value ?? false);
-            }, level),
+            for (var i = 0; i < al7anList.length; i++) ...[
+              MarksFormFields.mohobenIndividualForm(
+                al7anList[i],
+                controllerGroups[i],
+                boolGroups[i],
+                    (index, value) => setState(() => boolGroups[i][index] = value ?? false),
+                level,
+              ),
+              _sectionGap(),
+            ],
+            MarksFormFields.taks(context, taksController, al7anList.length, pdfUrl: al7anList.taksUrl),
           ],
         );
       },
@@ -1243,148 +959,122 @@ class MohobenIndividualFormModel extends BaseMarksFormModel {
 
   @override
   bool validate() {
-    final controllerGroups = [controllers1, controllers2, controllers3];
-    final limits = [15.0, 10.0, 10.0];
+    if (taksController.text.trim().isEmpty) return false;
+    if (!_withinRange(taksController.text, _taksMax)) return false;
     for (final group in controllerGroups) {
       if (_isEmptyControllers(group)) return false;
       for (var i = 0; i < group.length; i++) {
-        if (!_withinRange(group[i].text, limits[i])) return false;
+        if (!_withinRange(group[i].text, _fieldLimits[i])) return false;
       }
     }
     return true;
   }
 
+  double _groupScore(int i) {
+    double s = 0;
+    for (final c in controllerGroups[i]) {
+      s += _parseDouble(c.text);
+    }
+    if (al7anList[i].hasTools) s += boolGroups[i][_dfIdx] ? 1 : 0;
+    return s;
+  }
+
+  double _groupMax(int i) {
+    double m = _fieldLimits.reduce((a, b) => a + b);
+    if (al7anList[i].hasTools) m += 1; // df
+    return m;
+  }
+
   @override
   Map<String, dynamic> buildPayload(String judgeName) {
-    double sum = 0;
-    for (final controller in controllers3) {
-      sum += _parseDouble(controller.text);
-    }
-    sum += bool3[0] ? 1 : 0;
-    sum += bool3[1] ? 1 : 0;
-    final factor = (sum >= 50 && sum <= 53)
-        ? 1.01
-        : (sum >= 54 && sum <= 56)
-            ? 1.02
-            : (sum >= 57 && sum <= 59)
-                ? 1.05
-                : (sum >= 60 && sum <= 61)
-                    ? 1.07
-                    : 1.0;
+    final taks = _parseDouble(taksController.text);
+    final lastIndex = al7anList.length - 1;
 
-    for (final controller in [...controllers1, ...controllers2]) {
-      sum += _parseDouble(controller.text);
-    }
+    double sum = _groupScore(lastIndex); // factor threshold determined by last group
+    final factor = _bandFactor(sum);
 
-    sum += bool1[0] ? 1 : 0;
-    sum += bool1[1] ? 1 : 0;
-    sum += bool2[0] ? 1 : 0;
-    sum += bool2[1] ? 1 : 0;
+    for (var i = 0; i < lastIndex; i++) {
+      sum += _groupScore(i);
+    }
+    sum += taks;
     sum *= factor;
 
-    return {
+    double otherGroupsMax = 0;
+    for (var i = 0; i < lastIndex; i++) {
+      otherGroupsMax += _groupMax(i);
+    }
+    final maxSum = _maxFactoredSum(
+      maxLastGroupScore: _groupMax(lastIndex),
+      otherGroupsMaxScore: otherGroupsMax + _taksMax,
+    );
+
+    final payload = <String, dynamic>{};
+    for (var i = 0; i < al7anList.length; i++) {
+      final group = controllerGroups[i];
+      payload[al7anList[i].name] = {
+        Al7an.tslem: group[0].text,
+        Al7an.copticReading: group[1].text,
+        Al7an.ro7ania: group[2].text,
+        if (al7anList[i].hasTools) Al7an.df: boolGroups[i][_dfIdx],
+      };
+    }
+
+    payload.addAll({
       'churchName': churchName,
       'judge': judgeName,
-      al7anList[0].name: {
-        Al7an.tslem: controllers1[0].text,
-        Al7an.copticReading: controllers1[1].text,
-        Al7an.ro7ania: controllers1[2].text,
-        Al7an.taks: bool1[0],
-        Al7an.df: bool1[1],
-      },
-      al7anList[1].name: {
-        Al7an.tslem: controllers2[0].text,
-        Al7an.copticReading: controllers2[1].text,
-        Al7an.ro7ania: controllers2[2].text,
-        Al7an.taks: bool2[0],
-        Al7an.df: bool2[1],
-      },
-      al7anList[2].name: {
-        Al7an.tslem: controllers3[0].text,
-        Al7an.copticReading: controllers3[1].text,
-        Al7an.ro7ania: controllers3[2].text,
-        Al7an.taks: bool3[0],
-        Al7an.df: bool3[1],
-      },
+      'taks': taks,
       'total': sum,
-      'percent': sum / 111,
-    };
+      'percent': sum / maxSum,
+    });
+    return payload;
   }
 
   @override
   void dispose() {
-    for (final controller in [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3
-    ]) {
-      controller.dispose();
+    for (final group in controllerGroups) {
+      for (final c in group) {
+        c.dispose();
+      }
     }
+    taksController.dispose();
   }
 
   @override
   Future<bool> submit(String judgeName) async {
     final payload = buildPayload(judgeName);
-    final FirebaseFirestore fireStore = FirebaseFirestore.instance;
-    await fireStore
+    await FirebaseFirestore.instance
         .collection(level == 0
-            ? "kgFResultsFinal"
-            : level == 1
-                ? "oulaTanyaFResultsFinal"
-                : level == 2
-                    ? "taltaRabaFResultsFinal"
-                    : "khamsaSadsaFResultsFinal")
+        ? "kgFResultsFinal"
+        : level == 1
+        ? "oulaTanyaFResultsFinal"
+        : level == 2
+        ? "taltaRabaFResultsFinal"
+        : "khamsaSadsaFResultsFinal")
         .add(payload);
     return true;
   }
 
   static MohobenIndividualFormModel fromJson(
-    Map<String, dynamic> data, {
-    required int level,
-    required String levelInArabic,
-  }) {
-    final al7anList = level == 0
-        ? Al7an.kg3
-        : level == 1
-            ? Al7an.ola3
-            : level == 2
-                ? Al7an.talta3
-                : Al7an.khamsa3;
+      Map<String, dynamic> data, {
+        required int level,
+        required String levelInArabic,
+      }) {
+    final al7anList = _formForLevel(level);
     return MohobenIndividualFormModel(
       churchName: data['churchName']?.toString(),
       levelInArabic: levelInArabic,
       level: level,
       al7anList: al7anList,
-      controllers1: _controllersForCategory(
-        data,
-        al7anList[0].name,
-        [Al7an.tslem, Al7an.copticReading, Al7an.ro7ania],
+      controllerGroups: List.generate(
+        al7anList.length,
+            (i) => _controllersForCategory(
+            data, al7anList[i].name, [Al7an.tslem, Al7an.copticReading, Al7an.ro7ania]),
       ),
-      controllers2: _controllersForCategory(
-        data,
-        al7anList[1].name,
-        [Al7an.tslem, Al7an.copticReading, Al7an.ro7ania],
+      boolGroups: List.generate(
+        al7anList.length,
+            (i) => _boolsForCategory(data, al7anList[i].name, [Al7an.df]),
       ),
-      controllers3: _controllersForCategory(
-        data,
-        al7anList[2].name,
-        [Al7an.tslem, Al7an.copticReading, Al7an.ro7ania],
-      ),
-      bool1: _boolsForCategory(
-        data,
-        al7anList[0].name,
-        [Al7an.taks, Al7an.df],
-      ),
-      bool2: _boolsForCategory(
-        data,
-        al7anList[1].name,
-        [Al7an.taks, Al7an.df],
-      ),
-      bool3: _boolsForCategory(
-        data,
-        al7anList[2].name,
-        [Al7an.taks, Al7an.df],
-      ),
+      taksController: _textControllerFrom(data['taks']),
     );
   }
 }
@@ -1394,45 +1084,48 @@ class MohobenGroupFormModel extends BaseMarksFormModel {
     required super.churchName,
     required super.levelInArabic,
     required this.level,
-    List<L7n>? al7anList,
-    List<TextEditingController>? controllers1,
-    List<TextEditingController>? controllers2,
-    List<TextEditingController>? controllers3,
+    Form? al7anList,
+    List<List<TextEditingController>>? controllerGroups,
+    List<List<bool>>? boolGroups,
     TextEditingController? totalController,
     TextEditingController? slokController,
-    List<bool>? bool1,
-    List<bool>? bool2,
-    List<bool>? bool3,
-  })  : al7anList = al7anList ??
-            (level == 0
-                ? Al7an.kg3
-                : level == 1
-                    ? Al7an.ola3
-                    : level == 2
-                        ? Al7an.talta3
-                        : Al7an.khamsa3),
-        controllers1 =
-            controllers1 ?? List.generate(5, (_) => TextEditingController()),
-        controllers2 =
-            controllers2 ?? List.generate(5, (_) => TextEditingController()),
-        controllers3 =
-            controllers3 ?? List.generate(5, (_) => TextEditingController()),
+    TextEditingController? taksController,
+  })  : al7anList = al7anList ?? _formForLevel(level),
+        controllerGroups = controllerGroups ??
+            List.generate(
+              (al7anList ?? _formForLevel(level)).length,
+                  (_) => List.generate(5, (_) => TextEditingController()),
+            ),
+        boolGroups = boolGroups ??
+            List.generate(
+              (al7anList ?? _formForLevel(level)).length,
+                  (_) => List.generate(2, (_) => false),
+            ),
         totalController = totalController ?? TextEditingController(),
         slokController = slokController ?? TextEditingController(text: '10'),
-        bool1 = bool1 ?? List.generate(3, (_) => false),
-        bool2 = bool2 ?? List.generate(3, (_) => false),
-        bool3 = bool3 ?? List.generate(3, (_) => false);
+        taksController = taksController ?? TextEditingController();
 
   final int level;
-  final List<L7n> al7anList;
-  final List<TextEditingController> controllers1;
-  final List<TextEditingController> controllers2;
-  final List<TextEditingController> controllers3;
+  final Form al7anList;
+  final List<List<TextEditingController>> controllerGroups;
+  final List<List<bool>> boolGroups;
   final TextEditingController totalController;
   final TextEditingController slokController;
-  final List<bool> bool1;
-  final List<bool> bool2;
-  final List<bool> bool3;
+  final TextEditingController taksController;
+
+  static const List<double> _fieldLimits = [20.0, 10.0, 10.0, 10.0, 10.0];
+  static const int _dfIdx = 0;
+  static const int _treantoIdx = 1;
+
+  double get _taksMax => al7anList.length.toDouble();
+
+  static Form _formForLevel(int level) => level == 0
+      ? Al7an.kg3
+      : level == 1
+      ? Al7an.ola3
+      : level == 2
+      ? Al7an.talta3
+      : Al7an.khamsa3;
 
   @override
   Widget view() {
@@ -1443,20 +1136,17 @@ class MohobenGroupFormModel extends BaseMarksFormModel {
           children: [
             _churchHeader(),
             _sectionGap(),
-            MarksFormFields.mohobenGroupForm(al7anList[0], controllers1, bool1,
-                (index, value) {
-              setState(() => bool1[index] = value ?? false);
-            }, level),
-            _sectionGap(20),
-            MarksFormFields.mohobenGroupForm(al7anList[1], controllers2, bool2,
-                (index, value) {
-              setState(() => bool2[index] = value ?? false);
-            }, level),
-            _sectionGap(20),
-            MarksFormFields.mohobenGroupForm(al7anList[2], controllers3, bool3,
-                (index, value) {
-              setState(() => bool3[index] = value ?? false);
-            }, level),
+            for (var i = 0; i < al7anList.length; i++) ...[
+              MarksFormFields.mohobenGroupForm(
+                al7anList[i],
+                controllerGroups[i],
+                boolGroups[i],
+                    (index, value) => setState(() => boolGroups[i][index] = value ?? false),
+                level,
+              ),
+              _sectionGap(20),
+            ],
+            MarksFormFields.taks(context, taksController, al7anList.length, pdfUrl: al7anList.taksUrl),
             _sectionGap(),
             MarksFormFields.total(totalController),
             _sectionGap(),
@@ -1470,216 +1160,141 @@ class MohobenGroupFormModel extends BaseMarksFormModel {
   @override
   bool validate() {
     if (totalController.text.trim().isEmpty ||
-        slokController.text.trim().isEmpty) return false;
+        slokController.text.trim().isEmpty ||
+        taksController.text.trim().isEmpty) {
+      return false;
+    }
     if (!_withinRange(slokController.text, 10)) return false;
-    final controllerGroups = [controllers1, controllers2, controllers3];
+    if (!_withinRange(taksController.text, _taksMax)) return false;
     for (final group in controllerGroups) {
       if (_isEmptyControllers(group)) return false;
-      final limits = [20.0, 10.0, 10.0, 10.0, 10.0];
       for (var i = 0; i < group.length; i++) {
-        if (!_withinRange(group[i].text, limits[i])) return false;
+        if (!_withinRange(group[i].text, _fieldLimits[i])) return false;
       }
     }
     return true;
   }
 
+  double _groupScore(int i) {
+    double s = 0;
+    for (final c in controllerGroups[i]) {
+      s += _parseDouble(c.text);
+    }
+    if (al7anList[i].hasTools) {
+      s += boolGroups[i][_dfIdx] ? .5 : 0;
+      s += boolGroups[i][_treantoIdx] ? .5 : 0;
+    }
+    return s;
+  }
+
+  double _groupMax(int i) {
+    double m = _fieldLimits.reduce((a, b) => a + b);
+    if (al7anList[i].hasTools) m += 1; // df(.5) + treanto(.5)
+    return m;
+  }
+
   @override
   Map<String, dynamic> buildPayload(String judgeName) {
     final slok = _parseDouble(slokController.text);
-    double sum = 0;
+    final taks = _parseDouble(taksController.text);
+    final lastIndex = al7anList.length - 1;
 
-    for (final controller in controllers3) {
-      sum += _parseDouble(controller.text);
+    double sum = _groupScore(lastIndex); // factor threshold determined by last group
+    final factor = _bandFactor(sum);
+
+    for (var i = 0; i < lastIndex; i++) {
+      sum += _groupScore(i);
     }
-    sum += bool3[0] ? 1 : 0;
-    sum += bool3[1] ? .5 : 0;
-    sum += bool3[2] ? .5 : 0;
-
-    final factor = (sum >= 50 && sum <= 53)
-        ? 1.01
-        : (sum >= 54 && sum <= 56)
-            ? 1.02
-            : (sum >= 57 && sum <= 59)
-                ? 1.05
-                : (sum >= 60 && sum <= 61)
-                    ? 1.07
-                    : 1.0;
-
-    for (final controller in [...controllers1, ...controllers2]) {
-      sum += _parseDouble(controller.text);
-    }
-
-    sum += bool1[0] ? 1 : 0;
-    sum += bool1[1] ? .5 : 0;
-    sum += bool1[2] ? .5 : 0;
-    sum += bool2[0] ? 1 : 0;
-    sum += bool2[1] ? .5 : 0;
-    sum += bool2[2] ? .5 : 0;
+    sum += taks;
     sum *= factor;
-    sum += slok;
+    sum += slok; // slok added AFTER multiplier, matching original behavior
 
-    return {
+    double otherGroupsMax = 0;
+    for (var i = 0; i < lastIndex; i++) {
+      otherGroupsMax += _groupMax(i);
+    }
+    final maxSum = _maxFactoredSum(
+      maxLastGroupScore: _groupMax(lastIndex),
+      otherGroupsMaxScore: otherGroupsMax + _taksMax,
+    ) +
+        10; // slok max, added post-multiplication like above
+
+    final payload = <String, dynamic>{};
+    for (var i = 0; i < al7anList.length; i++) {
+      final group = controllerGroups[i];
+      payload[al7anList[i].name] = {
+        Al7an.tslem: group[0].text,
+        Al7an.tempo: group[1].text,
+        Al7an.tnas2: group[2].text,
+        Al7an.copticReading: group[3].text,
+        Al7an.ro7ania: group[4].text,
+        if (al7anList[i].hasTools) Al7an.df: boolGroups[i][_dfIdx],
+        if (al7anList[i].hasTools) Al7an.treanto: boolGroups[i][_treantoIdx],
+      };
+    }
+
+    payload.addAll({
       'churchName': churchName,
       'kidsTotal': totalController.text,
       'judge': judgeName,
       'slok': slok,
-      al7anList[0].name: {
-        Al7an.tslem: controllers1[0].text,
-        Al7an.tempo: controllers1[1].text,
-        Al7an.tnas2: controllers1[2].text,
-        Al7an.copticReading: controllers1[3].text,
-        Al7an.ro7ania: controllers1[4].text,
-        Al7an.taks: bool1[0],
-        Al7an.df: bool1[1],
-        Al7an.treanto: bool1[2],
-      },
-      al7anList[1].name: {
-        Al7an.tslem: controllers2[0].text,
-        Al7an.tempo: controllers2[1].text,
-        Al7an.tnas2: controllers2[2].text,
-        Al7an.copticReading: controllers2[3].text,
-        Al7an.ro7ania: controllers2[4].text,
-        Al7an.taks: bool2[0],
-        Al7an.df: bool2[1],
-        Al7an.treanto: bool2[2],
-      },
-      al7anList[2].name: {
-        Al7an.tslem: controllers3[0].text,
-        Al7an.tempo: controllers3[1].text,
-        Al7an.tnas2: controllers3[2].text,
-        Al7an.copticReading: controllers3[3].text,
-        Al7an.ro7ania: controllers3[4].text,
-        Al7an.taks: bool3[0],
-        Al7an.df: bool3[1],
-        Al7an.treanto: bool3[2],
-      },
+      'taks': taks,
       'total': sum,
-      'percent': sum / 196,
-    };
+      'percent': sum / maxSum,
+    });
+    return payload;
   }
 
   @override
   void dispose() {
-    for (final controller in [
-      ...controllers1,
-      ...controllers2,
-      ...controllers3,
-      totalController,
-      slokController
-    ]) {
-      controller.dispose();
+    for (final group in controllerGroups) {
+      for (final c in group) {
+        c.dispose();
+      }
     }
+    totalController.dispose();
+    slokController.dispose();
+    taksController.dispose();
   }
 
   @override
   Future<bool> submit(String judgeName) async {
     final payload = buildPayload(judgeName);
-    final FirebaseFirestore fireStore = FirebaseFirestore.instance;
-    await fireStore
+    await FirebaseFirestore.instance
         .collection(level == 0
-            ? "kgGResultsFinal"
-            : level == 1
-                ? "oulaTanyaGResultsFinal"
-                : level == 2
-                    ? "taltaRabaGResultsFinal"
-                    : "khamsaSadsaGResultsFinal")
+        ? "kgGResultsFinal"
+        : level == 1
+        ? "oulaTanyaGResultsFinal"
+        : level == 2
+        ? "taltaRabaGResultsFinal"
+        : "khamsaSadsaGResultsFinal")
         .add(payload);
     return true;
   }
 
   static MohobenGroupFormModel fromJson(
-    Map<String, dynamic> data, {
-    required int level,
-    required String levelInArabic,
-  }) {
-    final al7anList = level == 0
-        ? Al7an.kg3
-        : level == 1
-            ? Al7an.ola3
-            : level == 2
-                ? Al7an.talta3
-                : Al7an.khamsa3;
+      Map<String, dynamic> data, {
+        required int level,
+        required String levelInArabic,
+      }) {
+    final al7anList = _formForLevel(level);
     return MohobenGroupFormModel(
       churchName: data['churchName']?.toString(),
       levelInArabic: levelInArabic,
       level: level,
       al7anList: al7anList,
-      controllers1: _controllersForCategory(
-        data,
-        al7anList[0].name,
-        [
-          Al7an.tslem,
-          Al7an.tempo,
-          Al7an.tnas2,
-          Al7an.copticReading,
-          Al7an.ro7ania
-        ],
+      controllerGroups: List.generate(
+        al7anList.length,
+            (i) => _controllersForCategory(data, al7anList[i].name,
+            [Al7an.tslem, Al7an.tempo, Al7an.tnas2, Al7an.copticReading, Al7an.ro7ania]),
       ),
-      controllers2: _controllersForCategory(
-        data,
-        al7anList[1].name,
-        [
-          Al7an.tslem,
-          Al7an.tempo,
-          Al7an.tnas2,
-          Al7an.copticReading,
-          Al7an.ro7ania
-        ],
-      ),
-      controllers3: _controllersForCategory(
-        data,
-        al7anList[2].name,
-        [
-          Al7an.tslem,
-          Al7an.tempo,
-          Al7an.tnas2,
-          Al7an.copticReading,
-          Al7an.ro7ania
-        ],
-      ),
-      bool1: _boolsForCategory(
-        data,
-        al7anList[0].name,
-        [Al7an.taks, Al7an.df, Al7an.treanto],
-      ),
-      bool2: _boolsForCategory(
-        data,
-        al7anList[1].name,
-        [Al7an.taks, Al7an.df, Al7an.treanto],
-      ),
-      bool3: _boolsForCategory(
-        data,
-        al7anList[2].name,
-        [Al7an.taks, Al7an.df, Al7an.treanto],
+      boolGroups: List.generate(
+        al7anList.length,
+            (i) => _boolsForCategory(data, al7anList[i].name, [Al7an.df, Al7an.treanto]),
       ),
       totalController: _textControllerFrom(data['kidsTotal']),
       slokController: _textControllerFrom(data['slok'] ?? 10),
+      taksController: _textControllerFrom(data['taks']),
     );
   }
 }
-
-// class MarksFormFactory {
-//   static BaseMarksFormModel create(
-// 	MarksFormKind kind, {
-// 	required String churchName,
-// 	bool? isKg,
-// 	bool? isTalta,
-// 	int? level,
-// 	SubmissionHandler? onSubmit,
-//   }) {
-// 	switch (kind) {
-// 	  case MarksFormKind.kg1:
-// 		return Kg1FormModel(churchName: churchName, isKg: isKg ?? true, onSubmit: onSubmit);
-// 	  case MarksFormKind.kg2:
-// 		return Kg2FormModel(churchName: churchName, isKg: isKg ?? true, onSubmit: onSubmit);
-// 	  case MarksFormKind.talta1:
-// 		return Talta1FormModel(churchName: churchName, isTalta: isTalta ?? true, onSubmit: onSubmit);
-// 	  case MarksFormKind.talta2:
-// 		return Talta2FormModel(churchName: churchName, isTalta: isTalta ?? true, onSubmit: onSubmit);
-// 	  case MarksFormKind.mohobenIndividual:
-// 		return MohobenIndividualFormModel(churchName: churchName, level: level ?? 0, onSubmit: onSubmit);
-// 	  case MarksFormKind.mohobenGroup:
-// 		return MohobenGroupFormModel(churchName: churchName, level: level ?? 0, onSubmit: onSubmit);
-// 	}
-//   }
-// }
