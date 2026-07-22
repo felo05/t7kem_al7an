@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:t7kem_al7an/features/splash_screen/splash_screen.dart';
+import 'core/di/service_locator.dart';
 import 'core/services/notification_service/notification_service.dart';
 import 'firebase_options.dart';
 
@@ -11,6 +12,7 @@ Future<void> handleBackgroundMessage(RemoteMessage message) async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationService().initialize();
   NotificationService().showNotification(
       title: message.data["title"], body: message.data["body"]);
 }
@@ -26,6 +28,7 @@ void main() async {
     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
 
+  setupServiceLocator();
   runApp(const MyApp());
 }
 

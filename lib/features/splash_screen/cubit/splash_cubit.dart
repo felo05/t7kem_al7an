@@ -60,14 +60,11 @@ class SplashCubit extends Cubit<SplashState> {
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.notification != null) {
-        final imageUrl =
-            message.data['imageUrl'] ?? message.notification!.android?.imageUrl;
-
+      if (message.data.isNotEmpty) {
         notificationService.showNotification(
-          title: message.notification!.title,
-          body: message.notification!.body,
-          imageUrl: imageUrl,
+          title: message.data['title'],
+          body: message.data['body'],
+          imageUrl: message.data['imageUrl'],
         );
       }
     });

@@ -33,7 +33,7 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  void _onLogin() {
+  void _onLogin(BuildContext context) {
     FocusScope.of(context).unfocus();
 
     if (!_formKey.currentState!.validate()) return;
@@ -60,10 +60,10 @@ class _AuthScreenState extends State<AuthScreen> {
                     const SizedBox(height: 100),
                     Image.asset(
                       "assets/images/logo.png",
-                      width: 250,
-                      height: 250,
+                      width: 150,
+                      height: 150,
                     ),
-                    const SizedBox(height: 70),
+                    const SizedBox(height: 50),
                     CustomTextFormField(
                       text: "الاسم",
                       controller: _nameController,
@@ -94,7 +94,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         }
                         return null;
                       },
-                      onSubmit: (_) => _onLogin(),
+                      onSubmit: (_) => _onLogin(context),
                     ),
                     const SizedBox(height: 20),
                     BlocConsumer<LoginCubit, LoginState>(
@@ -132,7 +132,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         }
 
                         return MarksFormFields.submitButton(
-                          onPressed: _onLogin,
+                          onPressed: () => _onLogin(context),
                           text: "دخول",
                         );
                       },

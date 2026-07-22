@@ -6,7 +6,7 @@ class FirebaseConstants {
   static const String kg1 = 'kg1';
   static const String kg2 = 'kg2';
   static const String kgg = 'kgg';
-  static const String kgi = 'kgg';
+  static const String kgi = 'kgi';
   static const String ola1 = 'ola1';
   static const String ola2 = 'ola2';
   static const String olai = 'olai';

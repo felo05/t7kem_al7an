@@ -30,7 +30,7 @@ class AdminRepository implements IAdminRepository {
       // Get an OAuth2-authenticated client
       final client = await clientViaServiceAccount(credentials, scopes);
 
-      final projectId = jsonDecode(jsonString)['t7kem-al7an-c4a5f'];
+      final projectId = jsonDecode(jsonString)['project_id'];
       final url = Uri.parse(
         'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
       );
@@ -38,7 +38,7 @@ class AdminRepository implements IAdminRepository {
       final message = {
         'message': {
           'topic': 'all_users', // clients must subscribe to this topic
-          'notification': {
+          'data': {
             'title': title,
             'body': body,
           },

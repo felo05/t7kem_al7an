@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:t7kem_al7an/features/admin/judges/view/screens/judges_screen.dart';
 import 'package:t7kem_al7an/features/authentication/view/screens/auth_screen.dart';
 import '../../../../../core/services/storage_service/storage_service.dart';
+import '../../../../splash_screen/cubit/splash_cubit.dart';
 import '../../../churches_adding/view/screens/add_church_screen.dart';
 import '../../../judges_assigning/view/screens/assign_judge_screen.dart';
 import '../../../results/view/screens/check_status_screen.dart';
@@ -12,6 +13,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SplashCubit().checkAndRequestPermissions(skipIfExists: false);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
