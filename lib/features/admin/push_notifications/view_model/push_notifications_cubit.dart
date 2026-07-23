@@ -19,7 +19,7 @@ class PushNotificationsCubit extends Cubit<PushNotificationsState> {
       title: title,
       body: body,
     );
-    if (result != null) {
+    if (result == null) {
       emit(PushNotificationsSuccess());
     } else {
       emit(

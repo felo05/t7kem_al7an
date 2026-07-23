@@ -21,7 +21,7 @@ class AdminRepository implements IAdminRepository {
     try {
       // Load service account credentials bundled in the app
       final jsonString = await rootBundle
-          .loadString('assets/t7kem-al7an-c4a5f-5b9f2aaa218d.json');
+          .loadString('assets/t7kem-al7an-c4a5f-100885ba60e5.json');
       final credentials =
           ServiceAccountCredentials.fromJson(jsonDecode(jsonString));
 
@@ -34,6 +34,7 @@ class AdminRepository implements IAdminRepository {
       final url = Uri.parse(
         'https://fcm.googleapis.com/v1/projects/$projectId/messages:send',
       );
+
 
       final message = {
         'message': {
@@ -56,6 +57,7 @@ class AdminRepository implements IAdminRepository {
       }
       return 'Failed to send: ${response.statusCode} ${response.body}';
     } catch (e) {
+
       return 'Failed to send notification: $e';
     }
   }

@@ -51,6 +51,7 @@ flutter:
     - shorebird.yaml
     - assets/images/
     - assets/t7kem-al7an-c4a5f-5b9f2aaa218d.json
+    - assets/t7kem-al7an-c4a5f-100885ba60e5.json
 
 
 flutter_native_splash:
