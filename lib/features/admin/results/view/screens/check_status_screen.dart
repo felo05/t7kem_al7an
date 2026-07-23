@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/utils/final_day_gate.dart';
 import '../../model/result_collections.dart';
 import 'collection_details_screen.dart';
 
@@ -61,6 +62,7 @@ class _CollectionStatCard extends StatelessWidget {
     final title = ResultCollections.displayName(collectionName);
     final icon = ResultCollections.icon(collectionName);
     final color = ResultCollections.color(collectionName);
+    final resolvedCollection = FinalDayGate.resolve(collectionName);   // NEW
 
     return GestureDetector(
       onTap: () {
@@ -68,7 +70,7 @@ class _CollectionStatCard extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => CollectionDetailsScreen(
-                collectionName: collectionName, displayName: title),
+                collectionName: resolvedCollection, displayName: title),
           ),
         );
       },

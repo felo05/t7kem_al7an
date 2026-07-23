@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart' hide Form;
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:t7kem_al7an/core/utils/final_day_gate.dart';
 import '/core/constants/al7an.dart';
 import '/core/widgets/marks_form_fields.dart';
 
@@ -312,7 +312,7 @@ class Kg1FormModel extends BaseMarksFormModel {
     try {
       final payload = buildPayload(judgeName);
       await FirebaseFirestore.instance
-          .collection(isKg ? "kg1ResultsFinal" : "oulaTanya1ResultsFinal")
+          .collection(FinalDayGate.resolve(isKg ? "kg1ResultsFinal" : "oulaTanya1ResultsFinal"))
           .add(payload);
     } catch (e) {
       return false;
@@ -477,7 +477,7 @@ class Kg2FormModel extends BaseMarksFormModel {
   Future<bool> submit(String judgeName) async {
     final payload = buildPayload(judgeName);
     await FirebaseFirestore.instance
-        .collection(isKg ? "kg2ResultsFinal" : "oulaTanya2ResultsFinal")
+        .collection(FinalDayGate.resolve(isKg ? "kg2ResultsFinal" : "oulaTanya2ResultsFinal"))
         .add(payload);
     return true;
   }
@@ -665,7 +665,7 @@ class Talta1FormModel extends BaseMarksFormModel {
   Future<bool> submit(String judgeName) async {
     final payload = buildPayload(judgeName);
     await FirebaseFirestore.instance
-        .collection(isTalta ? "taltaRaba1ResultsFinal" : "khamsaSadsa1ResultsFinal")
+        .collection(FinalDayGate.resolve(isTalta ? "taltaRaba1ResultsFinal" : "khamsaSadsa1ResultsFinal"))
         .add(payload);
     return true;
   }
@@ -857,7 +857,7 @@ class Talta2FormModel extends BaseMarksFormModel {
   Future<bool> submit(String judgeName) async {
     final payload = buildPayload(judgeName);
     await FirebaseFirestore.instance
-        .collection(isTalta ? "taltaRaba2ResultsFinal" : "khamsaSadsa2ResultsFinal")
+        .collection(FinalDayGate.resolve(isTalta ? "taltaRaba2ResultsFinal" : "khamsaSadsa2ResultsFinal"))
         .add(payload);
     return true;
   }
@@ -1043,13 +1043,13 @@ class MohobenIndividualFormModel extends BaseMarksFormModel {
   Future<bool> submit(String judgeName) async {
     final payload = buildPayload(judgeName);
     await FirebaseFirestore.instance
-        .collection(level == 0
+        .collection(FinalDayGate.resolve(level == 0
         ? "kgFResultsFinal"
         : level == 1
         ? "oulaTanyaFResultsFinal"
         : level == 2
         ? "taltaRabaFResultsFinal"
-        : "khamsaSadsaFResultsFinal")
+        : "khamsaSadsaFResultsFinal"))
         .add(payload);
     return true;
   }
@@ -1261,13 +1261,13 @@ class MohobenGroupFormModel extends BaseMarksFormModel {
   Future<bool> submit(String judgeName) async {
     final payload = buildPayload(judgeName);
     await FirebaseFirestore.instance
-        .collection(level == 0
+        .collection(FinalDayGate.resolve(level == 0
         ? "kgGResultsFinal"
         : level == 1
         ? "oulaTanyaGResultsFinal"
         : level == 2
         ? "taltaRabaGResultsFinal"
-        : "khamsaSadsaGResultsFinal")
+        : "khamsaSadsaGResultsFinal"))
         .add(payload);
     return true;
   }

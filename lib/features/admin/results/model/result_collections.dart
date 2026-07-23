@@ -20,12 +20,22 @@ class ResultCollections {
     'khamsaSadsaFResultsFinal',
   ];
 
+  static String _baseNameOf(String collection) {
+    if (collection.endsWith('ResultsFinal')) {
+      return collection.substring(0, collection.length - 'ResultsFinal'.length);
+    }
+    if (collection.endsWith('Results')) {
+      return collection.substring(0, collection.length - 'Results'.length);
+    }
+    return collection;
+  }
+
   // NOTE: CheckStatusScreen and ChurchDetailsScreen had slightly different
   // Arabic text for oulaTanyaF/taltaRabaF/khamsaSadsaF ("موهوبين فردي" vs
   // "موهوبين الفردي" — extra "ال"). Centralizing forced picking one; I kept
   // CheckStatusScreen's version. Flag if the other was intentional.
   static String displayName(String collection) {
-    final name = collection.replaceAll('ResultsFinal', '');
+    final name = _baseNameOf(collection);   // was: collection.replaceAll('ResultsFinal', '')
     switch (name) {
       case 'kg1':
         return 'حضانة المستوى الأول';
