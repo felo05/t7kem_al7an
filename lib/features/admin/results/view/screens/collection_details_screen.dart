@@ -146,17 +146,27 @@ class _CollectionDetailsBodyState extends State<_CollectionDetailsBody> {
           ),
           child: BlocBuilder<CollectionResultsCubit, CollectionResultsState>(
             builder: (context, state) {
-              if (state is CollectionResultsLoading) {
+              if (state is CollectionResultsInitial ||
+                  state is CollectionResultsLoading) {
                 return const Center(
-                    child: CircularProgressIndicator(color: Colors.white));
+                  child: CircularProgressIndicator(color: Colors.white),
+                );
               }
-              final rankings = (state as CollectionResultsSuccess).rankings;
+
+              if (state is! CollectionResultsSuccess) {
+                return const SizedBox.shrink();
+              }
+
+              final rankings = state.rankings;
               _lastRankings = rankings;
 
               if (rankings.isEmpty) {
                 return const Center(
-                    child: Text('لا توجد بيانات متاحة',
-                        style: TextStyle(color: Colors.white, fontSize: 18)));
+                  child: Text(
+                    'لا توجد بيانات متاحة',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                );
               }
 
               return ListView.builder(
