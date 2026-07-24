@@ -15,27 +15,102 @@ class PdfCacheService {
   final Dio _dio = Dio();
 
   Future<File> getOrDownload(
-    String url, {
-    void Function(double progress)? onProgress,
-  }) async {
+      String url, {
+        void Function(double progress)? onProgress,
+      }) async {
     final cacheFile = await _cacheFileForUrl(url);
-    if (await cacheFile.exists()) return cacheFile;
+
+    if (await cacheFile.exists()) {
+      if (await _isValidPdf(cacheFile)) {
+        return cacheFile;
+      }
+      // Previously cached content wasn't a real PDF (e.g. a Drive HTML
+      // interstitial saved by mistake) — discard it and re-download.
+      await cacheFile.delete();
+    }
+
+    await _downloadDirect(url, cacheFile, onProgress: onProgress);
+
+    if (!await _isValidPdf(cacheFile)) {
+      await cacheFile.delete();
+      throw Exception('الملف الذي تم تحميله ليس ملف PDF صالح');
+    }
+
+    return cacheFile;
+  }
+
+  Future<void> _downloadDirect(
+      String url,
+      File destination, {
+        void Function(double progress)? onProgress,
+      }) async {
+    final directUrl = _toDirectDownloadUrl(url);
 
     await _dio.download(
-      url,
-      cacheFile.path,
+      directUrl,
+      destination.path,
       onReceiveProgress: (received, total) {
         if (total > 0) onProgress?.call(received / total);
       },
     );
-    return cacheFile;
+
+    // Google Drive sometimes serves an HTML "can't scan this file for
+    // viruses" interstitial instead of the file itself, even for small
+    // files. Detect that and retry with the confirm token it embeds.
+    if (!await _isValidPdf(destination)) {
+      final html = await destination.readAsString();
+      final confirmMatch = RegExp(r'confirm=([0-9A-Za-z_-]+)').firstMatch(html);
+      final uuidMatch = RegExp(r'uuid=([0-9A-Za-z_-]+)').firstMatch(html);
+
+      if (confirmMatch != null || uuidMatch != null) {
+        final fileId = _extractFileId(url);
+        final retryUrl = Uri.parse('https://drive.usercontent.google.com/download')
+            .replace(queryParameters: {
+          'id': fileId,
+          'export': 'download',
+          if (confirmMatch != null) 'confirm': confirmMatch.group(1),
+          if (uuidMatch != null) 'uuid': uuidMatch.group(1),
+        })
+            .toString();
+
+        await _dio.download(
+          retryUrl,
+          destination.path,
+          onReceiveProgress: (received, total) {
+            if (total > 0) onProgress?.call(received / total);
+          },
+        );
+      }
+    }
+  }
+
+  Future<bool> _isValidPdf(File file) async {
+    if (!await file.exists()) return false;
+    if (await file.length() < 5) return false;
+    final raf = await file.open();
+    final header = await raf.read(5);
+    await raf.close();
+    return String.fromCharCodes(header) == '%PDF-';
+  }
+
+  String _extractFileId(String shareUrl) {
+    final match = RegExp(r'/d/([a-zA-Z0-9_-]+)').firstMatch(shareUrl) ??
+        RegExp(r'[?&]id=([a-zA-Z0-9_-]+)').firstMatch(shareUrl);
+    if (match == null) {
+      throw Exception('تعذر التعرف على رابط الملف: $shareUrl');
+    }
+    return match.group(1)!;
+  }
+
+  String _toDirectDownloadUrl(String shareUrl) {
+    final id = _extractFileId(shareUrl);
+    return 'https://drive.google.com/uc?export=download&id=$id';
   }
 
   Future<File> _cacheFileForUrl(String url) async {
     final base = await getApplicationCacheDirectory();
     final dir = Directory('${base.path}/pdf_cache');
     if (!await dir.exists()) await dir.create(recursive: true);
-    // Use hashCode as the cache key — no crypto needed
     final key = url.hashCode.abs();
     return File('${dir.path}/$key.pdf');
   }

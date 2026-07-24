@@ -88,6 +88,7 @@ class MarksFormFields {
   }
 
   static Column kgForm(
+      BuildContext context,
       L7n l7n,
       List<TextEditingController> controllers,
       List<bool> isChecked,
@@ -97,7 +98,7 @@ class MarksFormFields {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        nameRow(l7n),
+        nameRow(context, l7n),
         const SizedBox(height: 20),
         CustomTextFormField(
           controller: controllers[0],
@@ -145,7 +146,8 @@ class MarksFormFields {
     );
   }
   static Column taltaForm(
-    L7n l7n,
+      BuildContext context,
+      L7n l7n,
     List<TextEditingController> controllers,
     List<bool> isChecked,
     void Function(int index, bool? value) onChanged,
@@ -154,7 +156,7 @@ class MarksFormFields {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        nameRow(l7n),
+        nameRow(context, l7n),
         const SizedBox(height: 20),
         CustomTextFormField(
           controller: controllers[0],
@@ -219,6 +221,7 @@ class MarksFormFields {
   }
 
   static Column mohobenIndividualForm(
+      BuildContext context,
       L7n l7n,
       List<TextEditingController> controllers,
       List<bool> isChecked,
@@ -228,7 +231,7 @@ class MarksFormFields {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        nameRow(l7n),
+        nameRow(context, l7n),
         const SizedBox(height: 20),
         CustomTextFormField(
           controller: controllers[0],
@@ -268,6 +271,7 @@ class MarksFormFields {
   }
 
   static Column mohobenGroupForm(
+      BuildContext context,
       L7n l7n,
       List<TextEditingController> controllers,
       List<bool> isChecked,
@@ -277,7 +281,7 @@ class MarksFormFields {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        nameRow(l7n),
+        nameRow(context, l7n),
         const SizedBox(height: 20),
         CustomTextFormField(
           controller: controllers[0],
@@ -362,7 +366,7 @@ class MarksFormFields {
     );
   }
 
-  static Widget nameRow(L7n l7n) {
+  static Widget nameRow(BuildContext context, L7n l7n) {
     return SizedBox(
       width: double.infinity,
       child: Row(
@@ -380,13 +384,16 @@ class MarksFormFields {
           if (l7n.pdfUrl != null) ...[
             const SizedBox(width: 8),
             InkWell(
-                onTap: () {
-                  PdfViewerScreen(
-                    title: l7n.name,
-                    url: l7n.pdfUrl!,
-                  );
-                },
-                child: const Icon(Icons.insert_drive_file_rounded)),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PdfViewerScreen(title: l7n.name, url: l7n.pdfUrl!),
+                  ),
+                );
+              },
+              child: const Icon(Icons.insert_drive_file_rounded),
+            ),
             const SizedBox(width: 15)
           ]
         ],
