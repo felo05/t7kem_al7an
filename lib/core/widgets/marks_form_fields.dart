@@ -247,29 +247,22 @@ class MarksFormFields {
           inputType: TextInputType.number,
           text: "${Al7an.ro7ania} 10 درجات",
         ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              Al7an.taks,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            Checkbox(
-                value: isChecked[0], onChanged: (val) => onChanged(0, val)),
-            if (l7n.hasTools) ...[
-              const SizedBox(width: 30),
+        if (l7n.hasTools) ...[
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
               const Text(
                 Al7an.df,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               Checkbox(
-                value: isChecked[1],
-                onChanged: (val) => onChanged(1, val),
+                value: isChecked[0],
+                onChanged: (val) => onChanged(0, val),
               ),
-            ]
-          ],
-        ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -325,8 +318,8 @@ class MarksFormFields {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               Checkbox(
-                value: isChecked[1],
-                onChanged: (val) => onChanged(1, val),
+                value: isChecked[0],
+                onChanged: (val) => onChanged(0, val),
               ),
               const SizedBox(width: 20),
               const Text(
@@ -334,24 +327,12 @@ class MarksFormFields {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               Checkbox(
-                value: isChecked[2],
-                onChanged: (val) => onChanged(2, val),
+                value: isChecked[1],
+                onChanged: (val) => onChanged(1, val),
               ),
             ],
-          )
+          ),
         ],
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              Al7an.taks,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            Checkbox(
-                value: isChecked[0], onChanged: (val) => onChanged(0, val)),
-          ],
-        ),
       ],
     );
   }
