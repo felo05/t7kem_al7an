@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -49,25 +50,10 @@ class SplashCubit extends Cubit<SplashState> {
 
     await StorageService().init();
 
-    final NotificationService notificationService = NotificationService();
-    await notificationService.initialize();
+    // Fire-and-forget: push setup must never block or delay login resolution,
+    // especially offline.
+    _setupPushNotifications();
 
-    await FirebaseMessaging.instance.requestPermission();
-
-    await FirebaseMessaging.instance.getToken();
-
-    await FirebaseMessaging.instance.subscribeToTopic('all_users');
-    FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
-
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.data.isNotEmpty) {
-        notificationService.showNotification(
-          title: message.data['title'],
-          body: message.data['body'],
-          imageUrl: message.data['imageUrl'],
-        );
-      }
-    });
     try {
       final user = await StorageService.instance.getUser();
       if (user != null) {
@@ -77,6 +63,48 @@ class SplashCubit extends Cubit<SplashState> {
       }
     } catch (e) {
       emit(NotLoggedIn());
+    }
+  }
+
+  Future<void> _setupPushNotifications() async {
+    try {
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+
+      await FirebaseMessaging.instance
+          .requestPermission()
+          .timeout(const Duration(seconds: 5), onTimeout: () => throw TimeoutException('requestPermission timed out'));
+
+      try {
+        await FirebaseMessaging.instance
+            .getToken()
+            .timeout(const Duration(seconds: 5));
+      } catch (e) {
+        debugPrint('FCM getToken failed: $e');
+      }
+
+      try {
+        await FirebaseMessaging.instance
+            .subscribeToTopic('all_users')
+            .timeout(const Duration(seconds: 5));
+      } catch (e) {
+        debugPrint('FCM subscribeToTopic failed: $e');
+        // Non-fatal — will succeed on a future app open once network returns.
+      }
+
+      FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
+
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        if (message.data.isNotEmpty) {
+          notificationService.showNotification(
+            title: message.data['title'],
+            body: message.data['body'],
+            imageUrl: message.data['imageUrl'],
+          );
+        }
+      });
+    } catch (e) {
+      debugPrint('Push notification setup failed: $e');
     }
   }
 }
