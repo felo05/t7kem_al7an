@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:saver_gallery/saver_gallery.dart';
@@ -45,14 +46,23 @@ class UserRepository implements IUserRepository {
       final file = File(filePath);
       await file.writeAsBytes(pngBytes, flush: true);
 
-      await _ensureGalleryPermission();
-      await SaverGallery.saveImage(
-        pngBytes,
-        fileName: fileName,
-        skipIfExists: true,
-      );
+      debugPrint("File saved locally: $filePath");
 
-      await _storageService.addFormImagePath(filePath);
+      await _ensureGalleryPermission();
+
+      try {
+        await SaverGallery.saveImage(
+          pngBytes,
+          fileName: fileName,
+          skipIfExists: true,
+        );
+        debugPrint("Gallery save successful");
+      } catch (e) {
+        debugPrint("Gallery save failed: $e");
+      }
+
+      await StorageService.instance.addFormImagePath(filePath);
+
       return filePath;
     } catch (e) {
       return null;
